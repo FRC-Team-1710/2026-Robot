@@ -87,7 +87,7 @@ public class RobotContainer {
   /* Create subsystems (uses simulated versions when running in simulation) */
   public final Arm arm = RobotBase.isSimulation() ? new ArmSIM() : new Arm();
   public final Flywheel flywheel = RobotBase.isSimulation() ? new FlywheelSIM() : new Flywheel();
-  private final Superstructure superstructure = new Superstructure(arm, flywheel);
+  private final Superstructure superstructure = new Superstructure();
 
   // Vision camera for tracking robot position
   public final LimelightSubsystem limelight =
