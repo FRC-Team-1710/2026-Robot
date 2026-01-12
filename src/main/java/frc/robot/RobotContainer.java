@@ -23,9 +23,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.autonomous.AutoCommands;
+import frc.robot.autonomous.AutoBuilder;
 import frc.robot.autonomous.AutoRoutines;
-import frc.robot.autonomous.LinearPathRequest;
+import frc.robot.autonomous.BLineRequest;
 import frc.robot.constants.AutoConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -74,9 +74,9 @@ public class RobotContainer {
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-  public final AutoCommands autoCommands = new AutoCommands(
+  public final AutoBuilder autoCommands = new AutoBuilder(
       drivetrain,
-      new LinearPathRequest(
+      new BLineRequest(
           new Constraints(AutoConstants.MAX_LINEAR_VELOCITY_MPS, AutoConstants.MAX_LINEAR_ACCELERATION_MPS2),
           new Constraints(AutoConstants.MAX_ANGULAR_VELOCITY_RAD_S, AutoConstants.MAX_ANGULAR_ACCELERATION_RAD_S2),
           new WheelForceCalculator(
