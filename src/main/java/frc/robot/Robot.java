@@ -17,22 +17,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.HootEpilogueBackend;
 
-/**
- * Main robot class - this is where everything starts.
- *
- * <p>This class handles:
- * <ul>
- *   <li>Running commands using the CommandScheduler
- *   <li>Recording data for later review (Epilogue and HootAutoReplay)
- *   <li>Switching between autonomous and driver-controlled modes
- * </ul>
- *
- * <p>The robot records data in two ways:
- * <ul>
- *   <li>HootEpilogueBackend - Records info from CTRE motor controllers
- *   <li>NTEpilogueBackend - Records data to NetworkTables (for AdvantageScope viewing)
- * </ul>
- */
 @Logged
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -54,7 +38,6 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    // Update data recording system
     hootAutoReplay.update();
   }
 
