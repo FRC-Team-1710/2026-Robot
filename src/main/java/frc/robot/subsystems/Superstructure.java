@@ -8,7 +8,9 @@ public class Superstructure {
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
-  public Superstructure() {
+  public Superstructure() {}
+
+  public void periodic() {
     currentState = handleStateTransitions();
     applyStates();
   }
