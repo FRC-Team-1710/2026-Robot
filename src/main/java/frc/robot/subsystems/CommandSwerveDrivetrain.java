@@ -118,7 +118,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return run(() -> this.setControl(requestSupplier.get()));
   }
 
-  @Override
   public void periodic() {
     /*
      * Periodically try to apply the operator perspective.
