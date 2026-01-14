@@ -15,7 +15,7 @@ import frc.robot.utils.MechanismUtil;
 import frc.robot.utils.TalonFXUtil;
 
 public class ShooterSIM extends Shooter {
-  
+
   // ==================== Physical Constants ====================
 
   private static final double GEAR_RATIO = 1.0;
