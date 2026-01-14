@@ -4,7 +4,6 @@
 
 package frc.robot.utils;
 
-import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.hal.DriverStationJNI;
@@ -13,7 +12,6 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.NotifierJNI;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.constants.Subsystems;
@@ -90,10 +88,11 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   private long m_loopStartTimeUs;
   private long previousStartOfPeriodic;
 
+  private Callback currentPeriodicCallback;
+
   private final PriorityQueue<Callback> m_callbacks = new PriorityQueue<>();
 
   private final HashMap<Subsystems, Runnable> subsystemToRunnable = new HashMap<>();
-  private final HashMap<Subsystems, Runnable> flagged = new HashMap<>();
 
   private final HashMap<Subsystems, Long> previousSubsystemTimes = new HashMap<>();
 
@@ -159,6 +158,8 @@ public class DynamicTimedRobot extends IterativeRobotBase {
           RobotController.getFPGATime() - previousSubsystemTimes.get(callback.subsystem));
       previousSubsystemTimes.put(callback.subsystem, RobotController.getFPGATime());
 
+      currentPeriodicCallback = callback;
+
       callback.func.run();
 
       subsystemsRunThisLoop.add(callback.subsystem.toString());
@@ -179,23 +180,10 @@ public class DynamicTimedRobot extends IterativeRobotBase {
           + (currentTime - callback.expirationTime) / callback.period * callback.period;
       m_callbacks.add(callback);
 
-      // Loop through flagged backup subsystems due to errors (redundancy)
-      for (Subsystems subsystem : flagged.keySet()) {
-        var tempTime = RobotController.getFPGATime();
-        Log.log("Periodics/" + subsystem.toString() + "/TimeBetweenTriggers",
-            RobotController.getFPGATime() - previousSubsystemTimes.get(subsystem));
-        previousSubsystemTimes.put(subsystem, RobotController.getFPGATime());
-
-        flagged.get(subsystem).run();
-
-      subsystemsRunThisLoop.add(subsystem.toString() + " (flagged)");
-
-        Log.log("Periodics/" + subsystem.toString() + "/Periodic",
-            RobotController.getFPGATime() - tempTime);
-      }
-
       // Process all other callbacks that are ready to run
       while (m_callbacks.peek().expirationTime <= currentTime) {
+        currentPeriodicCallback = callback;
+
         callback = m_callbacks.poll();
 
         var tempTime = RobotController.getFPGATime();
@@ -280,10 +268,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
     previousSubsystemTimes.put(subsystem, RobotController.getFPGATime());
   }
 
-  private final void addSubsystem(Subsystems subsystem, Callback callback) {
-    m_callbacks.add(callback);
-  }
-
   /**
    * Set new period for subsystem
    * 
@@ -295,54 +279,18 @@ public class DynamicTimedRobot extends IterativeRobotBase {
    * @param period    How frequently to call periodic
    */
   public final void setSubsystem(Subsystems subsystem, Time period) {
-    boolean subsystemOK = false;
-    for (Object obj : m_callbacks.toArray()) {
-      Callback callback = (Callback) obj;
-      // If the callback were looking for is found
-      if (callback.subsystem == subsystem) {
-        // Only add it back if it was removed (shouldn't fail but jic)
-        if (m_callbacks.remove(callback)) {
-          // Set the new period
-          callback.period = (long) (period.in(Seconds) * 1e6);
-          // Re-add the subsystem because it was "removed"
-          addSubsystem(subsystem, callback);
-          // Lets us know it was successful
-          subsystemOK = m_callbacks.contains(callback);
-          break;
-        }
-      }
-    }
-    if (!subsystemOK) {
-      for (Object obj : m_callbacks.toArray()) {
-        Callback callback = (Callback) obj;
-        if (callback.subsystem == subsystem) {
-          subsystemOK = true;
-          break;
-        }
-      }
-      if (!subsystemOK) {
-        // Add to flagged because of an error
-        flagged.put(subsystem, subsystemToRunnable.get(subsystem));
-      }
-      // Log error depending on current situation (bad situation)
-      DriverStation.reportError("Trying to set " + subsystem.toString() + " to " + period.in(Milliseconds)
-          + "ms and it failed! "
-          + (subsystemOK ? "The callback queue has the subsystem tho, you should be alright for now"
-              : "The callback queue does NOT have the subsystem!!! The subsystem is flagged and put in the redundancy queue of 20ms, it should be alright."),
-          true);
-          // I don't know if this will work and I don't want to test it
-          try {
-            String[] newArray = new String[flagged.size()];
-            int i = 0;
-            for (Subsystems flaggedSubsystem : flagged.keySet()) {
-              newArray[i] = flaggedSubsystem.toString();
-              i++;
-            }
-            Log.log("Periodics/Flagged", newArray);
-          } catch (Exception e) {
-            DriverStation.reportWarning(e.getMessage(), true);
+      if (currentPeriodicCallback.subsystem != subsystem) {
+        for (Object obj : m_callbacks.toArray()) {
+          Callback callback = (Callback) obj;
+          // If the callback were looking for is found
+          if (callback.subsystem == subsystem) {
+              callback.period = (long) (period.in(Seconds) * 1e6);
+              break;
           }
-    }
+        }
+      } else {
+        currentPeriodicCallback.period = (long) (period.in(Seconds) * 1e6);
+      }
   }
 
   /**
