@@ -16,27 +16,27 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
+import frc.robot.subsystems.intake.IntakeIOSIM;
 
 @Logged
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
   // top
   // speed
-  private double MaxAngularRate = RotationsPerSecond.of(1)
-      .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
+  private double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
 
   /* Configure field-centric driving (forward is always away from driver) */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -53,7 +53,20 @@ public class RobotContainer {
   private final Intake intake;
 
   public RobotContainer() {
-    intake = new Intake(new IntakeIOCTRE());
+    switch (Mode.getCurrentMode()) {
+      case REAL:
+        intake = new Intake(new IntakeIOCTRE());
+        break;
+
+      case SIMULATION:
+        intake = new Intake(new IntakeIOSIM());
+        break;
+
+      default:
+        intake = new Intake(new IntakeIO() {});
+        break;
+    }
+
     configureBindings();
   }
 

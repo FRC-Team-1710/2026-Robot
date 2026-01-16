@@ -6,7 +6,7 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.epilogue.Logged;
 
 @Logged
-public class IntakeIOSIM {
+public class IntakeIOSIM implements IntakeIO {
   /** Creates a new IntakeIOSIM. */
   public IntakeIOSIM() {}
 
