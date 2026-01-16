@@ -30,6 +30,10 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOCTRE;
+import frc.robot.subsystems.shooter.ShooterIOSIM;
 
 @Logged
 public class RobotContainer {
@@ -51,19 +55,23 @@ public class RobotContainer {
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Superstructure superstructure = new Superstructure();
   private final Intake intake;
+  private final Shooter shooter;
 
   public RobotContainer() {
     switch (Mode.getCurrentMode()) {
       case REAL:
         intake = new Intake(new IntakeIOCTRE());
+        shooter = new Shooter(new ShooterIOCTRE());
         break;
 
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM());
+        shooter = new Shooter(new ShooterIOSIM());
         break;
 
       default:
         intake = new Intake(new IntakeIO() {});
+        shooter = new Shooter(new ShooterIO() {});
         break;
     }
 

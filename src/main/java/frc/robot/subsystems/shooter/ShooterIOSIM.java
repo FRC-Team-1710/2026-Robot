@@ -1,6 +1,9 @@
 package frc.robot.subsystems.shooter;
 
-public class ShooterIOSIM {
+import edu.wpi.first.epilogue.Logged;
+
+@Logged
+public class ShooterIOSIM implements ShooterIO {
   
   public ShooterIOSIM() {
 

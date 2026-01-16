@@ -6,10 +6,9 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.intake.IntakeIO;
 
 @Logged
-public class ShooterIOCTRE implements IntakeIO {
+public class ShooterIOCTRE implements ShooterIO {
 
   private final MotionMagicVelocityVoltage m_velocityManager;
 
