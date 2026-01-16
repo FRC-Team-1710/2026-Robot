@@ -36,8 +36,7 @@ public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
   // top
   // speed
-  private double MaxAngularRate = RotationsPerSecond.of(1)
-      .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
+  private double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
 
   /* Configure field-centric driving (forward is always away from driver) */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
