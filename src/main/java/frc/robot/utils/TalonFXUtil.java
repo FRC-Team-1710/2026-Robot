@@ -45,15 +45,4 @@ public final class TalonFXUtil {
   public static boolean applyConfigWithRetries(TalonFX motor, TalonFXConfiguration config) {
     return applyConfigWithRetries(motor, config, 5);
   }
-
-  /**
-   * Stops multiple motors at once.
-   *
-   * @param motors The motors to stop
-   */
-  public static void stopMotors(TalonFX... motors) {
-    for (TalonFX motor : motors) {
-      motor.stopMotor();
-    }
-  }
 }
