@@ -15,6 +15,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Subsystems;
@@ -59,8 +60,12 @@ public class Robot extends DynamicTimedRobot {
 
     Epilogue.configure(config -> {config = epilogueConfig;});
 
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     // Epilogue dislikes the custom DynamicTimedRobot class so we manually update it
     addSubsystem(Subsystems.Epilogue, () -> Epilogue.robotLogger.tryUpdate(epilogueConfig.backend.getNested(epilogueConfig.root), this, epilogueConfig.errorHandler), epilogueConfig.loggingPeriod, epilogueConfig.loggingPeriodOffset);
+    
+    addAllSubsystems(m_robotContainer.getAllSubsystems());
   }
 
   @Override
@@ -68,6 +73,8 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     hootAutoReplay.update();
+
+    m_robotContainer.configureBindings();
   }
 
   @Override

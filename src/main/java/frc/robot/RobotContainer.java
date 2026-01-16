@@ -38,7 +38,7 @@ public class RobotContainer {
 
   /* Configure field-centric driving (forward is always away from driver) */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDriveRequestType(DriveRequestType.Velocity)
+      .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
       .withSteerRequestType(
           SteerRequestType.MotionMagicExpo); // Smooth steering with MotionMagic
 
@@ -53,8 +53,8 @@ public class RobotContainer {
     configureBindings();
   }
 
-  private void configureBindings() {
-    Commands.run(() ->
+  public void configureBindings() {
+    // Commands.run(() ->
         drivetrain.applyRequest(
             () -> {
               Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(), joystick.getLeftX());
@@ -62,13 +62,14 @@ public class RobotContainer {
                   .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
                   .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
                   .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
-            }));
+            }).schedule();
+            // );
 
-    joystick
-        .start()
-        .onTrue(
-            Commands.runOnce(
-                () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
+    // joystick
+    //     .start()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
   }
 
   public Command getAutonomousCommand() {
