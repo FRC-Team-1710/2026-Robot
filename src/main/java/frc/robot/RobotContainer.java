@@ -19,12 +19,15 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
+import frc.robot.subsystems.intake.IntakeIOSIM;
 import java.util.HashMap;
 
 @Logged
@@ -53,7 +56,20 @@ public class RobotContainer {
   private final Intake intake;
 
   public RobotContainer() {
-    intake = new Intake(new IntakeIOCTRE());
+    switch (Mode.getCurrentMode()) {
+      case REAL:
+        intake = new Intake(new IntakeIOCTRE());
+        break;
+
+      case SIMULATION:
+        intake = new Intake(new IntakeIOSIM());
+        break;
+
+      default:
+        intake = new Intake(new IntakeIO() {});
+        break;
+    }
+
     configureBindings();
   }
 
