@@ -75,7 +75,7 @@ public class TunerConstants {
 
   // CAN bus that the devices are located on;
   // All swerve devices must share the same CAN bus
-  public static final CANBus kCANBus = new CANBus("CANivore", "./logs/example.hoot");
+  public static final CANBus kCANBus = new CANBus("rex", "./logs/example.hoot");
 
   // Theoretical free speed (m/s) at 12 V applied output;
   // This needs to be tuned to your individual robot
@@ -83,10 +83,10 @@ public class TunerConstants {
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
   // This may need to be tuned to your individual robot
-  private static final double kCoupleRatio = 5.4;
+  private static final double kCoupleRatio = 6.1;//TODO
 
-  private static final double kDriveGearRatio = 5.67;
-  private static final double kSteerGearRatio = 12.1;
+  private static final double kDriveGearRatio = 5.27/1;
+  private static final double kSteerGearRatio = 26/1;
   private static final Distance kWheelRadius = Inches.of(2);
 
   private static final boolean kInvertLeftSide = false;

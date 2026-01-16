@@ -54,10 +54,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // Controller axes: X = forward/backward, Y = left/right
-    // (This is WPILib's standard coordinate system)
-    drivetrain.setDefaultCommand(
-        // Robot drives using joystick inputs by default
+    Commands.run(() ->
         drivetrain.applyRequest(
             () -> {
               Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(), joystick.getLeftX());
@@ -70,12 +67,11 @@ public class RobotContainer {
     joystick
         .start()
         .onTrue(
-            drivetrain.runOnce(
+            Commands.runOnce(
                 () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
   }
 
   public Command getAutonomousCommand() {
-    /* Return whichever autonomous mode was selected on the dashboard */
     return Commands.none();
   }
 
