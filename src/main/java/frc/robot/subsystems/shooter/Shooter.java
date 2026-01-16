@@ -18,9 +18,6 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class Shooter extends SubsystemBase {
 
-  int a = 0;
-  Integer b = null;
-
   public enum SHOOTER_STATE {
     STOP(RotationsPerSecond.of(0)),
 
