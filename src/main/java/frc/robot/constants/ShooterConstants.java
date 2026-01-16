@@ -6,16 +6,10 @@ package frc.robot.constants;
 
 public final class ShooterConstants {
 
-  // ==================== Preset Shooting Speeds ====================
+  // ==================== Motor IDs ====================
 
-  public static final double SHOOTING_SPEED_RPS = 25.0;
-  public static final double AMP_SPEED_RPS = 5.0;
-  public static final double FAR_SHOOTING_SPEED_RPS = 35.0;
+  public static final int FLYWHEEL_MOTOR_ID = 21;
 
-  // ==================== Tolerances ====================
-
-  /** Grace zone for isAtTarget function */
-  public static final double VELOCITY_TOLERANCE_RPS = 0.25;
 
   // ==================== PID Control Values ====================
 
@@ -28,6 +22,7 @@ public final class ShooterConstants {
   /** Proportional gain (corrects speed errors) */
   public static final double kP = 0.0;
 
+
   // ==================== Motion Magic (Speed Limits) ====================
 
   /** Maximum speed the flywheel can reach (rotations per second) */
@@ -36,6 +31,8 @@ public final class ShooterConstants {
   /** How fast the flywheel can speed up (rotations per second²) */
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
+
+  
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
