@@ -5,9 +5,15 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.RobotContainer;
+import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -19,15 +25,15 @@ public class BLineRequest implements SwerveRequest {
           .withDriveRequestType(DriveRequestType.Velocity)
           .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
-  public void pathSetup(){
      Path testPath = new Path("testPath");
      
-  }
+  
 
-  public void testAuto(CommandSwerveDrivetrain drivetrain){
-    pathSetup();
+  public Command runAuto(CommandSwerveDrivetrain drivetrain){
 
-    //return Commands.sequence(autoBuilder.autorendering)
+    return Commands.sequence(
+      drivetrain.pathBuilder.build(testPath)
+    );
   }
   
 
@@ -39,6 +45,7 @@ public class BLineRequest implements SwerveRequest {
   public StatusCode apply(
       SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply) {
 
+        
     //TODO: Implement BLine path following logic here
 
     return driveRequest.apply(parameters, modulesToApply);

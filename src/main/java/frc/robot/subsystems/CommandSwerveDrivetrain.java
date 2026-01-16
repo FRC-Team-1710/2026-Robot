@@ -39,12 +39,35 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
+  public BLineRequest bLineRequest = new BLineRequest();
+
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
   /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+
+  public final SwerveRequest.FieldCentric drive =
+      new SwerveRequest.FieldCentric()
+          .withDriveRequestType(DriveRequestType.Velocity)
+          .withSteerRequestType(
+              SteerRequestType.MotionMagicExpo); // Smooth steering with MotionMagic
+
+
+   public FollowPath.Builder pathBuilder =
+      new FollowPath.Builder(
+              this, // The drive subsystem to require
+              this::getPose, // Supplier for current robot pose
+              this::getRobotSpeeds, // Supplier for current speeds
+              (speeds) ->
+                  this.setControl(bLineRequest.driveRequest.withSpeeds(speeds)), // Consumer to drive the robot
+              new PIDController(5.0, 0.0, 0.0), // Translation PID
+              new PIDController(3.0, 0.0, 0.0), // Rotation PID
+              new PIDController(2.0, 0.0, 0.0) // Cross-track PID
+              )
+          .withDefaultShouldFlip() // Auto-flip for red alliance
+          .withPoseReset(this::resetPose);
    
 
   //public final SwerveRequest.ApplyRobotSpeeds autoDriveRequest = new ApplyRobotSpeeds();

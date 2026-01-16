@@ -36,11 +36,6 @@ public class RobotContainer {
           .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
 
   /* Configure field-centric driving (forward is always away from driver) */
-  private final SwerveRequest.FieldCentric drive =
-      new SwerveRequest.FieldCentric()
-          .withDriveRequestType(DriveRequestType.Velocity)
-          .withSteerRequestType(
-              SteerRequestType.MotionMagicExpo); // Smooth steering with MotionMagic
 
   private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -53,19 +48,7 @@ public class RobotContainer {
 
   public RobotContainer() {
 
-    FollowPath.Builder pathBuilder =
-      new FollowPath.Builder(
-              drivetrain, // The drive subsystem to require
-              drivetrain::getPose, // Supplier for current robot pose
-              drivetrain::getRobotSpeeds, // Supplier for current speeds
-              (speeds) ->
-                  drivetrain.setControl(bLineRequest.driveRequest.withSpeeds(speeds)), // Consumer to drive the robot
-              new PIDController(5.0, 0.0, 0.0), // Translation PID
-              new PIDController(3.0, 0.0, 0.0), // Rotation PID
-              new PIDController(2.0, 0.0, 0.0) // Cross-track PID
-              )
-          .withDefaultShouldFlip() // Auto-flip for red alliance
-          .withPoseReset(drivetrain::resetPose);
+  
 
     configureBindings();
   }
@@ -78,7 +61,7 @@ public class RobotContainer {
         drivetrain.applyRequest(
             () -> {
               Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(), joystick.getLeftX());
-              return drive
+              return drivetrain.drive
                   .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
                   .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
                   .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
@@ -93,7 +76,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     /* Return whichever autonomous mode was selected on the dashboard */
-    return Commands.none();
+    return (bLineRequest.runAuto(drivetrain));
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
