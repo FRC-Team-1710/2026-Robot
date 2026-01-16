@@ -13,15 +13,18 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.autos.BLineRequest;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.lib.BLine.FollowPath;
 
 @Logged
 public class RobotContainer {
@@ -45,8 +48,25 @@ public class RobotContainer {
 
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Superstructure superstructure = new Superstructure();
+  private BLineRequest bLineRequest = new BLineRequest();
+
 
   public RobotContainer() {
+
+    FollowPath.Builder pathBuilder =
+      new FollowPath.Builder(
+              drivetrain, // The drive subsystem to require
+              drivetrain::getPose, // Supplier for current robot pose
+              drivetrain::getRobotSpeeds, // Supplier for current speeds
+              (speeds) ->
+                  drivetrain.setControl(bLineRequest.driveRequest.withSpeeds(speeds)), // Consumer to drive the robot
+              new PIDController(5.0, 0.0, 0.0), // Translation PID
+              new PIDController(3.0, 0.0, 0.0), // Rotation PID
+              new PIDController(2.0, 0.0, 0.0) // Cross-track PID
+              )
+          .withDefaultShouldFlip() // Auto-flip for red alliance
+          .withPoseReset(drivetrain::resetPose);
+
     configureBindings();
   }
 
