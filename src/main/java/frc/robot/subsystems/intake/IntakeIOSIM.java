@@ -3,8 +3,9 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems.intake;
+import edu.wpi.first.epilogue.Logged;
 
-
+@Logged
 public class IntakeIOSIM {
   /** Creates a new IntakeIOSIM. */
   public IntakeIOSIM() {}
