@@ -18,13 +18,24 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class Shooter extends SubsystemBase {
 
-  public enum SHOOTER_STATE
-  {
-    STOP,
+  int a = 0;
+  Integer b = null;
 
-    SPINUP,
-    AMP,
-    FAR
+  public enum SHOOTER_STATE {
+    STOP(RotationsPerSecond.of(0)),
+
+    IDLE(RotationsPerSecond.of(200)),
+    SHOOT(RotationsPerSecond.of(250)),
+
+    PRESET_PASS(RotationsPerSecond.of(100)),
+    PRESET_SHOOT(RotationsPerSecond.of(250));
+
+
+    private final AngularVelocity velocity;
+
+    SHOOTER_STATE(AngularVelocity velocity) {
+      this.velocity = velocity;
+    }
   };
 
   private SHOOTER_STATE m_state;
@@ -78,20 +89,22 @@ public class Shooter extends SubsystemBase {
         
         break;
       
-        
-      case SPINUP:
-        setVelocity(RotationsPerSecond.of(ShooterConstants.SHOOTING_SPEED_RPS));
 
-        break;
-        
-      case AMP:
-        setVelocity(RotationsPerSecond.of(ShooterConstants.AMP_SPEED_RPS));
-
+      case IDLE:
+        setVelocity(SHOOTER_STATE.IDLE.velocity);
         break;
 
-      case FAR:
-        setVelocity(RotationsPerSecond.of(ShooterConstants.FAR_SHOOTING_SPEED_RPS));
+      case SHOOT:
+        setVelocity(SHOOTER_STATE.SHOOT.velocity);
+        break;
 
+
+        case PRESET_PASS:
+        setVelocity(SHOOTER_STATE.PRESET_PASS.velocity);
+        break;
+        
+      case PRESET_SHOOT:
+        setVelocity(SHOOTER_STATE.PRESET_SHOOT.velocity);
         break;
     }
   }
