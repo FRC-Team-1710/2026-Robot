@@ -27,6 +27,8 @@ import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOCTRE;
 
 @Logged
 public class RobotContainer {
@@ -48,8 +50,10 @@ public class RobotContainer {
 
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Superstructure superstructure = new Superstructure();
+  private final Intake intake;
 
   public RobotContainer() {
+    intake = new Intake(new IntakeIOCTRE());
     configureBindings();
   }
 
