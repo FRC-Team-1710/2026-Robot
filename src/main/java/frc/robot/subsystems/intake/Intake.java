@@ -6,8 +6,10 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 
+@Logged
 public class Intake {
   private final IntakeIO io;
   private IntakeStates currentState = IntakeStates.Up;
