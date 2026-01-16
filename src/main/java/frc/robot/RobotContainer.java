@@ -27,6 +27,8 @@ import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOCTRE;
 
 @Logged
 public class RobotContainer {
@@ -48,30 +50,15 @@ public class RobotContainer {
 
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Superstructure superstructure = new Superstructure();
+  private final Intake intake;
 
   public RobotContainer() {
+    intake = new Intake(new IntakeIOCTRE());
     configureBindings();
   }
 
   private void configureBindings() {
-    // Controller axes: X = forward/backward, Y = left/right
-    // (This is WPILib's standard coordinate system)
-    drivetrain.setDefaultCommand(
-        // Robot drives using joystick inputs by default
-        drivetrain.applyRequest(
-            () -> {
-              Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(), joystick.getLeftX());
-              return drive
-                  .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
-                  .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
-                  .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
-            }));
-
-    joystick
-        .start()
-        .onTrue(
-            drivetrain.runOnce(
-                () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
+  
   }
 
   public Command getAutonomousCommand() {
