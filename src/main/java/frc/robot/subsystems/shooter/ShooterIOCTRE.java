@@ -13,11 +13,11 @@ public class ShooterIOCTRE implements ShooterIO {
 
   private final MotionMagicVelocityVoltage m_velocityManager;
 
-  private final TalonFX m_flyWheen;
+  private final TalonFX m_flyWheel;
   private final TalonFX m_hood;
 
   public ShooterIOCTRE() {
-    this.m_flyWheen = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR_ID, TunerConstants.kCANBus);
+    this.m_flyWheel = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR_ID, TunerConstants.kCANBus);
     this.m_hood = new TalonFX(ShooterConstants.HOOD_MOTOR_ID, TunerConstants.kCANBus);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
@@ -25,11 +25,11 @@ public class ShooterIOCTRE implements ShooterIO {
 
 
   public void setVelocity(AngularVelocity velocity) {
-    this.m_flyWheen.setControl(this.m_velocityManager.withVelocity(velocity));
+    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
   }
 
   public void stop() {
-    this.m_flyWheen.stopMotor();
+    this.m_flyWheel.stopMotor();
   }
 
 
