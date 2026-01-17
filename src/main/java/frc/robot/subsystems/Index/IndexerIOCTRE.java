@@ -4,14 +4,11 @@
 
 package frc.robot.subsystems.Index;
 
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.epilogue.Logged;
-
 
 @Logged
 public class IndexerIOCTRE implements IndexerIO {
@@ -28,10 +25,9 @@ public class IndexerIOCTRE implements IndexerIO {
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     IndexMotor.getConfigurator().apply(motorConfig);
-
   }
 
-  public void setIndexMotor(double speed){
+  public void setIndexMotor(double speed) {
     IndexMotor.set(speed);
   }
 }
