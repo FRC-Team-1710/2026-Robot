@@ -8,7 +8,8 @@ public final class ShooterConstants {
 
   // ==================== Motor IDs ====================
 
-  public static final int FLYWHEEL_MOTOR_ID = 21;
+  public static final int FLYWHEEL_MOTOR_ID = 41;
+  public static final int HOOD_MOTOR_ID = 21;
 
 
   // ==================== PID Control Values ====================
