@@ -1,4 +1,4 @@
-package frc.robot.autos;
+package frc.robot;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters;
@@ -12,7 +12,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotContainer;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -26,6 +25,7 @@ public class BLineRequest implements SwerveRequest {
           .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
      Path testPath = new Path("testPath");
+
      
   
 
