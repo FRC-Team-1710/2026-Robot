@@ -74,7 +74,7 @@ public class Robot extends DynamicTimedRobot {
 
     hootAutoReplay.update();
 
-    m_robotContainer.configureBindings();
+    m_robotContainer.run();
   }
 
   @Override

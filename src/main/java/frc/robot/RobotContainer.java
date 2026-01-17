@@ -23,24 +23,26 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.utils.Log;
 
 @Logged
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
   // top
   // speed
-  private double MaxAngularRate = RotationsPerSecond.of(1)
+  private double MaxAngularRate = RotationsPerSecond.of(2)
       .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
 
   /* Configure field-centric driving (forward is always away from driver) */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
       .withSteerRequestType(
-          SteerRequestType.MotionMagicExpo); // Smooth steering with MotionMagic
+          SteerRequestType.Position); // Smooth steering with MotionMagic
 
   private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -53,23 +55,28 @@ public class RobotContainer {
     configureBindings();
   }
 
-  public void configureBindings() {
-    // Commands.run(() ->
-        drivetrain.applyRequest(
-            () -> {
-              Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(), joystick.getLeftX());
-              return drive
-                  .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
-                  .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
-                  .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
-            }).schedule();
-            // );
+  public void run() {
+drivetrain.applyRequest(
+        () -> {
+          Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(),
+              joystick.getLeftX());
+          return drive
+              .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
+              .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
+              .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
+        }).schedule();
+  }
 
-    // joystick
-    //     .start()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //             () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
+  private void configureBindings() {
+    joystick.a().whileTrue(drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    joystick.b().whileTrue(drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    joystick.x().whileTrue(drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    joystick.y().whileTrue(drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        joystick
+        .start()
+        .onTrue(
+            drivetrain.runOnce(
+                () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
   }
 
   public Command getAutonomousCommand() {
@@ -78,12 +85,12 @@ public class RobotContainer {
 
   public Vector<N2> rescaleTranslation(double x, double y) {
     Vector<N2> scaledJoyStick = VecBuilder.fill(x, y);
-    scaledJoyStick = MathUtil.applyDeadband(scaledJoyStick, 0.1);
+    scaledJoyStick = MathUtil.applyDeadband(scaledJoyStick, 0.075);
     return MathUtil.copyDirectionPow(scaledJoyStick, 2);
   }
 
   public double rescaleRotation(double rotation) {
-    return Math.copySign(MathUtil.applyDeadband(rotation, 1), 2);
+    return Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation);
   }
 
   public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {
