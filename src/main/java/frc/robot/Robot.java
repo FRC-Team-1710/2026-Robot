@@ -73,8 +73,6 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     hootAutoReplay.update();
-
-    m_robotContainer.run();
   }
 
   @Override

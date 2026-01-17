@@ -223,14 +223,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
               });
     }
-
-    var modules = getModules();
-
-    for (int i = 0; i < modules.length; i++) {
-      Log.log("Module" + i + "AngleRad", modules[i].getDriveMotor().getPosition().getValue().in(Radians));
-      Log.log("Module" + i + "SpeedRad", modules[i].getDriveMotor().getVelocity().getValue().in(RadiansPerSecond));
-      Log.log("Module" + i + "Voltage", modules[i].getDriveMotor().getMotorVoltage().getValue().in(Volts));
-    }
   }
 
   private void startSimThread() {

@@ -55,23 +55,19 @@ public class RobotContainer {
     configureBindings();
   }
 
-  public void run() {
-drivetrain.applyRequest(
-        () -> {
-          Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(),
-              joystick.getLeftX());
-          return drive
-              .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
-              .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
-              .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
-        }).schedule();
-  }
+//   public void run() {
+// drivetrain.applyRequest(
+//         () -> {
+//           Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(),
+//               joystick.getLeftX());
+//           return drive
+//               .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
+//               .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
+//               .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
+//         }).schedule();
+//   }
 
   private void configureBindings() {
-    joystick.a().whileTrue(drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    joystick.b().whileTrue(drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    joystick.x().whileTrue(drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    joystick.y().whileTrue(drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         joystick
         .start()
         .onTrue(
