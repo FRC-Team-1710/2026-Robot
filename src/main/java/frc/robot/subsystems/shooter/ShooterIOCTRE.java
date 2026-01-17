@@ -36,4 +36,8 @@ public class ShooterIOCTRE implements ShooterIO {
   public void setHoodAngle(Angle angle) {
     this.m_hood.setPosition(angle);
   }
+
+  public Angle getHoodAngle() {
+    return this.m_hood.getPosition().getValue();
+  }
 }
