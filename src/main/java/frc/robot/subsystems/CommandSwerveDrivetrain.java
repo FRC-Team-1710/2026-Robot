@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -18,7 +21,10 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.utils.Log;
 import java.util.function.Supplier;
 
 /**
@@ -26,7 +32,7 @@ import java.util.function.Supplier;
  * be used in command-based projects.
  */
 @Logged
-public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain {
+public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -37,6 +43,81 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain {
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+
+  // SysId routines
+
+  ///////////////////// Steer ///////////////////////
+
+  // private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization =
+  //     new SwerveRequest.SysIdSwerveSteerGains();
+
+  // private final SysIdRoutine m_sysIdRoutineToApply =
+  //     new SysIdRoutine(
+  //         new SysIdRoutine.Config(
+  //             /*
+  //              * This is in radians per second squared, but SysId only supports
+  //              * "volts per second"
+  //              */
+  //             Volts.of(1).per(Second),
+  //             /* This is in radians per second, but SysId only supports "volts" */
+  //             Volts.of(6),
+  //             Seconds.of(9),
+  //             // Log state with Logger class
+  //             state -> Log.log("SysIdSteer_State", state.toString())),
+  //         new SysIdRoutine.Mechanism(
+  //             output -> {
+  //               setControl(m_steerCharacterization.withVolts(output.in(Volts)));
+  //               Log.log("Steer_Rate", output.in(Volts));
+  //             },
+  //             null,
+  //             this));
+
+  //////////////////////////////// Translation /////////////////////////
+
+  private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
+      new SwerveRequest.SysIdSwerveTranslation();
+
+  private final SysIdRoutine m_sysIdRoutineToApply =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              Volts.of(1).per(Second),
+              Volts.of(7),
+              null, // Use default timeout (10 s)
+              // Log state with Logger class
+              state -> Log.log("SysId_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              output -> {
+                setControl(m_translationCharacterization.withVolts(output.in(Volts)));
+                Log.log("Translation_Rate", output.in(Volts));
+              },
+              null,
+              this));
+
+  /////////////////////////// Rotation /////////////////////////
+
+  // private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
+  //     new SwerveRequest.SysIdSwerveRotation();
+
+  // private final SysIdRoutine m_sysIdRoutineToApply =
+  //     new SysIdRoutine(
+  //         new SysIdRoutine.Config(
+  //             /*
+  //              * This is in radians per second squared, but SysId only supports
+  //              * "volts per second"
+  //              */
+  //             Volts.of(Math.PI / 6).per(Second),
+  //             /* This is in radians per second, but SysId only supports "volts" */
+  //             Volts.of(Math.PI),
+  //             null, // Use default timeout (10 s)
+  //             // Log state with Logger class
+  //             state -> Log.log("SysIdSteer_State", state.toString())),
+  //         new SysIdRoutine.Mechanism(
+  //             output -> {
+  //               setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+  //               Log.log("Rotation_Rate", output.in(Volts));
+  //             },
+  //             null,
+  //             this));
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -217,5 +298,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain {
   public ChassisSpeeds getTargetFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(
         getKinematics().toChassisSpeeds(getModuleTargets()), getRotation());
+  }
+
+  /**
+   * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
+   * #m_sysIdRoutineToApply}.
+   *
+   * @param direction Direction of the SysId Quasistatic test
+   * @return Command to run
+   */
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineToApply.quasistatic(direction);
+  }
+
+  /**
+   * Runs the SysId Dynamic test in the given direction for the routine specified by {@link
+   * #m_sysIdRoutineToApply}.
+   *
+   * @param direction Direction of the SysId Dynamic test
+   * @return Command to run
+   */
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutineToApply.dynamic(direction);
   }
 }
