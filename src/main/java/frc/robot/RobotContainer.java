@@ -29,6 +29,7 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import java.util.HashMap;
+import frc.robot.subsystems.intake.IntakeIOSIM;
 
 @Logged
 public class RobotContainer {
