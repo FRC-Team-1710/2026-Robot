@@ -74,7 +74,7 @@ public class Superstructure {
   private void scoreWhileIntaking() {}
 
   private void shootWhileIntaking() {}
-  
+
   private void climb() {}
 
   public enum WantedStates {
