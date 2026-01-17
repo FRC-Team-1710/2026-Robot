@@ -4,37 +4,33 @@
 
 package frc.robot.subsystems.Index;
 
-
-
 public class Indexer {
   private final IndexerIO io;
   private IndexStates currentState = IndexStates.Idle;
+
   /** Creates a new Index. */
   public Indexer(IndexerIO io) {
     this.io = io;
   }
-  
+
   public void periodic() {
     // This method will be called once per scheduler run
-    io.setIndexMotor (currentState.speed);
+    io.setIndexMotor(currentState.speed);
   }
-  public void setState(IndexStates state){
+
+  public void setState(IndexStates state) {
     currentState = state;
   }
- 
-  public enum IndexStates{
 
+  public enum IndexStates {
     Indexing(0),
 
     Idle(0);
-    
 
+    private final double speed;
 
-  private final double speed;
-
-  IndexStates(double speed){
-    this.speed = speed;
-  }
-
+    IndexStates(double speed) {
+      this.speed = speed;
+    }
   }
 }

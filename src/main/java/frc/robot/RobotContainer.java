@@ -6,8 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.HashMap;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -30,19 +28,24 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
+import java.util.HashMap;
 
 @Logged
 public class RobotContainer {
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
+  private double MaxSpeed =
+      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
   // top
   // speed
-  private double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
+  private double MaxAngularRate =
+      RotationsPerSecond.of(1)
+          .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
 
   /* Configure field-centric driving (forward is always away from driver) */
-  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDriveRequestType(DriveRequestType.Velocity)
-      .withSteerRequestType(
-          SteerRequestType.MotionMagicExpo); // Smooth steering with MotionMagic
+  private final SwerveRequest.FieldCentric drive =
+      new SwerveRequest.FieldCentric()
+          .withDriveRequestType(DriveRequestType.Velocity)
+          .withSteerRequestType(
+              SteerRequestType.MotionMagicExpo); // Smooth steering with MotionMagic
 
   private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -70,9 +73,7 @@ public class RobotContainer {
     configureBindings();
   }
 
-  private void configureBindings() {
-  
-  }
+  private void configureBindings() {}
 
   public Command getAutonomousCommand() {
     /* Return whichever autonomous mode was selected on the dashboard */
@@ -91,7 +92,9 @@ public class RobotContainer {
 
   public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {
     HashMap<Subsystems, Pair<Runnable, Time>> map = new HashMap<>();
-    map.put(Subsystems.Superstructure, new Pair<Runnable, Time>(superstructure::periodic, Milliseconds.of(20)));
+    map.put(
+        Subsystems.Superstructure,
+        new Pair<Runnable, Time>(superstructure::periodic, Milliseconds.of(20)));
     map.put(Subsystems.Drive, new Pair<Runnable, Time>(drivetrain::periodic, Milliseconds.of(20)));
     return map;
   }

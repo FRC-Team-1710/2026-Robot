@@ -22,13 +22,13 @@ public class BLineRequest implements SwerveRequest {
   public StatusCode apply(
       SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply) {
 
-    //TODO: Implement BLine path following logic here
+    // TODO: Implement BLine path following logic here
 
     return driveRequest.apply(parameters, modulesToApply);
   }
 
   public boolean isFinished() {
-    //TODO: Implement ending logic here
+    // TODO: Implement ending logic here
     return false;
   }
 
