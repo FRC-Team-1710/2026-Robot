@@ -1,10 +1,10 @@
 package frc.robot.constants;
 
 public enum Subsystems {
-    Robot(),
-    Epilogue(),
-    Superstructure(),
-    Drive(),
+  Robot(),
+  Epilogue(),
+  Superstructure(),
+  Drive(),
 }
 
-//Do not remove Robot or Epilogue!
+// Do not remove Robot or Epilogue!
