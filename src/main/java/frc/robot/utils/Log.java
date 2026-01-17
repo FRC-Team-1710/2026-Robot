@@ -22,14 +22,11 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.WPISerializable;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.wpilibj.DriverStation;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A custom bare-bones logger for simple
- */
+/** A custom bare-bones logger for simple */
 public final class Log {
   private static final NetworkTableInstance nt;
 
@@ -40,9 +37,7 @@ public final class Log {
     nt = NetworkTableInstance.getDefault();
   }
 
-  /**
-   * Don't use this
-   */
+  /** Don't use this */
   public Log() {
     throw new UnsupportedOperationException("You can't instantiate this class you bum");
   }
@@ -60,14 +55,12 @@ public final class Log {
   }
 
   public static void log(String identifier, float value) {
-    ((FloatPublisher)
-            publishers.computeIfAbsent(identifier, k -> nt.getFloatTopic(k).publish()))
+    ((FloatPublisher) publishers.computeIfAbsent(identifier, k -> nt.getFloatTopic(k).publish()))
         .set(value);
   }
 
   public static void log(String identifier, double value) {
-    ((DoublePublisher)
-            publishers.computeIfAbsent(identifier, k -> nt.getDoubleTopic(k).publish()))
+    ((DoublePublisher) publishers.computeIfAbsent(identifier, k -> nt.getDoubleTopic(k).publish()))
         .set(value);
   }
 
@@ -78,8 +71,7 @@ public final class Log {
   }
 
   public static void log(String identifier, byte[] value) {
-    ((RawPublisher)
-            publishers.computeIfAbsent(identifier, k -> nt.getRawTopic(k).publish("raw")))
+    ((RawPublisher) publishers.computeIfAbsent(identifier, k -> nt.getRawTopic(k).publish("raw")))
         .set(value);
   }
 
@@ -121,8 +113,7 @@ public final class Log {
   }
 
   public static void log(String identifier, String value) {
-    ((StringPublisher)
-            publishers.computeIfAbsent(identifier, k -> nt.getStringTopic(k).publish()))
+    ((StringPublisher) publishers.computeIfAbsent(identifier, k -> nt.getStringTopic(k).publish()))
         .set(value);
   }
 
@@ -131,7 +122,7 @@ public final class Log {
             publishers.computeIfAbsent(identifier, k -> nt.getStringArrayTopic(k).publish()))
         .set(value);
   }
-  
+
   @SuppressWarnings("unchecked")
   public static <T> void log(String identifier, Struct<T> struct, T value) {
     nt.addSchema(struct);
@@ -139,7 +130,7 @@ public final class Log {
             publishers.computeIfAbsent(identifier, k -> nt.getStructTopic(k, struct).publish()))
         .set(value);
   }
-  
+
   @SuppressWarnings("unchecked")
   public static <T> void log(String identifier, Struct<T> struct, T[] value) {
     nt.addSchema(struct);
@@ -151,14 +142,14 @@ public final class Log {
 
   @SuppressWarnings("unchecked")
   public static <T extends WPISerializable> void log(String identifier, T value) {
-    if (value == null)
-      return;
+    if (value == null) return;
     Struct<T> struct = (Struct<T>) findStructType(value.getClass());
     if (struct != null) {
       log(identifier, struct, value);
     } else {
       DriverStation.reportError(
-          "Log.java: Auto serialization is not supported for type " + value.getClass().getSimpleName(),
+          "Log.java: Auto serialization is not supported for type "
+              + value.getClass().getSimpleName(),
           false);
     }
   }
