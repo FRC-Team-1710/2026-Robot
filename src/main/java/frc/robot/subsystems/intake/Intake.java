@@ -12,11 +12,13 @@ import edu.wpi.first.units.measure.Angle;
 @Logged
 public class Intake {
   private final IntakeIO io;
-  private IntakeStates currentState = IntakeStates.Up;
+  private IntakeStates currentState;
 
   /** Creates a new Intake. */
   public Intake(IntakeIO io) {
     this.io = io;
+
+    this.currentState = IntakeStates.Up;
   }
 
   public void periodic() {
