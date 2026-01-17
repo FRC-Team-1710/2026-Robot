@@ -23,18 +23,18 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
   private static final Slot0Configs steerGains =
       new Slot0Configs()
-        //   .withKP(0.5)
+          //   .withKP(0.5)
           .withKI(0)
-          .withKD(0)//.72561)
+          .withKD(0) // .72561)
           .withKS(0.11032)
           .withKV(0.39283)
           .withKA(0.031907)
           .withKP(80)
-        //   .withKI(0)
-        //   .withKD(0.5)
-        //   .withKS(0.1)
-        //   .withKV(0.0)
-        //   .withKA(0)
+          //   .withKI(0)
+          //   .withKD(0.5)
+          //   .withKS(0.1)
+          //   .withKV(0.0)
+          //   .withKA(0)
           .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
   // When using closed-loop control, the drive motor uses the control
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
@@ -91,8 +91,8 @@ public class TunerConstants {
   // This may need to be tuned to your individual robot
   private static final double kCoupleRatio = 3.2;
 
-  private static final double kDriveGearRatio = 5.27/1;
-  private static final double kSteerGearRatio = 26/1;
+  private static final double kDriveGearRatio = 5.27 / 1;
+  private static final double kSteerGearRatio = 26 / 1;
   private static final Distance kWheelRadius = Inches.of(2);
 
   private static final boolean kInvertLeftSide = false;

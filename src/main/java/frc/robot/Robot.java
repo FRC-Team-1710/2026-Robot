@@ -57,13 +57,24 @@ public class Robot extends DynamicTimedRobot {
     epilogueConfig.loggingPeriod = Seconds.of(0.02);
     epilogueConfig.loggingPeriodOffset = Seconds.of(0.02 - (0.02 / Subsystems.values().length));
 
-    Epilogue.configure(config -> {config = epilogueConfig;});
+    Epilogue.configure(
+        config -> {
+          config = epilogueConfig;
+        });
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
     // Epilogue dislikes the custom DynamicTimedRobot class so we manually update it
-    addSubsystem(Subsystems.Epilogue, () -> Epilogue.robotLogger.tryUpdate(epilogueConfig.backend.getNested(epilogueConfig.root), this, epilogueConfig.errorHandler), epilogueConfig.loggingPeriod, epilogueConfig.loggingPeriodOffset);
-    
+    addSubsystem(
+        Subsystems.Epilogue,
+        () ->
+            Epilogue.robotLogger.tryUpdate(
+                epilogueConfig.backend.getNested(epilogueConfig.root),
+                this,
+                epilogueConfig.errorHandler),
+        epilogueConfig.loggingPeriod,
+        epilogueConfig.loggingPeriodOffset);
+
     addAllSubsystems(m_robotContainer.getAllSubsystems());
   }
 

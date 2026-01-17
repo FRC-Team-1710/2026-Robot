@@ -14,13 +14,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.constants.Mode;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -30,7 +31,6 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import java.util.HashMap;
-import frc.robot.utils.Log;
 
 @Logged
 public class RobotContainer {
@@ -38,14 +38,15 @@ public class RobotContainer {
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
   // top
   // speed
-  private double MaxAngularRate = RotationsPerSecond.of(2)
-      .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
+  private double MaxAngularRate =
+      RotationsPerSecond.of(2)
+          .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
 
   /* Configure field-centric driving (forward is always away from driver) */
-  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-      .withSteerRequestType(
-          SteerRequestType.Position); // Smooth steering with MotionMagic
+  private final SwerveRequest.FieldCentric drive =
+      new SwerveRequest.FieldCentric()
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+          .withSteerRequestType(SteerRequestType.Position); // Smooth steering with MotionMagic
 
   private final CommandXboxController joystick = new CommandXboxController(0);
 
@@ -73,20 +74,20 @@ public class RobotContainer {
     configureBindings();
   }
 
-//   public void run() {
-// drivetrain.applyRequest(
-//         () -> {
-//           Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(),
-//               joystick.getLeftX());
-//           return drive
-//               .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
-//               .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
-//               .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
-//         }).schedule();
-//   }
+  //   public void run() {
+  // drivetrain.applyRequest(
+  //         () -> {
+  //           Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(),
+  //               joystick.getLeftX());
+  //           return drive
+  //               .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
+  //               .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
+  //               .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
+  //         }).schedule();
+  //   }
 
   private void configureBindings() {
-        joystick
+    joystick
         .start()
         .onTrue(
             drivetrain.runOnce(
