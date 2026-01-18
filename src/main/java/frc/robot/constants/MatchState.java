@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class MatchState {
   // TODO: Set to simulate a match enviornment to test match specific code
-  public static boolean simulatePracticeMatch = true;
+  public static boolean simulatePracticeMatch = false;
 
   public static Optional<Boolean> autonomousWinnerIsRed = Optional.empty();
 
