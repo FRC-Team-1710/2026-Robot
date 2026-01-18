@@ -2,33 +2,59 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeStates;
 
 @Logged
 public class Superstructure {
+  private CommandXboxController driver;
+  private CommandXboxController mech;
+  private CommandSwerveDrivetrain drivetrain;
+  private Intake intake;
+
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
-  public Superstructure() {}
+  public Superstructure(
+      CommandXboxController driver,
+      CommandXboxController mech,
+      CommandSwerveDrivetrain drivetrain,
+      Intake intake) {
+    this.driver = driver;
+    this.mech = mech;
+    this.drivetrain = drivetrain;
+    this.intake = intake;
+  }
 
   public void periodic() {
     currentState = handleStateTransitions();
     applyStates();
   }
 
+  public void applyRumble() {
+    // mech.setRumble(RumbleType.kRightRumble, 0.5);
+  }
+
+  /**
+   * Handles the transitions from wanted states to current states
+   *
+   * @return the new current state
+   */
   private CurrentStates handleStateTransitions() {
     switch (wantedState) {
       case Default:
         return CurrentStates.Idle;
-      case Targeting:
-        return CurrentStates.Targeting;
-      case Scoring:
-        return CurrentStates.Scoring;
+      case Shoot:
+        return drivetrain.inAllianceZone() ? CurrentStates.Score : CurrentStates.Shoot;
       case Intake:
         return CurrentStates.Intake;
-      case ScoreWhileIntaking:
-        return CurrentStates.ScoreWhileIntaking;
-      case ShootWhileIntaking:
-        return CurrentStates.ShootWhileIntaking;
+      case IntakeAndShoot:
+        return drivetrain.inAllianceZone()
+            ? CurrentStates.ScoreWhileIntaking
+            : CurrentStates.ShootWhileIntaking;
       case Climb:
         return CurrentStates.Climb;
       default:
@@ -37,16 +63,17 @@ public class Superstructure {
     }
   }
 
+  /** Applies the current states to the subsystems */
   private void applyStates() {
     switch (currentState) {
       case Idle:
         idle();
         break;
-      case Targeting:
-        targeting();
+      case Shoot:
+        shoot();
         break;
-      case Scoring:
-        scoring();
+      case Score:
+        score();
         break;
       case Intake:
         intake();
@@ -63,37 +90,66 @@ public class Superstructure {
     }
   }
 
-  private void idle() {}
+  private void idle() {
+    intake.setState(IntakeStates.Up);
+  }
 
-  private void targeting() {}
+  private void shoot() {
+    intake.setState(IntakeStates.Up);
+  }
 
-  private void scoring() {}
+  private void score() {
+    intake.setState(IntakeStates.Up);
+  }
 
-  private void intake() {}
+  private void intake() {
+    intake.setState(IntakeStates.Intaking);
+  }
 
-  private void scoreWhileIntaking() {}
+  private void scoreWhileIntaking() {
+    intake.setState(IntakeStates.Intaking);
+  }
 
-  private void shootWhileIntaking() {}
+  private void shootWhileIntaking() {
+    intake.setState(IntakeStates.Intaking);
+  }
 
-  private void climb() {}
+  private void climb() {
+    intake.setState(IntakeStates.Up);
+  }
 
+  /** The wanted states of superstructure */
   public enum WantedStates {
     Default(),
-    Targeting(),
-    Scoring(),
+    Shoot(),
     Intake(),
-    ScoreWhileIntaking(),
-    ShootWhileIntaking(),
+    IntakeAndShoot(),
     Climb()
   }
 
+  /** The current states of superstructure */
   public enum CurrentStates {
     Idle(),
-    Targeting(),
-    Scoring(),
+    Shoot(),
+    Score(),
     Intake(),
-    ScoreWhileIntaking(),
     ShootWhileIntaking(),
+    ScoreWhileIntaking(),
     Climb()
+  }
+
+  /**
+   * @param state the wanted state to set
+   */
+  public void setWantedState(WantedStates state) {
+    wantedState = state;
+  }
+
+  /**
+   * @param state the wanted state to set
+   * @return a command that sets the wanted state
+   */
+  public Command setWantedStateCommand(WantedStates state) {
+    return Commands.runOnce(() -> setWantedState(state));
   }
 }

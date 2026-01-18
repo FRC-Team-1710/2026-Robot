@@ -2,11 +2,12 @@ package frc.robot.constants;
 
 import edu.wpi.first.wpilibj.RobotBase;
 
-public enum Mode {
-  SIMULATION,
-  REAL;
+public class Mode {
+  public static final CurrentMode currentMode =
+      RobotBase.isSimulation() ? CurrentMode.SIMULATION : CurrentMode.REAL;
 
-  public static Mode getCurrentMode() {
-    return RobotBase.isReal() ? Mode.REAL : Mode.SIMULATION;
+  public enum CurrentMode {
+    SIMULATION,
+    REAL
   }
 }
