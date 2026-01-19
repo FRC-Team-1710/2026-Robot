@@ -6,17 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -35,26 +28,19 @@ import java.util.HashMap;
 @Logged
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-
-  private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond);
-
-  /* Configure field-centric driving (forward is always away from driver) */
-  private final SwerveRequest.FieldCentric drive =
-      new SwerveRequest.FieldCentric()
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-          .withSteerRequestType(SteerRequestType.Position);
-
   private final CommandXboxController driver = new CommandXboxController(0);
   private final CommandXboxController mech = new CommandXboxController(1);
 
-  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  public final CommandSwerveDrivetrain drivetrain;
 
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Intake intake;
   private final Superstructure superstructure;
 
   public RobotContainer() {
+    drivetrain = TunerConstants.createDrivetrain();
+    drivetrain.setController(driver);
+
     switch (Mode.currentMode) {
       case REAL:
         intake = new Intake(new IntakeIOCTRE());
@@ -74,18 +60,6 @@ public class RobotContainer {
     configureBindings();
   }
 
-  //   public void run() {
-  // drivetrain.applyRequest(
-  //         () -> {
-  //           Vector<N2> scaledInputs = rescaleTranslation(joystick.getLeftY(),
-  //               joystick.getLeftX());
-  //           return drive
-  //               .withVelocityX(-scaledInputs.get(0, 0) * MaxSpeed)
-  //               .withVelocityY(-scaledInputs.get(1, 0) * MaxSpeed)
-  //               .withRotationalRate(-rescaleRotation(joystick.getRightX()) * MaxAngularRate);
-  //         }).schedule();
-  //   }
-
   private void configureBindings() {
     driver
         .start()
@@ -96,16 +70,6 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return Commands.none();
-  }
-
-  public Vector<N2> rescaleTranslation(double x, double y) {
-    Vector<N2> scaledJoyStick = VecBuilder.fill(x, y);
-    scaledJoyStick = MathUtil.applyDeadband(scaledJoyStick, 0.075);
-    return MathUtil.copyDirectionPow(scaledJoyStick, 2);
-  }
-
-  public double rescaleRotation(double rotation) {
-    return Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation);
   }
 
   public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {
