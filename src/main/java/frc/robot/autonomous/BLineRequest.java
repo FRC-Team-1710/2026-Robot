@@ -7,14 +7,25 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.lib.BLine.Path;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class BLineRequest implements SwerveRequest {
   public Pose2d TargetPose = Pose2d.kZero;
 
-  private final SwerveRequest.ApplyFieldSpeeds driveRequest =
+  public final SwerveRequest.ApplyFieldSpeeds driveRequest =
       new SwerveRequest.ApplyFieldSpeeds()
           .withDriveRequestType(DriveRequestType.Velocity)
           .withSteerRequestType(SteerRequestType.MotionMagicExpo);
+
+  Path testPath = new Path("testPath");
+
+  public Command runAuto(CommandSwerveDrivetrain drivetrain) {
+
+    return Commands.sequence(drivetrain.pathBuilder.build(testPath));
+  }
 
   public BLineRequest() {}
 

@@ -12,8 +12,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.autonomous.BLineRequest;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
@@ -36,6 +36,7 @@ public class RobotContainer {
 
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Intake intake;
+  private BLineRequest bLineRequest = new BLineRequest();
   private final Superstructure superstructure;
 
   public RobotContainer() {
@@ -101,7 +102,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.none();
+    return bLineRequest.runAuto(drivetrain);
   }
 
   public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {
