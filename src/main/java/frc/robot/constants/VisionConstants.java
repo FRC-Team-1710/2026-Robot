@@ -1,7 +1,7 @@
 package frc.robot.constants;
 
 public class VisionConstants {
-// ==================== Base Trust Levels ====================
+  // ==================== Base Trust Levels ====================
 
   /** Starting trust level for X/Y position per AprilTag seen (meters) */
   public static final double BASE_XY_STD_DEV = 0.5;
@@ -11,7 +11,10 @@ public class VisionConstants {
 
   // ==================== Ambiguity Filtering ====================
 
-  /** Maximum acceptable ambiguity for AprilTag detections (0.0 = perfect, 1.0 = completely ambiguous) */
+  /**
+   * Maximum acceptable ambiguity for AprilTag detections (0.0 = perfect, 1.0 = completely
+   * ambiguous)
+   */
   public static final double MAX_TAG_AMBIGUITY = 0.7;
 
   // ==================== Trust Level Limits ====================
