@@ -12,9 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     container: wpilib/roborio-cross-ubuntu:2025-22.04
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}
 
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +19,9 @@ jobs:
       - name: Add repository to git safe directories
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
+      - name: The Magic Touch
+        run: sed -i 's/\r$//' gradlew
+        
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
