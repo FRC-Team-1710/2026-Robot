@@ -6,6 +6,10 @@ jobs:
   spotless:
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
+    container: wpilib/roborio-cross-ubuntu:2025-22.04
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -16,4 +20,5 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 17
+      - run: chmod +x gradlew
       - run: ./gradlew spotlessCheck
