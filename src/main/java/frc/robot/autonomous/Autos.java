@@ -4,24 +4,34 @@
 
 package frc.robot.autonomous;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.HashMap;
 
 /** Add your docs here. */
 public class Autos {
+  private final HashMap<Auto, Command> autoCommands;
+  private final SendableChooser<Auto> autoChooser;
+
+  public Autos() {
+    autoCommands = new HashMap<>();
+    autoCommands.put(Auto.NONE, Commands.none());
+    autoChooser = new SendableChooser<>();
+    autoChooser.setDefaultOption("None", Auto.NONE);
+  }
+
+  public void addPath(Auto auto, Command command) {
+    autoCommands.put(auto, command);
+    autoChooser.addOption(auto.name(), auto);
+  }
+
+  public Command getAuto() {
+    return autoCommands.get(autoChooser.getSelected());
+  }
 
   public enum Auto {
-    TEST_PATH(Commands.sequence(null)),
-    EAT_BURGER(Commands.sequence(null));
-
-    private final Command command;
-
-    Auto(Command command) {
-      this.command = command;
-    }
-
-    public Command getCommand() {
-      return command;
-    }
+    NONE(),
+    TEST_PATH()
   }
 }
