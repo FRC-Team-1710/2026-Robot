@@ -33,12 +33,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.autonomous.BLineRequest;
+import frc.robot.autonomous.Autos;
+import frc.robot.autonomous.Autos.Auto;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.lib.BLine.FollowPath;
+import frc.robot.lib.BLine.Path;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.Log;
 import java.util.function.Supplier;
@@ -145,7 +147,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             null,
   //             this));
 
-  private BLineRequest bLineRequest = new BLineRequest();
+  private SwerveRequest.ApplyRobotSpeeds bLineRequest = new SwerveRequest.ApplyRobotSpeeds();
+
+  private Path testPath = new Path("testPath");
 
   // Create a reusable builder with your robot's configuration
   public FollowPath.Builder pathBuilder =
@@ -154,14 +158,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               this::getPose, // Supplier for current robot pose
               this::getRobotSpeeds, // Supplier for current speeds
               (speeds) ->
-                  this.setControl(
-                      bLineRequest.driveRequest.withSpeeds(speeds)), // Consumer to drive the robot
+                  this.setControl(bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
               new PIDController(5.0, 0.0, 0.0), // Translation PID
               new PIDController(3.0, 0.0, 0.0), // Rotation PID
               new PIDController(2.0, 0.0, 0.0) // Cross-track PID
               )
-          .withDefaultShouldFlip() // Auto-flip for red alliance
+          .withShouldFlip(() -> Alliance.redAlliance) // Auto-flip for red alliance
           .withPoseReset(this::resetPose); // Reset odometry at path start
+
+  private final Autos autoChooser = new Autos();
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -178,6 +183,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    autoChooser.addPath(Auto.TEST_PATH, Commands.sequence(pathBuilder.build(new Path("testPath"))));
   }
 
   /**
@@ -199,6 +205,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    autoChooser.addPath(Auto.TEST_PATH, Commands.sequence(pathBuilder.build(new Path("testPath"))));
   }
 
   /**
@@ -231,6 +238,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    autoChooser.addPath(Auto.TEST_PATH, Commands.sequence(pathBuilder.build(new Path("testPath"))));
+  }
+
+  public Command getAuto() {
+    return autoChooser.getAuto();
   }
 
   /**
