@@ -7,7 +7,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 @Logged
-public class Shooter extends SubsystemBase{
+public class Shooter extends SubsystemBase {
 
   public enum SHOOTER_STATE {
     STOP(RotationsPerSecond.of(0)),
