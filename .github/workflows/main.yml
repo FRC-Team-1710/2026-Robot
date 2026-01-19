@@ -21,9 +21,9 @@ jobs:
 
       - name: The Magic Touch
         run: sed -i 's/\r$//' gradlew
-        
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Compile and run tests on robot code
-        run: ./gradlew build
+        run: bash ./gradlew build

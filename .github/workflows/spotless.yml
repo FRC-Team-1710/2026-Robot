@@ -26,4 +26,4 @@ jobs:
         run: chmod +x gradlew
       
       - name: Compile and run Spotless Check on robot code
-      - run: bash ./gradlew spotlessCheck
+        run: bash ./gradlew spotlessCheck
