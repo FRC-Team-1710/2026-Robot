@@ -19,6 +19,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.constants.FieldConstants;
+import frc.robot.constants.Mode;
+import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 
 public class CustomFieldCentric implements SwerveRequest {
@@ -29,11 +31,22 @@ public class CustomFieldCentric implements SwerveRequest {
   public LinearVelocity yVelocity = MetersPerSecond.of(0);
   public AngularVelocity angularVelocity = RadiansPerSecond.of(0);
 
-  private final PIDController yAssistPID = new PIDController(0.0, 0.0, 0.0);
+  private final PIDController yAssistPID =
+      new PIDController(
+          Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
+          0.0,
+          Mode.currentMode == CurrentMode.SIMULATION ? 2 : 0.0);
   private final ProfiledPIDController rotationLockPID =
-      new ProfiledPIDController(0.0, 0.0, 0.0, new Constraints(0, 0));
+      new ProfiledPIDController(
+          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 0.0,
+          0.0,
+          Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
+          new Constraints(
+              Mode.currentMode == CurrentMode.SIMULATION ? 3 : 0.0,
+              Mode.currentMode == CurrentMode.SIMULATION ? 4 : 0.0));
 
-  private boolean shouldResetPID = true;
+  private boolean shouldResetYAssistPID = true;
+  private boolean shouldResetRotationPID = true;
 
   public DriveStates currentDriveState = DriveStates.DRIVER_CONTROLLED;
 
@@ -49,12 +62,14 @@ public class CustomFieldCentric implements SwerveRequest {
   @Override
   public StatusCode apply(
       SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply) {
-    if (shouldResetPID) {
+    if (shouldResetYAssistPID) {
       yAssistPID.reset();
-      rotationLockPID.reset(
-          parameters.currentPose.getRotation().getRadians(),
-          parameters.currentChassisSpeed.omegaRadiansPerSecond);
-      shouldResetPID = false;
+      shouldResetYAssistPID = false;
+    }
+
+    if (shouldResetRotationPID) {
+      rotationLockPID.reset(parameters.currentPose.getRotation().getRadians(), 0);
+      shouldResetRotationPID = false;
     }
 
     ChassisSpeeds wantedSpeeds;
@@ -62,6 +77,18 @@ public class CustomFieldCentric implements SwerveRequest {
     switch (currentDriveState) {
       case Y_ASSIST:
         var halfFieldWidth = FieldConstants.kFieldWidth.div(2).in(Meters);
+        double currentRadians = parameters.currentPose.getRotation().getRadians();
+        double targetSnapRadians = 0;
+        if (currentRadians >= (Math.PI / 4) && currentRadians <= (Math.PI * 3 / 4)) {
+          targetSnapRadians = Math.PI / 2;
+        } else if (currentRadians <= -(Math.PI / 4) && currentRadians >= -(Math.PI * 3 / 4)) {
+          targetSnapRadians = -Math.PI / 2;
+        } else if (currentRadians <= -(Math.PI * 3 / 4) || currentRadians >= (Math.PI * 3 / 4)) {
+          targetSnapRadians = Math.PI;
+        }
+
+        rotationLockPID.setGoal(targetSnapRadians);
+
         wantedSpeeds =
             new ChassisSpeeds(
                 xVelocity,
@@ -74,9 +101,13 @@ public class CustomFieldCentric implements SwerveRequest {
                                         ? yTargetFromCenter
                                         : yTargetFromCenter.times(-1))
                                     .in(Meters)))),
-                angularVelocity);
+                angularVelocity
+                    .times(0.5)
+                    .plus(RadiansPerSecond.of(rotationLockPID.calculate(currentRadians))));
         break;
       case ROTATION_LOCK:
+        rotationLockPID.setGoal(rotationTarget.getRadians());
+
         wantedSpeeds =
             new ChassisSpeeds(
                 xVelocity,
@@ -84,8 +115,7 @@ public class CustomFieldCentric implements SwerveRequest {
                 angularVelocity.plus(
                     RadiansPerSecond.of(
                         rotationLockPID.calculate(
-                            parameters.currentPose.getRotation().getRadians(),
-                            rotationTarget.getRadians()))));
+                            parameters.currentPose.getRotation().getRadians()))));
         break;
       default:
         wantedSpeeds = new ChassisSpeeds(xVelocity, yVelocity, angularVelocity);
@@ -102,9 +132,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @return The updated CustomFieldCentric object
    */
   public CustomFieldCentric withYTargetFromCenter(Distance target) {
-    if (!this.yTargetFromCenter.equals(target)) {
-      this.shouldResetPID = true;
-    }
     this.yTargetFromCenter = target;
     return this;
   }
@@ -116,9 +143,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @return The updated CustomFieldCentric object
    */
   public CustomFieldCentric withYTargetFromCenter(double target) {
-    if (!this.yTargetFromCenter.equals(Meters.of(target))) {
-      this.shouldResetPID = true;
-    }
     this.yTargetFromCenter = Meters.of(target);
     return this;
   }
@@ -130,9 +154,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @return The updated CustomFieldCentric object
    */
   public CustomFieldCentric withTargetRotation(Rotation2d target) {
-    if (!this.rotationTarget.equals(target)) {
-      this.shouldResetPID = true;
-    }
     this.rotationTarget = target;
     return this;
   }
@@ -210,10 +231,15 @@ public class CustomFieldCentric implements SwerveRequest {
    * @return The updated CustomFieldCentric object
    */
   public CustomFieldCentric withDriveState(DriveStates state) {
-    if (this.currentDriveState != state
-        && (state == DriveStates.Y_ASSIST || state == DriveStates.ROTATION_LOCK)) {
-      this.shouldResetPID = true;
+    if (this.currentDriveState != state) {
+      if ((state == DriveStates.Y_ASSIST)) {
+        this.shouldResetYAssistPID = true;
+        this.shouldResetRotationPID = true;
+      } else if (state == DriveStates.ROTATION_LOCK) {
+        this.shouldResetRotationPID = true;
+      }
     }
+
     this.currentDriveState = state;
     return this;
   }

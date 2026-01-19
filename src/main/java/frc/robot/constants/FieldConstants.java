@@ -2,6 +2,8 @@ package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Inches;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Distance;
 
 public class FieldConstants {
@@ -19,4 +21,7 @@ public class FieldConstants {
       kFieldWidth.div(2).minus(kTrenchWidth.div(2));
 
   public static final Distance kStartingLineDistance = Inches.of(158.6);
+
+  public static final Pose2d kHubCenterBlue =
+      new Pose2d(Inches.of(182.11125), kFieldWidth.div(2), Rotation2d.kZero);
 }

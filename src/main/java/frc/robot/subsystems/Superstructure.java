@@ -5,7 +5,9 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -178,8 +180,18 @@ public class Superstructure {
   }
 
   private Rotation2d getRotationForScore() {
-    // TODO
-    return Rotation2d.kZero;
+    // TODO: Account for robot velocity for shooting on the move
+    Pose2d targetPose =
+        Alliance.redAlliance
+            ? FieldConstants.kHubCenterBlue.rotateAround(
+                new Translation2d(
+                    FieldConstants.kFieldLength.div(2), FieldConstants.kFieldWidth.div(2)),
+                Rotation2d.k180deg)
+            : FieldConstants.kHubCenterBlue;
+    return Rotation2d.fromRadians(
+        Math.atan2(
+            targetPose.getY() - drivetrain.getPose().getY(),
+            targetPose.getX() - drivetrain.getPose().getX()));
   }
 
   /** The wanted states of superstructure */

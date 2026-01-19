@@ -19,6 +19,7 @@ import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -66,6 +67,37 @@ public class RobotContainer {
         .onTrue(
             drivetrain.runOnce(
                 () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
+
+    driver
+        .povRight()
+        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistRight))
+        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
+
+    driver
+        .povLeft()
+        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistLeft))
+        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
+
+    driver
+        .rightTrigger()
+        .and(driver.leftTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedStates.Shoot));
+
+    driver
+        .leftTrigger()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedStates.Intake));
+
+    driver
+        .leftTrigger()
+        .and(driver.rightTrigger())
+        .onTrue(superstructure.setWantedStateCommand(WantedStates.IntakeAndShoot));
+
+    driver
+        .leftTrigger()
+        .negate()
+        .and(driver.rightTrigger().negate())
+        .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
   }
 
   public Command getAutonomousCommand() {
