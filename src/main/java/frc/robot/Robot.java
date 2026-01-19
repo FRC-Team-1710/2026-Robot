@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.constants.Alliance;
+import frc.robot.constants.MatchState;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
 import java.util.HashMap;
@@ -35,6 +37,8 @@ public class Robot extends DynamicTimedRobot {
       new HootAutoReplay().withTimestampReplay().withJoystickReplay();
 
   public Robot() {
+    Alliance.updateRedAlliance();
+
     m_robotContainer = new RobotContainer();
     DataLogManager.start();
 
@@ -83,6 +87,8 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     hootAutoReplay.update();
+
+    MatchState.updateAutonomousWinner();
   }
 
   @Override
@@ -96,6 +102,8 @@ public class Robot extends DynamicTimedRobot {
 
   @Override
   public void autonomousInit() {
+    Alliance.updateRedAlliance();
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -111,6 +119,8 @@ public class Robot extends DynamicTimedRobot {
 
   @Override
   public void teleopInit() {
+    Alliance.updateRedAlliance();
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

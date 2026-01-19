@@ -33,32 +33,30 @@ import frc.robot.subsystems.intake.IntakeIOSIM;
 import java.util.HashMap;
 
 @Logged
+@SuppressWarnings("unused")
 public class RobotContainer {
-  private double MaxSpeed =
-      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired
-  // top
-  // speed
-  private double MaxAngularRate =
-      RotationsPerSecond.of(2)
-          .in(RadiansPerSecond); // 1 of a rotation per second max angular velocity
+  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+
+  private double MaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond);
 
   /* Configure field-centric driving (forward is always away from driver) */
   private final SwerveRequest.FieldCentric drive =
       new SwerveRequest.FieldCentric()
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-          .withSteerRequestType(SteerRequestType.Position); // Smooth steering with MotionMagic
+          .withSteerRequestType(SteerRequestType.Position);
 
-  private final CommandXboxController joystick = new CommandXboxController(0);
+  private final CommandXboxController driver = new CommandXboxController(0);
+  private final CommandXboxController mech = new CommandXboxController(1);
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
   /* Create subsystems (uses simulated versions when running in simulation) */
-  private final Superstructure superstructure = new Superstructure();
   private final Intake intake;
   private BLineRequest bLineRequest = new BLineRequest();
+  private final Superstructure superstructure;
 
   public RobotContainer() {
-    switch (Mode.getCurrentMode()) {
+    switch (Mode.currentMode) {
       case REAL:
         intake = new Intake(new IntakeIOCTRE());
         break;
@@ -71,6 +69,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         break;
     }
+
+    superstructure = new Superstructure(driver, mech, drivetrain, intake);
 
     configureBindings();
   }
@@ -88,7 +88,7 @@ public class RobotContainer {
   //   }
 
   private void configureBindings() {
-    joystick
+    driver
         .start()
         .onTrue(
             drivetrain.runOnce(
