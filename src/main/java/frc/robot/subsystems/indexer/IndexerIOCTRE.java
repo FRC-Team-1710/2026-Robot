@@ -9,6 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import frc.robot.constants.MotorID;
 
 @Logged
 public class IndexerIOCTRE implements IndexerIO {
@@ -18,7 +19,7 @@ public class IndexerIOCTRE implements IndexerIO {
   TalonFXConfiguration motorConfig;
 
   public IndexerIOCTRE() {
-    this.IndexMotor = new TalonFX(31);
+    this.IndexMotor = new TalonFX(MotorID.Indexer.INDEXER_MOTOR);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
