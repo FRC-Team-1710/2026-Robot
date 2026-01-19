@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -23,9 +24,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.autonomous.BLineRequest;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.lib.BLine.FollowPath;
 import frc.robot.utils.Log;
 import java.util.function.Supplier;
 
@@ -120,6 +123,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             },
   //             null,
   //             this));
+
+  private BLineRequest bLineRequest = new BLineRequest();
+
+  // Create a reusable builder with your robot's configuration
+  public FollowPath.Builder pathBuilder =
+      new FollowPath.Builder(
+              this, // The drive subsystem to require
+              this::getPose, // Supplier for current robot pose
+              this::getRobotSpeeds, // Supplier for current speeds
+              (speeds) ->
+                  this.setControl(
+                      bLineRequest.driveRequest.withSpeeds(speeds)), // Consumer to drive the robot
+              new PIDController(5.0, 0.0, 0.0), // Translation PID
+              new PIDController(3.0, 0.0, 0.0), // Rotation PID
+              new PIDController(2.0, 0.0, 0.0) // Cross-track PID
+              )
+          .withDefaultShouldFlip() // Auto-flip for red alliance
+          .withPoseReset(this::resetPose); // Reset odometry at path start
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
