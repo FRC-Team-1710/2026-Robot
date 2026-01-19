@@ -26,7 +26,7 @@ public final class ShooterConstants {
 
   // ==================== Motion Magic (Speed Limits) ====================
 
-  /** Maximum speed the flywheel can reach (rotations per second) */
+  /** Maximum rate of change of the flywheel can reach (rotations per second) */
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 100.0;
 
   /** How fast the flywheel can speed up (rotations per second²) */
