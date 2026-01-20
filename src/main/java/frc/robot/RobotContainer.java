@@ -42,6 +42,8 @@ public class RobotContainer {
   private final Intake intake;
   private final Shooter shooter;
 
+  private final Superstructure superstructure;
+
   public RobotContainer() {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
