@@ -41,7 +41,6 @@ public class RobotContainer {
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Intake intake;
   private final Shooter shooter;
-  private final Superstructure superstructure;
 
   public RobotContainer() {
     drivetrain = TunerConstants.createDrivetrain();
