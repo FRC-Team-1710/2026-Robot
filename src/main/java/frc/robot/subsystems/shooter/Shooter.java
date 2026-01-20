@@ -18,7 +18,6 @@ public class Shooter extends SubsystemBase {
     PRESET_PASS(RotationsPerSecond.of(100)),
     PRESET_SHOOT(RotationsPerSecond.of(250));
 
-
     private final AngularVelocity m_velocity;
 
     SHOOTER_STATE(AngularVelocity velocity) {
@@ -29,7 +28,6 @@ public class Shooter extends SubsystemBase {
   private SHOOTER_STATE m_state;
 
   private final ShooterIO m_io;
-
 
   public Shooter(ShooterIO io) {
     this.m_io = io;
@@ -43,7 +41,6 @@ public class Shooter extends SubsystemBase {
         this.m_io.stop();
         break;
 
-
       case IDLE:
         this.m_io.setVelocity(SHOOTER_STATE.IDLE.m_velocity);
         break;
@@ -52,17 +49,15 @@ public class Shooter extends SubsystemBase {
         this.m_io.setVelocity(SHOOTER_STATE.SHOOT.m_velocity);
         break;
 
-
-        case PRESET_PASS:
+      case PRESET_PASS:
         this.m_io.setVelocity(SHOOTER_STATE.PRESET_PASS.m_velocity);
         break;
-        
+
       case PRESET_SHOOT:
         this.m_io.setVelocity(SHOOTER_STATE.PRESET_SHOOT.m_velocity);
         break;
     }
   }
-
 
   public void setState(SHOOTER_STATE state) {
     this.m_state = state;

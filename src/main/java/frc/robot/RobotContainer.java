@@ -27,7 +27,6 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
-
 import java.util.HashMap;
 
 @Logged

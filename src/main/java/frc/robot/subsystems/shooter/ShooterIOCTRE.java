@@ -24,7 +24,8 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public ShooterIOCTRE() {
     this.m_flyWheel = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR_ID, TunerConstants.kCANBus);
-    this.m_flyWheel_Follower = new TalonFX(ShooterConstants.FLYWHEEL_FOLLOWER_MOTOR_ID, TunerConstants.kCANBus);
+    this.m_flyWheel_Follower =
+        new TalonFX(ShooterConstants.FLYWHEEL_FOLLOWER_MOTOR_ID, TunerConstants.kCANBus);
     this.m_hood = new TalonFX(ShooterConstants.HOOD_MOTOR_ID, TunerConstants.kCANBus);
 
     // Flywheel settings
@@ -46,7 +47,7 @@ public class ShooterIOCTRE implements ShooterIO {
       Robot.telemetry().log("Flywheel/Config", false);
     }
 
-     if (TalonFXUtil.applyConfigWithRetries(this.m_flyWheel_Follower, m_config, 2)) {
+    if (TalonFXUtil.applyConfigWithRetries(this.m_flyWheel_Follower, m_config, 2)) {
       Robot.telemetry().log("Flywheel_Follower/Config", true);
     } else {
       Robot.telemetry().log("Flywheel_Follower/Config", false);
