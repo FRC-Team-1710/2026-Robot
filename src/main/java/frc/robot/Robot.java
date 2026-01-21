@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Seconds;
+
+import com.ctre.phoenix6.HootAutoReplay;
+import com.ctre.phoenix6.HootEpilogueBackend;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
 import edu.wpi.first.epilogue.Logged;
@@ -15,34 +19,34 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.constants.Alliance;
+import frc.robot.constants.MatchState;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
-
-import static edu.wpi.first.units.Units.Seconds;
-
 import java.util.HashMap;
-
-import com.ctre.phoenix6.HootAutoReplay;
-import com.ctre.phoenix6.HootEpilogueBackend;
 
 @Logged
 public class Robot extends DynamicTimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
-  private final HootAutoReplay hootAutoReplay = new HootAutoReplay().withTimestampReplay().withJoystickReplay();
+  private final HootAutoReplay hootAutoReplay =
+      new HootAutoReplay().withTimestampReplay().withJoystickReplay();
 
   public Robot() {
+    Alliance.updateRedAlliance();
+
     m_robotContainer = new RobotContainer();
     DataLogManager.start();
 
     var epilogueConfig = new EpilogueConfiguration();
 
-    epilogueConfig.backend = EpilogueBackend.multi(
-            new HootEpilogueBackend(),
-            new NTEpilogueBackend(NetworkTableInstance.getDefault()));
+    epilogueConfig.backend =
+        EpilogueBackend.multi(
+            new HootEpilogueBackend(), new NTEpilogueBackend(NetworkTableInstance.getDefault()));
 
     if (isSimulation()) {
       epilogueConfig.minimumImportance = Importance.DEBUG;
@@ -57,10 +61,25 @@ public class Robot extends DynamicTimedRobot {
     epilogueConfig.loggingPeriod = Seconds.of(0.02);
     epilogueConfig.loggingPeriodOffset = Seconds.of(0.02 - (0.02 / Subsystems.values().length));
 
-    Epilogue.configure(config -> {config = epilogueConfig;});
+    Epilogue.configure(
+        config -> {
+          config = epilogueConfig;
+        });
+
+    DriverStation.silenceJoystickConnectionWarning(true);
 
     // Epilogue dislikes the custom DynamicTimedRobot class so we manually update it
-    addSubsystem(Subsystems.Epilogue, () -> Epilogue.robotLogger.tryUpdate(epilogueConfig.backend.getNested(epilogueConfig.root), this, epilogueConfig.errorHandler), epilogueConfig.loggingPeriod, epilogueConfig.loggingPeriodOffset);
+    addSubsystem(
+        Subsystems.Epilogue,
+        () ->
+            Epilogue.robotLogger.tryUpdate(
+                epilogueConfig.backend.getNested(epilogueConfig.root),
+                this,
+                epilogueConfig.errorHandler),
+        epilogueConfig.loggingPeriod,
+        epilogueConfig.loggingPeriodOffset);
+
+    addAllSubsystems(m_robotContainer.getAllSubsystems());
   }
 
   @Override
@@ -68,22 +87,23 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     hootAutoReplay.update();
+
+    MatchState.updateAutonomousWinner();
   }
 
   @Override
-  public void disabledInit() {
-  }
+  public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {
-  }
+  public void disabledPeriodic() {}
 
   @Override
-  public void disabledExit() {
-  }
+  public void disabledExit() {}
 
   @Override
   public void autonomousInit() {
+    Alliance.updateRedAlliance();
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -92,31 +112,28 @@ public class Robot extends DynamicTimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {
-  }
+  public void autonomousPeriodic() {}
 
   @Override
-  public void autonomousExit() {
-  }
+  public void autonomousExit() {}
 
   @Override
   public void teleopInit() {
+    Alliance.updateRedAlliance();
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
   }
 
   @Override
-  public void teleopPeriodic() {
-  }
+  public void teleopPeriodic() {}
 
   @Override
-  public void simulationPeriodic() {
-  }
+  public void simulationPeriodic() {}
 
   @Override
-  public void teleopExit() {
-  }
+  public void teleopExit() {}
 
   @Override
   public void testInit() {
@@ -124,19 +141,21 @@ public class Robot extends DynamicTimedRobot {
   }
 
   @Override
-  public void testPeriodic() {
-  }
+  public void testPeriodic() {}
 
   @Override
-  public void testExit() {
-  }
+  public void testExit() {}
 
   /** A map of all subsystems with their period */
   public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Time>> subsystems) {
     int id = 0;
     for (Subsystems key : subsystems.keySet()) {
       id++;
-      addSubsystem(key, subsystems.get(key).getFirst(), subsystems.get(key).getSecond(), Seconds.of(0.02 / Subsystems.values().length).times(id));
+      addSubsystem(
+          key,
+          subsystems.get(key).getFirst(),
+          subsystems.get(key).getSecond(),
+          Seconds.of(0.02 / Subsystems.values().length).times(id));
     }
   }
 
