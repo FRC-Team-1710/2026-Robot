@@ -10,6 +10,8 @@ import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,6 +25,7 @@ import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 
+@Logged
 public class CustomFieldCentric implements SwerveRequest {
   public Distance yTargetFromCenter = Meters.of(0);
   public Rotation2d rotationTarget = Rotation2d.kZero;
@@ -131,6 +134,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param target The target y distance from the center of the field
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withYTargetFromCenter(Distance target) {
     this.yTargetFromCenter = target;
     return this;
@@ -142,6 +146,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param target The target y distance from the center of the field in meters
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withYTargetFromCenter(double target) {
     this.yTargetFromCenter = Meters.of(target);
     return this;
@@ -153,6 +158,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param target The target rotation
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withTargetRotation(Rotation2d target) {
     this.rotationTarget = target;
     return this;
@@ -164,6 +170,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target x velocity
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withVelocityX(LinearVelocity velocity) {
     this.xVelocity = velocity;
     return this;
@@ -175,6 +182,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target x velocity in meters/second
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withVelocityX(double velocity) {
     this.xVelocity = MetersPerSecond.of(velocity);
     return this;
@@ -186,6 +194,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target y velocity
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withVelocityY(LinearVelocity velocity) {
     this.yVelocity = velocity;
     return this;
@@ -197,6 +206,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target y velocity in meters/second
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withVelocityY(double velocity) {
     this.yVelocity = MetersPerSecond.of(velocity);
     return this;
@@ -208,6 +218,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target theta velocity
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withRotationalRate(AngularVelocity velocity) {
     this.angularVelocity = velocity;
     return this;
@@ -219,6 +230,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target theta velocity in radians/second
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withRotationalRate(double velocity) {
     this.angularVelocity = RadiansPerSecond.of(velocity);
     return this;
@@ -230,6 +242,7 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param state The current drive state
    * @return The updated CustomFieldCentric object
    */
+  @NotLogged
   public CustomFieldCentric withDriveState(DriveStates state) {
     if (this.currentDriveState != state) {
       if ((state == DriveStates.Y_ASSIST)) {

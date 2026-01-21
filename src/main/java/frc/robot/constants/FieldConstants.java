@@ -2,8 +2,6 @@ package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Inches;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 
@@ -25,12 +23,13 @@ public class FieldConstants {
 
   public static final Distance kStartingLineDistance = Inches.of(158.6);
 
-  public static final Pose2d kHubCenterBlue =
-      new Pose2d(Inches.of(182.11125), kFieldWidth.div(2), Rotation2d.kZero);
+  public static final Translation2d kHubCenterBlue =
+      new Translation2d(Inches.of(182.11125), kFieldWidth.div(2));
 
   public static final Distance kDepotWidth = Inches.of(42);
   public static final Distance kDepotDistanceFromWall = Inches.of(213.84375);
 
+  // Add a translation2d to this subclass and automatically add it to the auto chooser
   public class AutoConstants {
     public static final Translation2d kRightTrenchEntrance =
         new Translation2d(kStartingLineDistance, kTrenchWidth.div(2));

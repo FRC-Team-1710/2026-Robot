@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
@@ -14,6 +13,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
@@ -47,6 +47,18 @@ public class Superstructure {
     currentState = handleStateTransitions();
     applyStates();
     applyRumble();
+
+    Robot.telemetry().log("redAlliance", Alliance.redAlliance);
+
+    Robot.telemetry().log("MatchState/TimeTillActive", MatchState.timeTillActive());
+    Robot.telemetry().log("MatchState/TimeTillInactive", MatchState.timeTillInactive());
+    Robot.telemetry()
+        .log(
+            "MatchState/AutonomousWinnerIsRed",
+            MatchState.autonomousWinnerIsRed.isPresent()
+                ? String.valueOf(MatchState.autonomousWinnerIsRed.get())
+                : "No data");
+    Robot.telemetry().log("MatchState/IsActive", MatchState.isActive());
   }
 
   public void applyRumble() {
@@ -178,7 +190,7 @@ public class Superstructure {
 
   private Rotation2d getRotationForScore() {
     // TODO: Account for robot velocity for shooting on the move
-    Pose2d targetPose =
+    Translation2d targetPose =
         Alliance.redAlliance
             ? FieldConstants.kHubCenterBlue.rotateAround(
                 new Translation2d(
