@@ -9,36 +9,34 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
+import frc.robot.constants.MotorID;
 
 @Logged
 public class IntakeIOCTRE implements IntakeIO {
   /** Creates a new Intake. */
-  @NotLogged
-  private double deploymentMotorGearRatio = 1/1;
-  
+  @NotLogged private double deploymentMotorGearRatio = 1 / 1;
+
   private final TalonFX intakeMotor;
   private final TalonFX deploymentMotor;
   TalonFXConfiguration motorConfig;
-  
-  @NotLogged
-  private MotionMagicVoltage MMRequest;
-  
+
+  @NotLogged private MotionMagicVoltage MMRequest;
+
   private Angle angleSetpoint;
 
   public IntakeIOCTRE() {
-    intakeMotor = new TalonFX(1);
-    deploymentMotor = new TalonFX(2);
-    
+    intakeMotor = new TalonFX(MotorID.Intake.INTAKE_MOTOR);
+    deploymentMotor = new TalonFX(MotorID.Intake.DEPLOYMENT_MOTOR);
+
     MMRequest = new MotionMagicVoltage(0).withSlot(0);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    
+
     deploymentMotor.getConfigurator().apply(motorConfig);
     intakeMotor.getConfigurator().apply(motorConfig);
 

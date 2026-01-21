@@ -8,5 +8,6 @@ import edu.wpi.first.units.measure.Angle;
 
 public interface IntakeIO {
   public default void setAngle(Angle angle) {}
+
   public default void setIntakeMotor(double speed) {}
 }
