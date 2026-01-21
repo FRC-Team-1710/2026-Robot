@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.MotorID;
 
 @Logged
+@SuppressWarnings("unused")
 public class IntakeIOCTRE implements IntakeIO {
   /** Creates a new Intake. */
   @NotLogged private double deploymentMotorGearRatio = 1 / 1;

@@ -5,6 +5,9 @@ public enum Subsystems {
   Epilogue(),
   Superstructure(),
   Drive(),
+  Intake(),
+  Shooter(),
+  Indexer(),
 }
 
 // Do not remove Robot or Epilogue!
