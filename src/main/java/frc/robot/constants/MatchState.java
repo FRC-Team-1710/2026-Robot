@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.utils.Log;
 import java.util.Optional;
 
 public class MatchState {
@@ -18,7 +17,6 @@ public class MatchState {
   }
 
   public static Time timeTillActive() {
-    Log.log("AutoWinnerIsRed", autonomousWinnerIsRed.isPresent() && autonomousWinnerIsRed.get());
     if (fmsAttached()) {
       var currentMatchTime = DriverStation.getMatchTime();
       if (DriverStation.isAutonomous() || currentMatchTime <= 30 || currentMatchTime > 130) {
@@ -51,7 +49,6 @@ public class MatchState {
   }
 
   public static Time timeTillInactive() {
-    Log.log("AutoWinnerIsRed", autonomousWinnerIsRed.isPresent() && autonomousWinnerIsRed.get());
     if (fmsAttached()) {
       var currentMatchTime = DriverStation.getMatchTime();
       if (DriverStation.isAutonomous() || currentMatchTime <= 30) {

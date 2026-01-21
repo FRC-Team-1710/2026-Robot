@@ -19,7 +19,6 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
-import frc.robot.utils.Log;
 
 @Logged
 public class Superstructure {
@@ -53,8 +52,6 @@ public class Superstructure {
   public void applyRumble() {
     var timeUntilRumble = MatchState.timeTillActive().plus(MatchState.timeTillInactive());
     if (!DriverStation.isAutonomous() && MatchState.autonomousWinnerIsRed.isPresent()) {
-      Log.log("Num1", MatchState.timeTillActive().in(Seconds));
-      Log.log("Num2", MatchState.timeTillInactive().in(Seconds));
       if (!timeUntilRumble.isEquivalent(Seconds.of(0))) {
         mech.setRumble(RumbleType.kBothRumble, timeUntilRumble.in(Seconds) < 2.5 ? 1 : 0);
       } else {
