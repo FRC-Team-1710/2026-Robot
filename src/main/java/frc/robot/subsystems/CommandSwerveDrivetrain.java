@@ -32,12 +32,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
-import frc.robot.utils.Log;
 import java.util.function.Supplier;
 
 /**
@@ -86,11 +86,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             Volts.of(6),
   //             Seconds.of(9),
   //             // Log state with Logger class
-  //             state -> Log.log("SysIdSteer_State", state.toString())),
+  //             state -> Robot.telemetry().log("SysIdSteer_State", state.toString())),
   //         new SysIdRoutine.Mechanism(
   //             output -> {
   //               setControl(m_steerCharacterization.withVolts(output.in(Volts)));
-  //               Log.log("Steer_Rate", output.in(Volts));
+  //               Robot.telemetry().log("Steer_Rate", output.in(Volts));
   //             },
   //             null,
   //             this));
@@ -107,11 +107,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               Volts.of(7),
               null, // Use default timeout (10 s)
               // Log state with Logger class
-              state -> Log.log("SysId_State", state.toString())),
+              state -> Robot.telemetry().log("SysId_State", state.toString())),
           new SysIdRoutine.Mechanism(
               output -> {
                 setControl(m_translationCharacterization.withVolts(output.in(Volts)));
-                Log.log("Translation_Rate", output.in(Volts));
+                Robot.telemetry().log("Translation_Rate", output.in(Volts));
               },
               null,
               this));
@@ -133,11 +133,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             Volts.of(Math.PI),
   //             null, // Use default timeout (10 s)
   //             // Log state with Logger class
-  //             state -> Log.log("SysIdSteer_State", state.toString())),
+  //             state -> Robot.telemetry().log("SysIdSteer_State", state.toString())),
   //         new SysIdRoutine.Mechanism(
   //             output -> {
   //               setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-  //               Log.log("Rotation_Rate", output.in(Volts));
+  //               Robot.telemetry().log("Rotation_Rate", output.in(Volts));
   //             },
   //             null,
   //             this));

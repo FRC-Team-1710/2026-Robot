@@ -8,7 +8,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.Robot;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.utils.TalonFXUtil;
@@ -41,17 +40,9 @@ public class ShooterIOCTRE implements ShooterIO {
     m_config.MotionMagic.MotionMagicCruiseVelocity = ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
     m_config.MotionMagic.MotionMagicAcceleration = ShooterConstants.MOTION_MAGIC_ACCELERATION;
 
-    if (TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, m_config, 2)) {
-      Robot.telemetry().log("Flywheel/Config", true);
-    } else {
-      Robot.telemetry().log("Flywheel/Config", false);
-    }
+    TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, m_config, 2);
 
-    if (TalonFXUtil.applyConfigWithRetries(this.m_flyWheel_Follower, m_config, 2)) {
-      Robot.telemetry().log("Flywheel_Follower/Config", true);
-    } else {
-      Robot.telemetry().log("Flywheel_Follower/Config", false);
-    }
+    TalonFXUtil.applyConfigWithRetries(this.m_flyWheel_Follower, m_config, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
   }

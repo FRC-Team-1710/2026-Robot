@@ -9,12 +9,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.lib.BLine.Path;
 import frc.robot.lib.BLine.Path.Waypoint;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
-import frc.robot.utils.Log;
 import java.lang.reflect.Field;
 
 public class CustomAutoMaker {
@@ -67,13 +67,15 @@ public class CustomAutoMaker {
     updateTrigger.onTrue(
         Commands.runOnce(
                 () -> {
-                  Log.log(
-                      "SmartDashboard/Auto/CustomPoseViewer",
-                      new Pose2d(
-                          SmartDashboard.getNumber("Auto/CustomX", 0),
-                          SmartDashboard.getNumber("Auto/CustomY", 0),
-                          Rotation2d.fromDegrees(
-                              SmartDashboard.getNumber("Auto/CustomTheta(deg)", 0))));
+                  Robot.telemetry()
+                      .log(
+                          "SmartDashboard/Auto/CustomPoseViewer",
+                          new Pose2d(
+                              SmartDashboard.getNumber("Auto/CustomX", 0),
+                              SmartDashboard.getNumber("Auto/CustomY", 0),
+                              Rotation2d.fromDegrees(
+                                  SmartDashboard.getNumber("Auto/CustomTheta(deg)", 0))),
+                          Pose2d.struct);
                   SmartDashboard.putBoolean("Auto/Update", false);
                 })
             .ignoringDisable(true));
