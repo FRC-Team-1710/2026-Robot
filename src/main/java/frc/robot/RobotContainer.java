@@ -21,6 +21,9 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -43,6 +46,7 @@ public class RobotContainer {
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Intake intake;
   private final Shooter shooter;
+  private final Indexer indexer;
 
   private final Superstructure superstructure;
 
@@ -55,20 +59,24 @@ public class RobotContainer {
       case REAL:
         intake = new Intake(new IntakeIOCTRE());
         shooter = new Shooter(new ShooterIOCTRE());
+        indexer = new Indexer(new IndexerIOCTRE());
         break;
 
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM());
         shooter = new Shooter(new ShooterIOSIM());
+        // TODO: Add IndexerIOSIM
+        indexer = new Indexer(new IndexerIO() {});
         break;
 
       default:
         intake = new Intake(new IntakeIO() {});
         shooter = new Shooter(new ShooterIO() {});
+        indexer = new Indexer(new IndexerIO() {});
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake);
+    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
 
     autoChooser = new AutosChooser(superstructure);
 
@@ -124,6 +132,9 @@ public class RobotContainer {
         Subsystems.Superstructure,
         new Pair<Runnable, Time>(superstructure::periodic, Milliseconds.of(20)));
     map.put(Subsystems.Drive, new Pair<Runnable, Time>(drivetrain::periodic, Milliseconds.of(20)));
+    map.put(Subsystems.Intake, new Pair<Runnable, Time>(intake::periodic, Milliseconds.of(20)));
+    map.put(Subsystems.Shooter, new Pair<Runnable, Time>(shooter::periodic, Milliseconds.of(20)));
+    map.put(Subsystems.Indexer, new Pair<Runnable, Time>(indexer::periodic, Milliseconds.of(20)));
     return map;
   }
 }
