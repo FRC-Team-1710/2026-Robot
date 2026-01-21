@@ -5,20 +5,34 @@
 package frc.robot.autonomous;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.Superstructure;
 import java.util.HashMap;
 
 /** Add your docs here. */
-public class Autos {
+public class AutosChooser {
   private final HashMap<Auto, Command> autoCommands;
   private final SendableChooser<Auto> autoChooser;
 
-  public Autos() {
+  private final CustomAutoMaker customAutoMaker;
+
+  public AutosChooser(Superstructure superstructure) {
     autoCommands = new HashMap<>();
     autoCommands.put(Auto.NONE, Commands.none());
     autoChooser = new SendableChooser<>();
+    SmartDashboard.putData("Auto/AutoChooser", autoChooser);
     autoChooser.setDefaultOption("None", Auto.NONE);
+    addPath(Auto.CUSTOM, Commands.none());
+    customAutoMaker = new CustomAutoMaker(superstructure);
+
+    // Put preset autos hare//
+    addPath(Auto.TEST_PATH, Commands.none());
+  }
+
+  public void setCustom(Command command) {
+    autoCommands.put(Auto.CUSTOM, command);
   }
 
   public void addPath(Auto auto, Command command) {
@@ -27,11 +41,14 @@ public class Autos {
   }
 
   public Command getAuto() {
-    return autoCommands.get(autoChooser.getSelected());
+    return autoChooser.getSelected() == Auto.CUSTOM
+        ? customAutoMaker.getAuto()
+        : autoCommands.get(autoChooser.getSelected());
   }
 
   public enum Auto {
     NONE(),
+    CUSTOM(),
     TEST_PATH()
   }
 }

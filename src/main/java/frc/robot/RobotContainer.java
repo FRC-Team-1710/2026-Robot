@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.autonomous.AutoPathBuilder;
+import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
@@ -30,10 +32,11 @@ import frc.robot.subsystems.shooter.ShooterIOSIM;
 import java.util.HashMap;
 
 @Logged
-@SuppressWarnings("unused")
 public class RobotContainer {
   private final CommandXboxController driver = new CommandXboxController(0);
   private final CommandXboxController mech = new CommandXboxController(1);
+
+  private final AutosChooser autoChooser;
 
   public final CommandSwerveDrivetrain drivetrain;
 
@@ -46,6 +49,7 @@ public class RobotContainer {
   public RobotContainer() {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
+    AutoPathBuilder.setDrivetrainInstance(drivetrain);
 
     switch (Mode.currentMode) {
       case REAL:
@@ -65,6 +69,8 @@ public class RobotContainer {
     }
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake);
+
+    autoChooser = new AutosChooser(superstructure);
 
     configureBindings();
   }
@@ -109,7 +115,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return drivetrain.getAuto();
+    return autoChooser.getAuto();
   }
 
   public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {

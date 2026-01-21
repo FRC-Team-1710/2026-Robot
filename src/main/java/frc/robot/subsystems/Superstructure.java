@@ -202,7 +202,8 @@ public class Superstructure {
     Shoot(),
     Intake(),
     IntakeAndShoot(),
-    Climb()
+    Climb(),
+    DefaultAuto(),
   }
 
   /** The current states of superstructure */

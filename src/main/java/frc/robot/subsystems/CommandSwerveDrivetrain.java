@@ -14,7 +14,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -33,14 +32,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.autonomous.Autos;
-import frc.robot.autonomous.Autos.Auto;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.lib.BLine.FollowPath;
-import frc.robot.lib.BLine.Path;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.Log;
 import java.util.function.Supplier;
@@ -147,26 +142,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             null,
   //             this));
 
-  private SwerveRequest.ApplyRobotSpeeds bLineRequest = new SwerveRequest.ApplyRobotSpeeds();
-
-  private Path testPath = new Path("testPath");
-
-  // Create a reusable builder with your robot's configuration
-  public FollowPath.Builder pathBuilder =
-      new FollowPath.Builder(
-              this, // The drive subsystem to require
-              this::getPose, // Supplier for current robot pose
-              this::getRobotSpeeds, // Supplier for current speeds
-              (speeds) ->
-                  this.setControl(bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
-              new PIDController(5.0, 0.0, 0.0), // Translation PID
-              new PIDController(3.0, 0.0, 0.0), // Rotation PID
-              new PIDController(2.0, 0.0, 0.0) // Cross-track PID
-              )
-          .withShouldFlip(() -> Alliance.redAlliance) // Auto-flip for red alliance
-          .withPoseReset(this::resetPose); // Reset odometry at path start
-
-  private final Autos autoChooser = new Autos();
+  public SwerveRequest.ApplyRobotSpeeds bLineRequest = new SwerveRequest.ApplyRobotSpeeds();
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -183,7 +159,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    autoChooser.addPath(Auto.TEST_PATH, Commands.sequence(pathBuilder.build(new Path("testPath"))));
   }
 
   /**
@@ -205,7 +180,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    autoChooser.addPath(Auto.TEST_PATH, Commands.sequence(pathBuilder.build(new Path("testPath"))));
   }
 
   /**
@@ -238,11 +212,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    autoChooser.addPath(Auto.TEST_PATH, Commands.sequence(pathBuilder.build(new Path("testPath"))));
-  }
-
-  public Command getAuto() {
-    return autoChooser.getAuto();
   }
 
   /**
@@ -274,12 +243,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Vector<N2> scaledTranslationInputs =
         rescaleTranslation(inputController.getLeftY(), inputController.getLeftX());
 
-    setControl(
-        fieldCentric
-            .withVelocityX(MaxSpeed.times(-scaledTranslationInputs.get(0, 0)))
-            .withVelocityY(MaxSpeed.times(-scaledTranslationInputs.get(1, 0)))
-            .withRotationalRate(MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
-            .withDriveState(currentState));
+    if (!DriverStation.isAutonomous()) {
+      setControl(
+          fieldCentric
+              .withVelocityX(MaxSpeed.times(-scaledTranslationInputs.get(0, 0)))
+              .withVelocityY(MaxSpeed.times(-scaledTranslationInputs.get(1, 0)))
+              .withRotationalRate(
+                  MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
+              .withDriveState(currentState));
+    }
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
