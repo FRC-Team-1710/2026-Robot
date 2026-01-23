@@ -47,14 +47,22 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
   }
 
-  public void setVelocity(AngularVelocity velocity) {
-    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
-    this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
+  public void update() {
+    
   }
 
   public void stop() {
     this.m_flyWheel.stopMotor();
     this.m_flyWheel_Follower.stopMotor();
+  }
+
+  public AngularVelocity getVelocity() {
+    return null;
+  }
+
+  public void setVelocity(AngularVelocity velocity) {
+    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
+    this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
   }
 
   public void setHoodAngle(Angle angle) {
