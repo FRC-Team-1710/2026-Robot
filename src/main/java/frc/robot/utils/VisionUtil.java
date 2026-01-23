@@ -356,9 +356,9 @@ public class VisionUtil {
   // TODO: fix fieldLength error
   private static boolean invalidPose(Pose3d robotPose) {
     return robotPose.getMeasureX().lt(FIELD_MARGIN.unaryMinus())
-        || robotPose.getMeasureX().gt(FieldConstants.fieldLength.plus(FIELD_MARGIN))
+        || robotPose.getMeasureX().gt(FieldConstants.kFieldLength.plus(FIELD_MARGIN))
         || robotPose.getMeasureY().lt(FIELD_MARGIN.unaryMinus())
-        || robotPose.getMeasureY().gt(FieldConstants.fieldWidth.plus(FIELD_MARGIN))
+        || robotPose.getMeasureY().gt(FieldConstants.kFieldWidth.plus(FIELD_MARGIN))
         || robotPose.getMeasureZ().lt(Z_MARGIN.unaryMinus())
         || robotPose.getMeasureZ().gt(Z_MARGIN);
     // || !robotPose.getRotation().getMeasureY().isNear(Rotations.of(0), Rotations.of(3))
