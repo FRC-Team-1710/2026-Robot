@@ -6,4 +6,11 @@ package frc.robot.subsystems.Index;
 
 public interface IndexerIO {
   public default void setIndexMotor(double speed) {}
+
+  public final class IndexerIOInputs {
+  public double position = 0.0;
+  public double velocity = 0.0;
+  public double appliedVolts = 0.0;
 }
+}
+
