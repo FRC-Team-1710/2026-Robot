@@ -65,8 +65,6 @@ public class Shooter extends SubsystemBase {
         break;
     }
 
-    
-
     // Stop motor if velocity is 0
     if (this.getTargetVelocity().in(DegreesPerSecond) == 0) {
       this.m_io.stop();
