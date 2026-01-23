@@ -55,18 +55,17 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     switch (this.m_state) {
       case SHOOT:
-        this.setVelocity(this.m_io.getTargetVelocity());
-        this.setHoodAngle(this.m_io.getHoodAngle());
+        this.m_io.setTargetVelocity(this.getTargetVelocity());
+        this.m_io.setHoodAngle(this.getHoodAngle());
         break;
 
       default:
-        this.setVelocity(this.m_state.getVelocity());
-        this.setHoodAngle(this.m_state.getHoodAngle());
+        this.m_io.setTargetVelocity(this.m_state.getVelocity());
+        this.m_io.setHoodAngle(this.m_state.getHoodAngle());
         break;
     }
 
-    this.m_io.setTargetVelocity(this.getTargetVelocity());
-    this.m_io.setHoodAngle(this.getHoodAngle());
+    
 
     // Stop motor if velocity is 0
     if (this.getTargetVelocity().in(DegreesPerSecond) == 0) {
