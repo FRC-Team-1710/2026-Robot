@@ -81,7 +81,10 @@ public class VisionUtil {
    * Enum defining different vision processing modes with unique validation and measurement
    * calculation implementations.
    */
+  
   public enum VisionMode {
+    
+// TODO: Fix the enum error
     /**
      * Mode that rejects all vision measurements. Useful for testing or when vision should be
      * temporarily disabled.
@@ -154,6 +157,7 @@ public class VisionUtil {
       }
 
       /** Custom implementation that take default behavior and add area filter */
+        // TODO: Photonize PoseObservation
       @Override
       public boolean acceptVisionMeasurement(PoseObservation mt) {
         return super.acceptVisionMeasurement(mt) && !invalidTagArea(mt.poseEstimate());
@@ -174,6 +178,7 @@ public class VisionUtil {
      * @param mt The pose estimate containing tag detection information
      * @return VisionDevs containing calculated standard deviations
      */
+    // TODO: photonize poseestimate
     private static VisionDevs calculateStandardDeviations(PoseEstimate mt) {
       if (mt.tagCount() >= 2) {
         return calculateMultipleTagStdDevs(mt);
@@ -254,7 +259,7 @@ public class VisionUtil {
           && !invalidAmbiguity(poseEst);
     }
   }
-
+* /
   /** Record containing a pose estimate and its associated standard deviations. */
   public record VisionMeasurement(PoseEstimate poseEstimate, Vector<N3> visionMeasurementStdDevs) {}
 
@@ -314,6 +319,8 @@ public class VisionUtil {
    * @param mt The pose estimate to validate
    * @return True if the measurement is invalid due to timing constraints
    */
+
+   // TODO: Figure out what the hell to fix here
   private static boolean invalidMT2Time(PoseEstimate mt) {
     return mt.isMegaTag2() && Robot.BEFORE_MATCH;
   }
@@ -344,6 +351,9 @@ public class VisionUtil {
    * @param robotPose The 3D pose to validate
    * @return True if the pose is outside the valid field boundaries
    */
+
+
+  // TODO: fix fieldLength error
   private static boolean invalidPose(Pose3d robotPose) {
     return robotPose.getMeasureX().lt(FIELD_MARGIN.unaryMinus())
         || robotPose.getMeasureX().gt(FieldConstants.fieldLength.plus(FIELD_MARGIN))
@@ -363,4 +373,5 @@ public class VisionUtil {
   private static boolean invalidTagArea(PoseEstimate mt) {
     return mt.avgTagArea() < MIN_TAG_AREA;
   }
+  */
 }

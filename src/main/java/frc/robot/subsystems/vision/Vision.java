@@ -69,11 +69,16 @@ public class Vision extends SubsystemBase {
   }
 
   private void fetchInputs() {
+
+    // This entire thing doesn't work yo
+    // TODO: Fix up the pose estimate stuff in phontonized helpers and then work on making all this work. Import the correct thing
+
+    /*
     // Get robot position estimate from Limelight (using blue alliance coordinates)
     LimelightHelpers.PoseEstimate poseEstimate =
         LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
     // TODO: Replace LimelightHelpers functions with photonvision functions
-
+ 
     if (poseEstimate != null && poseEstimate.tagCount > 0) {
       robotPose = poseEstimate.pose;
       robotPoseTimestamp = poseEstimate.timestampSeconds;
@@ -87,6 +92,7 @@ public class Vision extends SubsystemBase {
       avgTagDistance = 0.0;
       ambiguity = 0.0;
     }
+      */
   }
 
   private void processInputs() {

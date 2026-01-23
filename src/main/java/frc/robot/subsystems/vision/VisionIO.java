@@ -17,7 +17,9 @@ import edu.wpi.first.epilogue.Logged;
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package frc.robot.subsystems.vision;
+
+// TODO: Figure out why this doesn't work
+// package frc.robot.subsystems.vision;
 
 import frc.robot.utils.VisionUtil;
 import frc.robot.utils.VisionUtil;
@@ -27,10 +29,11 @@ import edu.wpi.first.epilogue.Logged;
 public interface VisionIO {
   public static class VisionIOInputs {
     boolean connected = false;
-    PoseEstimate poseEstimateMT1 = new PoseEstimate();
-    PoseEstimate poseEstimateMT2 = new PoseEstimate();
-    RawFiducial[] rawFiducialsMT1 = new RawFiducial[0];
-    RawFiducial[] rawFiducialsMT2 = new RawFiducial[0];
+    // TODO: Get these photonized and working without bumlight
+    // PoseEstimate poseEstimateMT1 = new PoseEstimate();
+    // PoseEstimate poseEstimateMT2 = new PoseEstimate();
+    // RawFiducial[] rawFiducialsMT1 = new RawFiducial[0];
+    // RawFiducial[] rawFiducialsMT2 = new RawFiducial[0];
   }
 
   default void updateInputs(VisionIOInputs inputs) {}
