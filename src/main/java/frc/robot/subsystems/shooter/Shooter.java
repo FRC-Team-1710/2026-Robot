@@ -52,23 +52,22 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     AngularVelocity velocity;
     Angle hoodAngle;
-    
+
     switch (this.m_state) {
       case SHOOT:
         velocity = this.m_io.getTargetVelocity();
         hoodAngle = this.m_io.getHoodAngle();
         break;
-      
+
       default:
         velocity = this.m_state.getVelocity();
         hoodAngle = this.m_state.getHoodAngle();
         break;
     }
 
-    
     this.m_io.setTargetVelocity(velocity);
     this.m_io.setHoodAngle(hoodAngle);
-    
+
     // Stop motor if velocity is 0
     if (velocity.in(DegreesPerSecond) == 0) {
       this.m_io.stop();
