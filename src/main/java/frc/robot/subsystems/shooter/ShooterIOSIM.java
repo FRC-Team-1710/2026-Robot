@@ -34,7 +34,6 @@ public class ShooterIOSIM implements ShooterIO {
 
     this.m_hoodMechanism.update(this.m_hoodAngle);
 
-
     SmartDashboard.putData("Flywheel 1", this.m_flyWheelMechanism.getMechanism());
     SmartDashboard.putData("Flywheel 2", this.m_flyWheelFollowerMechanism.getMechanism());
 

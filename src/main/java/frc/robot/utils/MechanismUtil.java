@@ -272,21 +272,21 @@ public class MechanismUtil {
 
     private final MechanismLigament2d[] m_spokes;
 
-    
     public HoodMechanism(String name, double offset) {
       this.m_mech = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
       MechanismRoot2d root = this.m_mech.getRoot(name + "Root", ROOT_X, ROOT_Y + offset);
 
-      this.m_spokes = new MechanismLigament2d[] {
-        root.append(new MechanismLigament2d("Direction", 0.2, 20, SPOKE_WIDTH, new Color8Bit(Color.kRed)))
-      };
+      this.m_spokes =
+          new MechanismLigament2d[] {
+            root.append(
+                new MechanismLigament2d(
+                    "Direction", 0.2, 20, SPOKE_WIDTH, new Color8Bit(Color.kRed)))
+          };
     }
 
-  
     public Mechanism2d getMechanism() {
       return m_mech;
     }
-
 
     public void update(Angle angle) {
       double new_angle = angle.in(Radians);
