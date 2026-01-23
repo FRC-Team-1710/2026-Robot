@@ -15,6 +15,8 @@ import frc.robot.utils.LimelightHelpers.LimelightTarget_Classifier;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.utils.LimelightHelpers.LimelightTarget_Retro;
+import frc.robot.utils.LimelightHelpers.RawFiducial;
+import java.util.Arrays;
 
 public class PhotonizedLimelightHelpers {
 
@@ -106,6 +108,7 @@ public class PhotonizedLimelightHelpers {
     @JsonProperty("Barcode")
     public LimelightTarget_Barcode[] targets_Barcode;
 
+    // TODO: Get rid of dependancy on limelight
     public LimelightResults() {
       botpose = new double[6];
       botpose_wpired = new double[6];
@@ -118,6 +121,7 @@ public class PhotonizedLimelightHelpers {
       targets_Barcode = new LimelightTarget_Barcode[0];
     }
   }
+
   // TODO: We are also missing some of the fluidial stuff
   public static Pose2d toPose2D(double[] inData) {
     if (inData.length < 6) {
@@ -138,5 +142,111 @@ public class PhotonizedLimelightHelpers {
             Units.degreesToRadians(inData[3]),
             Units.degreesToRadians(inData[4]),
             Units.degreesToRadians(inData[5])));
+  }
+
+  /** Represents a 3D Pose Estimate. */
+  // TODO: Consider encompassing PoseObservation within here, or combining PoseEstimate and
+  // RawFiducial
+  public static class PoseEstimate {
+    public Pose2d pose;
+    public double timestampSeconds;
+    public double latency;
+    public int tagCount;
+    public double tagSpan;
+    public double avgTagDist;
+    public double avgTagArea;
+
+    // TODO: check for limelight tomfoolery with RawFiducial
+    public RawFiducial[] rawFiducials;
+    public boolean isMegaTag2;
+
+    /** Instantiates a PoseEstimate object with default values */
+    public PoseEstimate() {
+      this.pose = new Pose2d();
+      this.timestampSeconds = 0;
+      this.latency = 0;
+      this.tagCount = 0;
+      this.tagSpan = 0;
+      this.avgTagDist = 0;
+      this.avgTagArea = 0;
+      this.rawFiducials = new RawFiducial[] {};
+      this.isMegaTag2 = false;
+    }
+
+    public PoseEstimate(
+        Pose2d pose,
+        double timestampSeconds,
+        double latency,
+        int tagCount,
+        double tagSpan,
+        double avgTagDist,
+        double avgTagArea,
+        // TODO: limelight tomfoolery with RawFiducial
+        RawFiducial[] rawFiducials,
+        boolean isMegaTag2) {
+
+      this.pose = pose;
+      this.timestampSeconds = timestampSeconds;
+      this.latency = latency;
+      this.tagCount = tagCount;
+      this.tagSpan = tagSpan;
+      this.avgTagDist = avgTagDist;
+      this.avgTagArea = avgTagArea;
+      this.rawFiducials = rawFiducials;
+      this.isMegaTag2 = isMegaTag2;
+    }
+
+    public boolean isValid() {
+      return pose != null && tagCount > 0;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null || getClass() != obj.getClass()) return false;
+      PoseEstimate that = (PoseEstimate) obj;
+      // We don't compare the timestampSeconds as it isn't relevant for equality and makes
+      // unit testing harder
+      return Double.compare(that.latency, latency) == 0
+          && tagCount == that.tagCount
+          && Double.compare(that.tagSpan, tagSpan) == 0
+          && Double.compare(that.avgTagDist, avgTagDist) == 0
+          && Double.compare(that.avgTagArea, avgTagArea) == 0
+          && pose.equals(that.pose)
+          && Arrays.equals(rawFiducials, that.rawFiducials);
+    }
+  }
+
+  // TODO: Consider altering this
+  public record PoseObservation(PoseEstimate poseEstimate, RawFiducial[] rawFiducials) {
+
+    public PoseObservation() {
+      this(new PoseEstimate(), new RawFiducial[] {});
+    }
+
+    public boolean isValid() {
+      return poseEstimate != null
+          && poseEstimate.isValid()
+          && rawFiducials != null
+          && rawFiducials.length > 0;
+    }
+
+    @Override
+    public String toString() {
+      if (!isValid()) {
+        return "Invalid Pose Observation data.";
+      }
+
+      StringBuilder sb = new StringBuilder("Pose Estimate Information:\n");
+      sb.append(poseEstimate.toString().indent(2));
+      sb.append("\nRaw Fiducials Details:\n");
+
+      for (int i = 0; i < rawFiducials.length; i++) {
+        sb.append(String.format(" Fiducial #%d:%n", i + 1));
+        sb.append(rawFiducials[i].toString().indent(4));
+      }
+
+      return sb.toString();
+    }
   }
 }
