@@ -8,9 +8,19 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
 public interface ShooterIO {
+  public default void update() {}
+
   public default void stop() {}
+
   public default void setVelocity(AngularVelocity velocity) {}
 
+  public default AngularVelocity getVelocity() {
+    return null;
+  }
+
   public default void setHoodAngle(Angle angle) {}
-  public default Angle getHoodAngle() { return null; }
+
+  public default Angle getHoodAngle() {
+    return null;
+  }
 }
