@@ -23,9 +23,12 @@ public class Indexer {
   }
 
   public enum IndexStates {
+    //fill in speeds once robot has an indexer
     Indexing(0),
 
     Idle(0);
+
+    
 
     private final double speed;
 
