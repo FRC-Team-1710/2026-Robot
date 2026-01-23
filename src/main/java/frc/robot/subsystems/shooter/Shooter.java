@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
@@ -27,6 +28,14 @@ public class Shooter extends SubsystemBase {
       this.m_velocity = velocity;
       this.m_hoodAngle = hoodAngle;
     }
+
+    AngularVelocity getVelocity() {
+      return this.m_velocity;
+    }
+
+    Angle getHoodAngle() {
+      return this.m_hoodAngle;
+    }
   };
 
   private SHOOTER_STATE m_state;
@@ -41,22 +50,40 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    this.m_io.setHoodAngle(m_state.m_hoodAngle);
-
+    AngularVelocity velocity;
+    Angle hoodAngle;
+    
     switch (this.m_state) {
-      case STOP:
-        this.m_io.stop();
+      case SHOOT:
+        velocity = this.m_io.getTargetVelocity();
+        hoodAngle = this.m_io.getHoodAngle();
         break;
-
+      
       default:
-        this.m_io.setVelocity(m_state.m_velocity);
+        velocity = this.m_state.getVelocity();
+        hoodAngle = this.m_state.getHoodAngle();
         break;
+    }
+
+    
+    this.m_io.setTargetVelocity(velocity);
+    this.m_io.setHoodAngle(hoodAngle);
+    
+    // Stop motor if velocity is 0
+    if (velocity.in(DegreesPerSecond) == 0) {
+      this.m_io.stop();
     }
 
     this.m_io.update();
   }
 
-  public void setVelocity(AngularVelocity velocity) {}
+  public void setVelocity(AngularVelocity velocity) {
+    this.m_io.setTargetVelocity(velocity);
+  }
+
+  public AngularVelocity getVelocity() {
+    return this.m_io.getTargetVelocity();
+  }
 
   public void setHoodAngle(Angle angle) {
     this.m_io.setHoodAngle(angle);
