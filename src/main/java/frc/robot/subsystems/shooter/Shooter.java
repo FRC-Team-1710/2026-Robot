@@ -42,6 +42,9 @@ public class Shooter extends SubsystemBase {
 
   private final ShooterIO m_io;
 
+  private AngularVelocity m_velocity;
+  private Angle m_hoodAngle;
+
   public Shooter(ShooterIO io) {
 
     this.m_io = io;
@@ -50,26 +53,23 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    AngularVelocity velocity;
-    Angle hoodAngle;
-
     switch (this.m_state) {
       case SHOOT:
-        velocity = this.m_io.getTargetVelocity();
-        hoodAngle = this.m_io.getHoodAngle();
+        this.setVelocity(this.m_io.getTargetVelocity());
+        this.setHoodAngle(this.m_io.getHoodAngle());
         break;
 
       default:
-        velocity = this.m_state.getVelocity();
-        hoodAngle = this.m_state.getHoodAngle();
+        this.setVelocity(this.m_state.getVelocity());
+        this.setHoodAngle(this.m_state.getHoodAngle());
         break;
     }
 
-    this.m_io.setTargetVelocity(velocity);
-    this.m_io.setHoodAngle(hoodAngle);
+    this.m_io.setTargetVelocity(this.getTargetVelocity());
+    this.m_io.setHoodAngle(this.getHoodAngle());
 
     // Stop motor if velocity is 0
-    if (velocity.in(DegreesPerSecond) == 0) {
+    if (this.getTargetVelocity().in(DegreesPerSecond) == 0) {
       this.m_io.stop();
     }
 
@@ -77,19 +77,23 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setVelocity(AngularVelocity velocity) {
-    this.m_io.setTargetVelocity(velocity);
+    this.m_velocity = velocity;
   }
 
   public AngularVelocity getVelocity() {
-    return this.m_io.getTargetVelocity();
+    return this.m_io.getVelocity();
+  }
+
+  public AngularVelocity getTargetVelocity() {
+    return this.m_velocity;
   }
 
   public void setHoodAngle(Angle angle) {
-    this.m_io.setHoodAngle(angle);
+    this.m_hoodAngle = angle;
   }
 
   public Angle getHoodAngle() {
-    return this.m_io.getHoodAngle();
+    return this.m_hoodAngle;
   }
 
   public void setState(SHOOTER_STATE state) {
