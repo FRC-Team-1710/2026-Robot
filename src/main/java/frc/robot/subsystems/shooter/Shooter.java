@@ -56,7 +56,7 @@ public class Shooter extends SubsystemBase {
     switch (this.m_state) {
       case SHOOT:
         this.m_io.setTargetVelocity(this.getTargetVelocity());
-        this.m_io.setHoodAngle(this.getHoodAngle());
+        this.m_io.setHoodAngle(this.getTargetHoodAngle());
         break;
 
       default:
@@ -87,11 +87,11 @@ public class Shooter extends SubsystemBase {
     return this.m_velocity;
   }
 
-  public void setHoodAngle(Angle angle) {
+  public void setTargetHoodAngle(Angle angle) {
     this.m_hoodAngle = angle;
   }
 
-  public Angle getHoodAngle() {
+  public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
   }
 
