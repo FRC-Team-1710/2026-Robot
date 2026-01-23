@@ -74,4 +74,3 @@ public class Shooter extends SubsystemBase {
     return this.m_state;
   }
 }
-

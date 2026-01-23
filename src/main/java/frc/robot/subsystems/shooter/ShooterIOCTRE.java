@@ -25,6 +25,8 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheel = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR_ID, TunerConstants.kCANBus);
     this.m_flyWheel_Follower =
         new TalonFX(ShooterConstants.FLYWHEEL_FOLLOWER_MOTOR_ID, TunerConstants.kCANBus);
+    this.m_flyWheel_Follower =
+        new TalonFX(ShooterConstants.FLYWHEEL_FOLLOWER_MOTOR_ID, TunerConstants.kCANBus);
     this.m_hood = new TalonFX(ShooterConstants.HOOD_MOTOR_ID, TunerConstants.kCANBus);
 
     // Flywheel settings
@@ -49,11 +51,22 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public void update() {
     
+  public void update() {
+    
   }
 
   public void stop() {
     this.m_flyWheel.stopMotor();
     this.m_flyWheel_Follower.stopMotor();
+  }
+
+  public AngularVelocity getVelocity() {
+    return null;
+  }
+
+  public void setVelocity(AngularVelocity velocity) {
+    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
+    this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
   }
 
   public AngularVelocity getVelocity() {
