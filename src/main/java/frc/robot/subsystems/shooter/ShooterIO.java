@@ -14,9 +14,13 @@ public interface ShooterIO {
 
   public default void stop() {}
 
-  public default void setVelocity(AngularVelocity velocity) {}
+  public default void setTargetVelocity(AngularVelocity velocity) {}
 
   public default AngularVelocity getVelocity() {
+    return null;
+  }
+
+  public default AngularVelocity getTargetVelocity() {
     return null;
   }
 

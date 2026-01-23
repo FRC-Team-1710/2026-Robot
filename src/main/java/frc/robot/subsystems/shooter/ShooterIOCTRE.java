@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -55,13 +57,17 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheel_Follower.stopMotor();
   }
 
-  public AngularVelocity getVelocity() {
-    return null;
-  }
-
-  public void setVelocity(AngularVelocity velocity) {
+  public void setTargetVelocity(AngularVelocity velocity) {
     this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
     this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
+  }
+
+  public AngularVelocity getVelocity() {
+    return DegreesPerSecond.of(this.m_flyWheel.get());
+  }
+
+  public AngularVelocity getTargetVelocity() {
+    return DegreesPerSecond.of(this.m_velocityManager.Velocity);
   }
 
   public void setHoodAngle(Angle angle) {
