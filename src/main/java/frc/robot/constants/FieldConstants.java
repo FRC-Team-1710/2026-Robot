@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Inches;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.generated.TunerConstants;
 
 /** Field constants RELATIVE TO THE BLUE ALLIANCE (frc coordinate system) */
 public class FieldConstants {
@@ -27,7 +28,12 @@ public class FieldConstants {
       new Translation2d(Inches.of(182.11125), kFieldWidth.div(2));
 
   public static final Distance kDepotWidth = Inches.of(42);
+  public static final Distance kDepotLength = Inches.of(24);
   public static final Distance kDepotDistanceFromWall = Inches.of(213.84375);
+  public static final Distance kDepotCenterDistanceFromWall =
+      kDepotDistanceFromWall.plus(kDepotWidth.div(2));
+
+  public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
 
   // Add a translation2d to this subclass and automatically add it to the auto chooser
   public class AutoConstants {
@@ -56,10 +62,9 @@ public class FieldConstants {
         new Translation2d(
             kStartingLineDistance.plus(kBumpDepth),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-
-    public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
-
-    public static final Distance kDepotCenterDistanceFromWall =
-        kDepotDistanceFromWall.plus(kDepotWidth.div(2));
+    public static final Translation2d kDepot =
+        new Translation2d(kDepotLength, kDepotCenterDistanceFromWall);
+    public static final Translation2d kOutpost =
+        new Translation2d(kOutpostCenterFromWall, TunerConstants.RobotLength.div(2));
   }
 }

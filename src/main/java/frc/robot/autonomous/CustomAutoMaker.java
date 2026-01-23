@@ -29,6 +29,8 @@ public class CustomAutoMaker {
   private final Trigger updateTrigger =
       new Trigger(() -> SmartDashboard.getBoolean("Auto/Update", false));
 
+  String setPaths = "";
+
   public CustomAutoMaker(Superstructure superstructure) {
     poseChooser.setDefaultOption("Custom", new Translation2d());
 
@@ -41,6 +43,7 @@ public class CustomAutoMaker {
     SmartDashboard.putData("Auto/CommandChooser", commandChooser);
     SmartDashboard.putBoolean("Auto/AddPath", true);
     SmartDashboard.putBoolean("Auto/Update", false);
+    SmartDashboard.putString("Auto/Current Paths", setPaths);
 
     for (WantedStates state : WantedStates.values()) {
       if (state.name().contains("Auto")) {
@@ -84,6 +87,21 @@ public class CustomAutoMaker {
                 () -> {
                   if (SmartDashboard.getBoolean("Auto/AddPath", true)) {
                     Translation2d translationToSet = poseChooser.getSelected();
+                    if (translationToSet == FieldConstants.AutoConstants.kLeftBumpEntrance
+                        || translationToSet == FieldConstants.AutoConstants.kLeftBumpExit
+                        || translationToSet == FieldConstants.AutoConstants.kRightBumpExit
+                        || translationToSet == FieldConstants.AutoConstants.kRightBumpEntrance) {
+                      setPaths = setPaths + "bump ";
+                    } else if (translationToSet == FieldConstants.AutoConstants.kLeftTrenchEntrance
+                        || translationToSet == FieldConstants.AutoConstants.kLeftTrenchExit
+                        || translationToSet == FieldConstants.AutoConstants.kRightTrenchEntrance
+                        || translationToSet == FieldConstants.AutoConstants.kRightTrenchExit) {
+                      setPaths = setPaths + "trench ";
+                    } else if (translationToSet == FieldConstants.AutoConstants.kDepot) {
+                      setPaths = setPaths + "depot ";
+                    } else if (translationToSet == FieldConstants.AutoConstants.kOutpost) {
+                      setPaths = setPaths + "outpost ";
+                    }
                     if (translationToSet == new Translation2d()) {
                       translationToSet =
                           new Translation2d(
@@ -106,13 +124,14 @@ public class CustomAutoMaker {
                     customAuto = Commands.sequence(customAuto, commandChooser.getSelected());
                   }
                   SmartDashboard.putBoolean("Auto/Submit", false);
+                  SmartDashboard.putString("Auto/Current Paths", setPaths);
                 })
             .ignoringDisable(true));
     resetTrigger.onTrue(
         Commands.runOnce(
                 () -> {
                   customAuto = Commands.none();
-                  SmartDashboard.putBoolean("Auto/Reset", false);
+                  // SmartDashboard.putBoolean("Auto/Reset", false);
                 })
             .ignoringDisable(true));
   }
