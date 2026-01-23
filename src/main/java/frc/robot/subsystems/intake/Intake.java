@@ -32,7 +32,7 @@ public class Intake {
   }
 
   public enum IntakeStates {
-    Up(Degrees.of(90), 0),
+    Up(Degrees.of(0), 0),
     Down(Degrees.of(-45), 0),
     Intaking(Degrees.of(-45), .3);
 

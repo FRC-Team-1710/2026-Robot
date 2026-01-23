@@ -4,8 +4,10 @@
 
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 
+@Logged
 public interface IntakeIO {
   public default void setAngle(Angle angle) {}
 
