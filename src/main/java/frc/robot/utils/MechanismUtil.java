@@ -1,6 +1,9 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -165,13 +168,13 @@ public class MechanismUtil {
     private static final double ROOT_X = 200.0;
 
     /** Y position of the mechanism root on the canvas */
-    private static final double ROOT_Y = 200.0;
+    private static final double ROOT_Y = 0.5;
 
     /** Width of each spoke in the flywheel visualization in pixels */
-    private static final double SPOKE_WIDTH = 8.0;
+    private static final double SPOKE_WIDTH = 2.0;
 
     /** Number of spokes in the flywheel visualization */
-    private static final int NUM_SPOKES = 4;
+    private static final int NUM_SPOKES = 16;
 
     /** Color of flywheel when not spinning or slow */
     private static final Color8Bit IDLE_COLOR = new Color8Bit(Color.kRed);
@@ -196,10 +199,10 @@ public class MechanismUtil {
      * @param name The name to use for the mechanism visualization
      * @param flywheelRadius The visual radius of the flywheel in pixels
      */
-    public FlywheelMechanism(String name, double flywheelRadius) {
+    public FlywheelMechanism(String name, double flywheelRadius, double offset) {
       // Create the 2D mechanism visualization canvas
       mech = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
-      MechanismRoot2d root = mech.getRoot(name + "Root", ROOT_X, ROOT_Y);
+      MechanismRoot2d root = mech.getRoot(name + "Root", ROOT_X, ROOT_Y + offset);
 
       // Build the visual representation: multiple spokes radiating from center
       spokes = new MechanismLigament2d[NUM_SPOKES];
@@ -252,6 +255,47 @@ public class MechanismUtil {
         double spokeAngle = visualAngleDeg + ((360.0 / NUM_SPOKES) * i);
         spokes[i].setAngle(spokeAngle);
         spokes[i].setColor(currentColor);
+      }
+    }
+  }
+
+  public static class HoodMechanism {
+    private static final double CANVAS_WIDTH = 400.0;
+    private static final double CANVAS_HEIGHT = 400.0;
+
+    private static final double ROOT_X = 200.0;
+    private static final double ROOT_Y = 0.5;
+
+    private static final double SPOKE_WIDTH = 2.0;
+
+    private final Mechanism2d m_mech;
+
+    private final MechanismLigament2d[] m_spokes;
+
+    public HoodMechanism(String name, double offset) {
+      this.m_mech = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
+      MechanismRoot2d root = this.m_mech.getRoot(name + "Root", ROOT_X, ROOT_Y + offset);
+
+      this.m_spokes =
+          new MechanismLigament2d[] {
+            root.append(
+                new MechanismLigament2d(
+                    "Direction", 0.2, 20, SPOKE_WIDTH, new Color8Bit(Color.kRed)))
+          };
+    }
+
+    public Mechanism2d getMechanism() {
+      return m_mech;
+    }
+
+    public void update(Angle angle) {
+      double new_angle = angle.in(Radians);
+
+      new_angle %= 360.0;
+
+      for (int i = 0; i < this.m_spokes.length; i++) {
+        double spokeAngle = new_angle + this.m_spokes[i].getAngle();
+        this.m_spokes[i].setAngle(spokeAngle);
       }
     }
   }
