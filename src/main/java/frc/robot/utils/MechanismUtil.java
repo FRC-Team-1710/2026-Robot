@@ -459,7 +459,6 @@ public class MechanismUtil {
     /** Visual representation of the flywheel spokes that rotate with simulation */
     private final MechanismLigament2d[] spokes;
 
-
     /**
      * Constructs a new ArmMechanism visualization.
      *
@@ -468,7 +467,7 @@ public class MechanismUtil {
      * @param rollerRadius The radius of the roller in pixels
      */
     public IntakeVisualSim(String name, double armVisualLength, double rollerRadius) {
-      //Root
+      // Root
       subsystem = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
       MechanismRoot2d root = subsystem.getRoot(name + "Root", ROOT_X, ROOT_Y);
 
@@ -524,6 +523,7 @@ public class MechanismUtil {
 
     /**
      * Updates the visual representation of the roller.
+     *
      * @param speed The speed of the roller
      */
     public void updateRoller(double speed) {

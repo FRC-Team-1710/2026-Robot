@@ -27,21 +27,23 @@ public class IntakeIOSIM implements IntakeIO {
   private final IntakeVisualSim intakeVisualSim;
   private Angle angleSetpoint;
 
-  private final ProfiledPIDController PID = new ProfiledPIDController(
-      5, 0, 0, new Constraints(400, 400));
+  private final ProfiledPIDController PID =
+      new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
 
   public IntakeIOSIM() {
     gearbox = DCMotor.getKrakenX60(1);
     armPhysicsSim =
         new SingleJointedArmSim(gearbox, 25, 0.004, 10, -45, 90, false, 45, new double[2]);
 
-    intakeVisualSim = new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
+    intakeVisualSim =
+        new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
   }
 
   public void setAngle(Angle angle) {
     angleSetpoint = angle;
     if (angleSetpoint == null) return;
-    armPhysicsSim.setInputVoltage(PID.calculate(armPhysicsSim.getAngleRads(), angleSetpoint.in(Radians)));
+    armPhysicsSim.setInputVoltage(
+        PID.calculate(armPhysicsSim.getAngleRads(), angleSetpoint.in(Radians)));
     armPhysicsSim.update(0.02);
     intakeVisualSim.updateArm(
         Units.radiansToDegrees(armPhysicsSim.getAngleRads()),
