@@ -12,6 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 import frc.robot.utils.MechanismUtil;
 import frc.robot.utils.MechanismUtil.IntakeVisualSim;
 
@@ -21,23 +22,29 @@ public class IntakeIOSIM implements IntakeIO {
   private final DCMotor gearbox;
 
   private final SingleJointedArmSim armPhysicsSim;
-  private final IntakeVisualSim armVisualSim;
+  private final IntakeVisualSim intakeVisualSim;
   private Angle angleSetpoint;
 
   public IntakeIOSIM() {
     gearbox = DCMotor.getKrakenX60(1);
     armPhysicsSim =
         new SingleJointedArmSim(gearbox, 25, 0.004, 10, -45, 90, true, 0, new double[2]);
-    armVisualSim = new MechanismUtil().new IntakeVisualSim("Intake", .5); // creates the visual sim
+
+    intakeVisualSim = new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
   }
 
   public void setAngle(Angle angle) {
     angleSetpoint = angle;
     armPhysicsSim.setState(angle.magnitude(), Units.degreesToRadians(360));
-    armVisualSim.update(
+    intakeVisualSim.updateArm(
         Units.radiansToDegrees(armPhysicsSim.getAngleRads()),
         Math.abs(angleSetpoint.in(Radians) - armPhysicsSim.getAngleRads())
             < Units.degreesToRadians(1)); // updates visuals
-    SmartDashboard.putData("ArmVisuals", armVisualSim.getMechanism());
+    SmartDashboard.putData("ArmVisuals", intakeVisualSim.getMechanism());
+  }
+
+  public void setIntakeMotor(double speed) {
+    intakeVisualSim.updateRoller(speed * 20); // updates roller visuals
+    Robot.telemetry().log("RollerSpeed", speed);
   }
 }
