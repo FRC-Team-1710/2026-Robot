@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -25,6 +27,7 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheel = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR_ID, TunerConstants.kCANBus);
     this.m_flyWheel_Follower =
         new TalonFX(ShooterConstants.FLYWHEEL_FOLLOWER_MOTOR_ID, TunerConstants.kCANBus);
+
     this.m_hood = new TalonFX(ShooterConstants.HOOD_MOTOR_ID, TunerConstants.kCANBus);
 
     // Flywheel settings
@@ -47,14 +50,24 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
   }
 
-  public void setVelocity(AngularVelocity velocity) {
-    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
-    this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
-  }
+  public void update() {}
 
   public void stop() {
     this.m_flyWheel.stopMotor();
     this.m_flyWheel_Follower.stopMotor();
+  }
+
+  public void setTargetVelocity(AngularVelocity velocity) {
+    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
+    this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
+  }
+
+  public AngularVelocity getVelocity() {
+    return DegreesPerSecond.of(this.m_flyWheel.get());
+  }
+
+  public AngularVelocity getTargetVelocity() {
+    return DegreesPerSecond.of(this.m_velocityManager.Velocity);
   }
 
   public void setHoodAngle(Angle angle) {
