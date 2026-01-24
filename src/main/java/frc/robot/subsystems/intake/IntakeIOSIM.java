@@ -41,10 +41,7 @@ public class IntakeIOSIM implements IntakeIO {
   public void setAngle(Angle angle) {
     angleSetpoint = angle;
     if (angleSetpoint == null) return;
-    double armAngleRadians = armPhysicsSim.getAngleRads();
-    double out = PID.calculate(armAngleRadians, angleSetpoint.in(Radians));
-    Robot.telemetry().log("arm volts", out);
-    armPhysicsSim.setInputVoltage(Math.max(-12.0, Math.min(12.0, out)));
+    armPhysicsSim.setInputVoltage(PID.calculate(armPhysicsSim.getAngleRads(), angleSetpoint.in(Radians)));
     armPhysicsSim.update(0.02);
     intakeVisualSim.updateArm(
         Units.radiansToDegrees(armPhysicsSim.getAngleRads()),
