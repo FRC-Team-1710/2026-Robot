@@ -44,12 +44,16 @@ public class ShooterIOSIM implements ShooterIO {
     this.m_velocity = DegreesPerSecond.of(0);
   }
 
-  public void setM_velocity(AngularVelocity velocity) {
+  public void setTargetVelocity(AngularVelocity velocity) {
     this.m_velocity = velocity;
   }
 
-  public AngularVelocity get_velocity() {
-    return DegreesPerSecond.of(0);
+  public AngularVelocity getVelocity() {
+    return this.m_velocity;
+  }
+
+  public AngularVelocity getTargetVelocity() {
+    return this.m_velocity;
   }
 
   public void setHoodAngle(Angle angle) {

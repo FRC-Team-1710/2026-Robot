@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
@@ -27,11 +28,22 @@ public class Shooter extends SubsystemBase {
       this.m_velocity = velocity;
       this.m_hoodAngle = hoodAngle;
     }
+
+    AngularVelocity getVelocity() {
+      return this.m_velocity;
+    }
+
+    Angle getHoodAngle() {
+      return this.m_hoodAngle;
+    }
   };
 
   private SHOOTER_STATE m_state;
 
   private final ShooterIO m_io;
+
+  private AngularVelocity m_velocity;
+  private Angle m_hoodAngle;
 
   public Shooter(ShooterIO io) {
 
@@ -41,29 +53,44 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    this.m_io.setHoodAngle(m_state.m_hoodAngle);
-
     switch (this.m_state) {
-      case STOP:
-        this.m_io.stop();
+      case SHOOT:
+        this.m_io.setTargetVelocity(this.getTargetVelocity());
+        this.m_io.setHoodAngle(this.getTargetHoodAngle());
         break;
 
       default:
-        this.m_io.setVelocity(m_state.m_velocity);
+        this.m_io.setTargetVelocity(this.m_state.getVelocity());
+        this.m_io.setHoodAngle(this.m_state.getHoodAngle());
         break;
+    }
+
+    // Stop motor if velocity is 0
+    if (this.getTargetVelocity().in(DegreesPerSecond) == 0) {
+      this.m_io.stop();
     }
 
     this.m_io.update();
   }
 
-  public void setVelocity(AngularVelocity velocity) {}
-
-  public void setHoodAngle(Angle angle) {
-    this.m_io.setHoodAngle(angle);
+  public void setVelocity(AngularVelocity velocity) {
+    this.m_velocity = velocity;
   }
 
-  public Angle getHoodAngle() {
-    return this.m_io.getHoodAngle();
+  public AngularVelocity getVelocity() {
+    return this.m_io.getVelocity();
+  }
+
+  public AngularVelocity getTargetVelocity() {
+    return this.m_velocity;
+  }
+
+  public void setTargetHoodAngle(Angle angle) {
+    this.m_hoodAngle = angle;
+  }
+
+  public Angle getTargetHoodAngle() {
+    return this.m_hoodAngle;
   }
 
   public void setState(SHOOTER_STATE state) {
