@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Inches;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.generated.TunerConstants;
+import java.util.HashMap;
 
 /** Field constants RELATIVE TO THE BLUE ALLIANCE (frc coordinate system) */
 public class FieldConstants {
@@ -35,8 +36,43 @@ public class FieldConstants {
 
   public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
 
+  public HashMap<String, Translation2d> setPoints() {
+    HashMap<String, Translation2d> points = new HashMap<>();
+    points.put("Trench REn, ", new Translation2d(kStartingLineDistance, kTrenchWidth.div(2)));
+    points.put(
+        "Trench REx, ",
+        new Translation2d(kStartingLineDistance.plus(kBumpDepth), kTrenchWidth.div(2)));
+    points.put(
+        "Trench LEn, ",
+        new Translation2d(kStartingLineDistance, kFieldWidth.minus(kTrenchWidth.div(2))));
+    points.put(
+        "Trench LEx, ",
+        new Translation2d(
+            kStartingLineDistance.plus(kBumpDepth), kFieldWidth.minus(kTrenchWidth.div(2))));
+    points.put(
+        "Bump REn, ",
+        new Translation2d(kStartingLineDistance, kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
+    points.put(
+        "Bump REx, ",
+        new Translation2d(
+            kStartingLineDistance.plus(kBumpDepth), kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
+    points.put(
+        "Bump LEn, ",
+        new Translation2d(
+            kStartingLineDistance,
+            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
+    points.put(
+        "Bump LEx, ",
+        new Translation2d(
+            kStartingLineDistance.plus(kBumpDepth),
+            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
+
+    return points;
+  }
+
   // Add a translation2d to this subclass and automatically add it to the auto chooser
   public class AutoConstants {
+
     public static final Translation2d kRightTrenchEntrance =
         new Translation2d(kStartingLineDistance, kTrenchWidth.div(2));
     public static final Translation2d kRightTrenchExit =
