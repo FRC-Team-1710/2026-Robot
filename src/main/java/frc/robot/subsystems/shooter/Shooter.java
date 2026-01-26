@@ -43,7 +43,7 @@ public class Shooter extends SubsystemBase {
   private final ShooterIO m_io;
 
   private AngularVelocity m_velocity = RotationsPerSecond.of(0);
-  private Angle m_hoodAngle;
+  private Angle m_hoodAngle = Degrees.of(0);
 
   public Shooter(ShooterIO io) {
 
