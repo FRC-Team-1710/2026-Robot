@@ -484,7 +484,7 @@ public class MechanismUtil {
         spokes[i] =
             armLigament.append(
                 new MechanismLigament2d(
-                    "Spoke" + i, rollerRadius, spokeAngle, SPOKE_WIDTH, MOVING_COLOR));
+                    "Spoke" + i, rollerRadius, spokeAngle, SPOKE_WIDTH, AT_TARGET_COLOR));
       }
     }
 
