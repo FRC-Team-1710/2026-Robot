@@ -31,6 +31,9 @@ public final class ShooterConstants {
   /** How fast the flywheel can speed up (rotations per second²) */
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
+  // ======================== Shooter Physical Constants ===========================
+  public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
+
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
