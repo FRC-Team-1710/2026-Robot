@@ -140,19 +140,22 @@ public class RobotContainer {
         new Pair<Runnable, Pair<Time, Time>>(
             intake::periodic,
             new Pair<Time, Time>(
-                Milliseconds.of(60), Milliseconds.of((20.0 / Subsystems.values().length) * 2))));
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0))));
     map.put(
         Subsystems.Shooter,
         new Pair<Runnable, Pair<Time, Time>>(
             shooter::periodic,
             new Pair<Time, Time>(
-                Milliseconds.of(60), Milliseconds.of((20.0 / Subsystems.values().length) * 3))));
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0))));
     map.put(
         Subsystems.Indexer,
         new Pair<Runnable, Pair<Time, Time>>(
             indexer::periodic,
             new Pair<Time, Time>(
-                Milliseconds.of(60), Milliseconds.of((20.0 / Subsystems.values().length) * 4))));
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
     map.put(
         Subsystems.Drive,
         new Pair<Runnable, Pair<Time, Time>>(
