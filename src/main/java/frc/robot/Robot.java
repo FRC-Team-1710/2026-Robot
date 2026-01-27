@@ -20,21 +20,27 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
+import frc.robot.constants.Mode;
+import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
 import java.util.HashMap;
 
 @Logged
+@SuppressWarnings("unused")
 public class Robot extends DynamicTimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
   private final HootAutoReplay hootAutoReplay =
       new HootAutoReplay().withTimestampReplay().withJoystickReplay();
+
+  private final PowerDistribution pdhLogging = new PowerDistribution();
 
   public Robot() {
     Alliance.updateRedAlliance();
@@ -48,7 +54,7 @@ public class Robot extends DynamicTimedRobot {
         EpilogueBackend.multi(
             new HootEpilogueBackend(), new NTEpilogueBackend(NetworkTableInstance.getDefault()));
 
-    if (isSimulation()) {
+    if (Mode.currentMode == CurrentMode.SIMULATION) {
       epilogueConfig.minimumImportance = Importance.DEBUG;
       epilogueConfig.errorHandler = ErrorHandler.crashOnError();
     } else {
