@@ -15,103 +15,106 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 @Logged
 public class Shooter {
 
-  public enum SHOOTER_STATE {
-    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(200), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0)),
-    PRESET_PASS(Milliseconds.of(20), RotationsPerSecond.of(100), Degrees.of(0)),
-    PRESET_SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0));
+  private ShooterState state;
 
-    private final Time m_subsystemPeriodicFrequency;
-    private final AngularVelocity m_velocity;
-    private final Angle m_hoodAngle;
+  private final ShooterIO io;
 
-    SHOOTER_STATE(Time subsystemPeriodicFrequency, AngularVelocity velocity, Angle hoodAngle) {
-      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.m_velocity = velocity;
-      this.m_hoodAngle = hoodAngle;
-    }
+  private final TimesConsumer timesConsumer;
 
-    Time getSubsystemPeriodicFrequency() {
-      return this.m_subsystemPeriodicFrequency;
-    }
-
-    AngularVelocity getVelocity() {
-      return this.m_velocity;
-    }
-
-    Angle getHoodAngle() {
-      return this.m_hoodAngle;
-    }
-  };
-
-  private SHOOTER_STATE m_state;
-
-  private final ShooterIO m_io;
-
-  private final TimesConsumer m_timesConsumer;
-
-  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
-  private Angle m_hoodAngle = Degrees.of(0);
+  private AngularVelocity velocity;
+  private Angle hoodAngle;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
 
-    this.m_io = io;
-    this.m_timesConsumer = consumer;
-    this.m_state = SHOOTER_STATE.STOP;
+    this.io = io;
+    this.timesConsumer = consumer;
+    this.state = ShooterState.Stop;
+
+    this.velocity = RotationsPerSecond.of(0);
+    this.hoodAngle = Degrees.of(0);
   }
 
   public void periodic() {
-    switch (this.m_state) {
-      case SHOOT:
-        this.m_io.setTargetVelocity(this.getTargetVelocity());
-        this.m_io.setHoodAngle(this.getTargetHoodAngle());
+    switch (this.state) {
+      case Shoot:
+        this.io.setTargetVelocity(this.getTargetVelocity());
+        this.io.setHoodAngle(this.getTargetHoodAngle());
         break;
 
       default:
-        this.m_io.setTargetVelocity(this.m_state.getVelocity());
-        this.m_io.setHoodAngle(this.m_state.getHoodAngle());
+        this.io.setTargetVelocity(this.state.getVelocity());
+        this.io.setHoodAngle(this.state.getHoodAngle());
         break;
     }
 
     // Stop motor if velocity is 0
     if (this.getTargetVelocity().in(DegreesPerSecond) == 0) {
-      this.m_io.stop();
+      this.io.stop();
     }
 
-    this.m_io.update();
+    this.io.update();
   }
 
   public void setVelocity(AngularVelocity velocity) {
-    this.m_velocity = velocity;
+    this.velocity = velocity;
   }
 
   public AngularVelocity getVelocity() {
-    return this.m_io.getVelocity();
+    return this.io.getVelocity();
   }
 
   public AngularVelocity getTargetVelocity() {
-    return this.m_velocity;
+    return this.velocity;
   }
 
   public void setTargetHoodAngle(Angle angle) {
-    this.m_hoodAngle = angle;
+    this.hoodAngle = angle;
   }
 
   public Angle getTargetHoodAngle() {
-    return this.m_hoodAngle;
+    return this.hoodAngle;
   }
 
-  public void setState(SHOOTER_STATE state) {
-    if (!this.m_state
+  public enum ShooterState {
+    Stop(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
+    Idle(Milliseconds.of(60), RotationsPerSecond.of(200), Degrees.of(0)),
+    Shoot(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0)),
+    PresetPass(Milliseconds.of(20), RotationsPerSecond.of(100), Degrees.of(0)),
+    PresetShoot(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0));
+
+    private final Time subsystemPeriodicFrequency;
+    private final AngularVelocity velocity;
+    private final Angle hoodAngle;
+
+    ShooterState(Time subsystemPeriodicFrequency, AngularVelocity velocity, Angle hoodAngle) {
+      this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
+      this.velocity = velocity;
+      this.hoodAngle = hoodAngle;
+    }
+
+    Time getSubsystemPeriodicFrequency() {
+      return this.subsystemPeriodicFrequency;
+    }
+
+    AngularVelocity getVelocity() {
+      return this.velocity;
+    }
+
+    Angle getHoodAngle() {
+      return this.hoodAngle;
+    }
+  };
+
+  public void setState(ShooterState state) {
+    if (!this.state
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
-      m_timesConsumer.accept(Subsystems.Shooter, state.getSubsystemPeriodicFrequency());
+      timesConsumer.accept(Subsystems.Shooter, state.getSubsystemPeriodicFrequency());
     }
-    this.m_state = state;
+    this.state = state;
   }
 
-  public SHOOTER_STATE getState() {
-    return this.m_state;
+  public ShooterState getState() {
+    return this.state;
   }
 }
