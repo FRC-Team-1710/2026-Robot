@@ -38,6 +38,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
+import frc.robot.utils.SwerveTelemetry;
 import java.util.function.Supplier;
 
 /**
@@ -49,6 +50,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
+
+  private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
   private AngularVelocity MaxAngularRate = RotationsPerSecond.of(2);
@@ -252,6 +255,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                   MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
               .withDriveState(currentState));
     }
+
+    swerveTelemetry.currentSpeeds = getRobotSpeeds();
+    swerveTelemetry.desiredSpeeds = getTargetFieldSpeeds();
+    swerveTelemetry.currentStates = getModuleStates();
+    swerveTelemetry.desiredStates = getModuleTargets();
+    swerveTelemetry.rotation = getRotation();
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
