@@ -2,31 +2,38 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.Subsystems;
+import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
-public class Shooter extends SubsystemBase {
+public class Shooter {
 
   public enum SHOOTER_STATE {
-    STOP(RotationsPerSecond.of(0), Degrees.of(0)),
+    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(200), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0)),
+    PRESET_PASS(Milliseconds.of(20), RotationsPerSecond.of(100), Degrees.of(0)),
+    PRESET_SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0));
 
-    IDLE(RotationsPerSecond.of(200), Degrees.of(0)),
-    SHOOT(RotationsPerSecond.of(250), Degrees.of(0)),
-
-    PRESET_PASS(RotationsPerSecond.of(100), Degrees.of(0)),
-    PRESET_SHOOT(RotationsPerSecond.of(250), Degrees.of(0));
-
+    private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
     private final Angle m_hoodAngle;
 
-    SHOOTER_STATE(AngularVelocity velocity, Angle hoodAngle) {
+    SHOOTER_STATE(Time subsystemPeriodicFrequency, AngularVelocity velocity, Angle hoodAngle) {
+      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
       this.m_velocity = velocity;
       this.m_hoodAngle = hoodAngle;
+    }
+
+    Time getSubsystemPeriodicFrequency() {
+      return this.m_subsystemPeriodicFrequency;
     }
 
     AngularVelocity getVelocity() {
@@ -42,16 +49,18 @@ public class Shooter extends SubsystemBase {
 
   private final ShooterIO m_io;
 
-  private AngularVelocity m_velocity;
-  private Angle m_hoodAngle;
+  private final TimesConsumer m_timesConsumer;
 
-  public Shooter(ShooterIO io) {
+  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
+  private Angle m_hoodAngle = Degrees.of(0);
+
+  public Shooter(ShooterIO io, TimesConsumer consumer) {
 
     this.m_io = io;
+    this.m_timesConsumer = consumer;
     this.m_state = SHOOTER_STATE.STOP;
   }
 
-  @Override
   public void periodic() {
     switch (this.m_state) {
       case SHOOT:
@@ -94,6 +103,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setState(SHOOTER_STATE state) {
+    if (!this.m_state
+        .getSubsystemPeriodicFrequency()
+        .isEquivalent(state.getSubsystemPeriodicFrequency())) {
+      m_timesConsumer.accept(Subsystems.Shooter, state.getSubsystemPeriodicFrequency());
+    }
     this.m_state = state;
   }
 

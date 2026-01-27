@@ -39,7 +39,7 @@ public class Robot extends DynamicTimedRobot {
   public Robot() {
     Alliance.updateRedAlliance();
 
-    m_robotContainer = new RobotContainer();
+    m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
     DataLogManager.start();
 
     var epilogueConfig = new EpilogueConfiguration();
@@ -147,15 +147,13 @@ public class Robot extends DynamicTimedRobot {
   public void testExit() {}
 
   /** A map of all subsystems with their period */
-  public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Time>> subsystems) {
-    int id = 0;
+  public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> subsystems) {
     for (Subsystems key : subsystems.keySet()) {
-      id++;
       addSubsystem(
           key,
           subsystems.get(key).getFirst(),
-          subsystems.get(key).getSecond(),
-          Seconds.of(0.02 / Subsystems.values().length).times(id));
+          subsystems.get(key).getSecond().getFirst(),
+          subsystems.get(key).getSecond().getSecond());
     }
   }
 
