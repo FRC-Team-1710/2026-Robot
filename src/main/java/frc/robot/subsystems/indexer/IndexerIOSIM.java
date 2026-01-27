@@ -2,28 +2,15 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-
-
-
 package frc.robot.subsystems.indexer;
-<<<<<<< HEAD
-<<<<<<< HEAD:src/main/java/frc/robot/subsystems/indexer/IndexerOSIM.java
-=======
-package frc.robot.subsystems.Index;
->>>>>>> 7644ef4 (added some code for index sim, such as returning motor positions, but still a work in progress and not yet fully functioning.):src/main/java/frc/robot/subsystems/Index/IndexerOSIM.java
-=======
 
->>>>>>> 1a14fdc (fixed merge conflicts):src/main/java/frc/robot/subsystems/indexer/IndexerIOSIM.java
-=======
-
->>>>>>> 1a14fdcdbf75ab9ebb1bf57a97b1783d75694e8b
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class IndexerIOSIM extends IndexerIOCTRE {
-   //Creates a new IndeerOSIM. 
+   
    private DCMotorSim sim = 
    new DCMotorSim(
     //fill in kA value later when doing PID stuff
@@ -32,17 +19,7 @@ public class IndexerIOSIM extends IndexerIOCTRE {
    
    private double appliedVolts = 0.0;
 
-<<<<<<< HEAD
-<<<<<<< HEAD:src/main/java/frc/robot/subsystems/indexer/IndexerOSIM.java
-<<<<<<< HEAD:src/main/java/frc/robot/subsystems/indexer/IndexerOSIM.java
 //Tells the sim to update every 0.02 seconds with data of the mtors position and velocity.
-=======
-
->>>>>>> 7644ef4 (added some code for index sim, such as returning motor positions, but still a work in progress and not yet fully functioning.):src/main/java/frc/robot/subsystems/Index/IndexerOSIM.java
-=======
->>>>>>> 1a14fdc (fixed merge conflicts):src/main/java/frc/robot/subsystems/indexer/IndexerIOSIM.java
-=======
->>>>>>> 1a14fdcdbf75ab9ebb1bf57a97b1783d75694e8b
 private void updateInputs(IndexerIOInputs inputs) {
    sim.setInputVoltage(appliedVolts);
    sim.update(0.02);
@@ -51,4 +28,7 @@ private void updateInputs(IndexerIOInputs inputs) {
    inputs.appliedVolts = appliedVolts;
 } 
 }
+
+@Override
+private
 
