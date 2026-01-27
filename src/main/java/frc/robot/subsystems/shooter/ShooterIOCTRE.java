@@ -19,15 +19,15 @@ public class ShooterIOCTRE implements ShooterIO {
 
   private final MotionMagicVelocityVoltage m_velocityManager;
 
-  private final TalonFX m_flyWheel;
-  private final TalonFX m_flyWheel_Follower;
-  private final TalonFX m_hood;
+  private final TalonFX flyWheel;
+  private final TalonFX flyWheel_Follower;
+  private final TalonFX hood;
 
   public ShooterIOCTRE() {
-    this.m_flyWheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_MOTOR);
-    this.m_flyWheel_Follower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
+    this.flyWheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_MOTOR);
+    this.flyWheel_Follower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
 
-    this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
+    this.hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
 
     // Flywheel settings
     TalonFXConfiguration m_config = new TalonFXConfiguration();
@@ -42,9 +42,9 @@ public class ShooterIOCTRE implements ShooterIO {
     m_config.MotionMagic.MotionMagicCruiseVelocity = ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
     m_config.MotionMagic.MotionMagicAcceleration = ShooterConstants.MOTION_MAGIC_ACCELERATION;
 
-    TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, m_config, 2);
+    TalonFXUtil.applyConfigWithRetries(this.flyWheel, m_config, 2);
 
-    TalonFXUtil.applyConfigWithRetries(this.m_flyWheel_Follower, m_config, 2);
+    TalonFXUtil.applyConfigWithRetries(this.flyWheel_Follower, m_config, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
   }
@@ -52,17 +52,17 @@ public class ShooterIOCTRE implements ShooterIO {
   public void update() {}
 
   public void stop() {
-    this.m_flyWheel.stopMotor();
-    this.m_flyWheel_Follower.stopMotor();
+    this.flyWheel.stopMotor();
+    this.flyWheel_Follower.stopMotor();
   }
 
   public void setTargetVelocity(AngularVelocity velocity) {
-    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
-    this.m_flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
+    this.flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
+    this.flyWheel_Follower.setControl(this.m_velocityManager.withVelocity(velocity));
   }
 
   public AngularVelocity getVelocity() {
-    return DegreesPerSecond.of(this.m_flyWheel.get());
+    return DegreesPerSecond.of(this.flyWheel.get());
   }
 
   public AngularVelocity getTargetVelocity() {
@@ -70,10 +70,10 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle angle) {
-    this.m_hood.setPosition(angle);
+    this.hood.setPosition(angle);
   }
 
   public Angle getHoodAngle() {
-    return this.m_hood.getPosition().getValue();
+    return this.hood.getPosition().getValue();
   }
 }

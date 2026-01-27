@@ -13,54 +13,54 @@ import frc.robot.utils.MechanismUtil.HoodMechanism;
 @Logged
 public class ShooterIOSIM implements ShooterIO {
 
-  private AngularVelocity m_velocity;
-  private Angle m_hoodAngle;
+  private AngularVelocity velocity;
+  private Angle hoodAngle;
 
-  private final FlywheelMechanism m_flyWheelMechanism;
-  private final FlywheelMechanism m_flyWheelFollowerMechanism;
+  private final FlywheelMechanism flyWheelMechanism;
+  private final FlywheelMechanism flyWheelFollowerMechanism;
 
-  private final HoodMechanism m_hoodMechanism;
+  private final HoodMechanism hoodMechanism;
 
   public ShooterIOSIM() {
-    this.m_flyWheelMechanism = new FlywheelMechanism("Flywheel 1", 0.1, -0.25);
-    this.m_flyWheelFollowerMechanism = new FlywheelMechanism("Flywheel 2", 0.1, 0.25);
+    this.flyWheelMechanism = new FlywheelMechanism("Flywheel 1", 0.1, -0.25);
+    this.flyWheelFollowerMechanism = new FlywheelMechanism("Flywheel 2", 0.1, 0.25);
 
-    this.m_hoodMechanism = new HoodMechanism("Hood", 0);
+    this.hoodMechanism = new HoodMechanism("Hood", 0);
   }
 
   public void update() {
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
+    this.flyWheelMechanism.update(this.velocity.in(RadiansPerSecond), 0.02, false);
+    this.flyWheelMechanism.update(this.velocity.in(RadiansPerSecond), 0.02, false);
 
-    this.m_hoodMechanism.update(this.m_hoodAngle);
+    this.hoodMechanism.update(this.hoodAngle);
 
-    SmartDashboard.putData("Flywheel 1", this.m_flyWheelMechanism.getMechanism());
-    SmartDashboard.putData("Flywheel 2", this.m_flyWheelFollowerMechanism.getMechanism());
+    SmartDashboard.putData("Flywheel 1", this.flyWheelMechanism.getMechanism());
+    SmartDashboard.putData("Flywheel 2", this.flyWheelFollowerMechanism.getMechanism());
 
-    SmartDashboard.putData("Hood", this.m_hoodMechanism.getMechanism());
+    SmartDashboard.putData("Hood", this.hoodMechanism.getMechanism());
   }
 
   public void stop() {
-    this.m_velocity = DegreesPerSecond.of(0);
+    this.velocity = DegreesPerSecond.of(0);
   }
 
   public void setTargetVelocity(AngularVelocity velocity) {
-    this.m_velocity = velocity;
+    this.velocity = velocity;
   }
 
   public AngularVelocity getVelocity() {
-    return this.m_velocity;
+    return this.velocity;
   }
 
   public AngularVelocity getTargetVelocity() {
-    return this.m_velocity;
+    return this.velocity;
   }
 
   public void setHoodAngle(Angle angle) {
-    this.m_hoodAngle = angle;
+    this.hoodAngle = angle;
   }
 
   public Angle getHoodAngle() {
-    return this.m_hoodAngle;
+    return this.hoodAngle;
   }
 }
