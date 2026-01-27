@@ -88,6 +88,8 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   private long m_loopStartTimeUs;
   private long previousStartOfPeriodic;
 
+  private long totalCodeTime = 0;
+
   private Callback currentPeriodicCallback;
 
   private final PriorityQueue<Callback> m_callbacks = new PriorityQueue<>();
@@ -95,6 +97,8 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   private final HashMap<Subsystems, Runnable> subsystemToRunnable = new HashMap<>();
 
   private final HashMap<Subsystems, Long> previousSubsystemTimes = new HashMap<>();
+
+  private ArrayList<String> subsystemsRunThisLoop = new ArrayList<>();
 
   /** Constructor for DynamicTimedRobot. */
   protected DynamicTimedRobot() {
@@ -137,8 +141,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
     // Loop forever, calling the appropriate mode-dependent function
     while (true) {
-      ArrayList<String> subsystemsRunThisLoop = new ArrayList<>();
-
       // We don't have to check there's an element in the queue first because
       // there's always at least one (the constructor adds one). It's reenqueued
       // at the end of the loop.
@@ -152,8 +154,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
         break;
       }
 
-      m_loopStartTimeUs = RobotController.getFPGATime();
-
       Robot.telemetry()
           .log(
               "Periodics/" + callback.subsystem.toString() + "/TimeBetweenTriggers",
@@ -162,20 +162,30 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
       currentPeriodicCallback = callback;
 
+      if (callback.subsystem == Subsystems.Robot) {
+        Robot.telemetry()
+            .log("Periodics/Total", RobotController.getFPGATime() - previousStartOfPeriodic);
+        previousStartOfPeriodic = RobotController.getFPGATime();
+        Robot.telemetry().log("Periodics/TotalCode", totalCodeTime);
+        totalCodeTime = 0;
+        Robot.telemetry().log("Periodics/SubsystemsRunThisLoop/Size", subsystemsRunThisLoop.size());
+        Robot.telemetry()
+            .log("Periodics/SubsystemsRunThisLoop/Values", subsystemsRunThisLoop.toString());
+        subsystemsRunThisLoop = new ArrayList<>();
+      }
+
+      m_loopStartTimeUs = RobotController.getFPGATime();
+
       callback.func.run();
 
-      subsystemsRunThisLoop.add(callback.subsystem.toString());
+      totalCodeTime += RobotController.getFPGATime() - m_loopStartTimeUs;
 
       Robot.telemetry()
           .log(
               "Periodics/" + callback.subsystem.toString() + "/Periodic",
               RobotController.getFPGATime() - m_loopStartTimeUs);
 
-      if (callback.subsystem == Subsystems.Robot) {
-        Robot.telemetry()
-            .log("Periodics/Total", RobotController.getFPGATime() - previousStartOfPeriodic);
-        previousStartOfPeriodic = RobotController.getFPGATime();
-      }
+      subsystemsRunThisLoop.add(callback.subsystem.toString());
 
       // Increment the expiration time by the number of full periods it's behind
       // plus one to avoid rapid repeat fires from a large loop overrun. We
@@ -192,38 +202,43 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
         callback = m_callbacks.poll();
 
-        var tempTime = RobotController.getFPGATime();
-
         Robot.telemetry()
             .log(
                 "Periodics/" + callback.subsystem.toString() + "/TimeBetweenTriggers",
                 RobotController.getFPGATime() - previousSubsystemTimes.get(callback.subsystem));
         previousSubsystemTimes.put(callback.subsystem, RobotController.getFPGATime());
 
+        if (callback.subsystem == Subsystems.Robot) {
+          Robot.telemetry()
+              .log("Periodics/Total", RobotController.getFPGATime() - previousStartOfPeriodic);
+          previousStartOfPeriodic = RobotController.getFPGATime();
+          Robot.telemetry().log("Periodics/TotalCode", totalCodeTime);
+          totalCodeTime = 0;
+          Robot.telemetry()
+              .log("Periodics/SubsystemsRunThisLoop/Size", subsystemsRunThisLoop.size());
+          Robot.telemetry()
+              .log("Periodics/SubsystemsRunThisLoop/Values", subsystemsRunThisLoop.toString());
+          subsystemsRunThisLoop = new ArrayList<>();
+        }
+
+        var tempTime = RobotController.getFPGATime();
+
         callback.func.run();
 
-        subsystemsRunThisLoop.add(callback.subsystem.toString());
+        totalCodeTime += RobotController.getFPGATime() - tempTime;
 
         Robot.telemetry()
             .log(
                 "Periodics/" + callback.subsystem.toString() + "/Periodic",
                 RobotController.getFPGATime() - tempTime);
 
-        if (callback.subsystem == Subsystems.Robot) {
-          Robot.telemetry()
-              .log("Periodics/Total", RobotController.getFPGATime() - previousStartOfPeriodic);
-          previousStartOfPeriodic = RobotController.getFPGATime();
-        }
+        subsystemsRunThisLoop.add(callback.subsystem.toString());
 
         callback.expirationTime +=
             callback.period
                 + (currentTime - callback.expirationTime) / callback.period * callback.period;
         m_callbacks.add(callback);
       }
-
-      Robot.telemetry().log("Periodics/SubsystemsRunThisLoop/Number", subsystemsRunThisLoop.size());
-      Robot.telemetry()
-          .log("Periodics/SubsystemsRunThisLoop/Subsystems", subsystemsRunThisLoop.toString());
     }
   }
 

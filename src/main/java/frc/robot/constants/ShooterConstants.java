@@ -5,13 +5,6 @@
 package frc.robot.constants;
 
 public final class ShooterConstants {
-
-  // ==================== Motor IDs ====================
-
-  public static final int FLYWHEEL_MOTOR_ID = 1;
-  public static final int FLYWHEEL_FOLLOWER_MOTOR_ID = 2;
-  public static final int HOOD_MOTOR_ID = 41;
-
   // ==================== PID Control Values ====================
 
   /** Static friction compensation */

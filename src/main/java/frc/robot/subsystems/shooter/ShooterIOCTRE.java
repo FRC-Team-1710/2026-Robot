@@ -10,8 +10,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.generated.TunerConstants;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
@@ -24,11 +24,10 @@ public class ShooterIOCTRE implements ShooterIO {
   private final TalonFX m_hood;
 
   public ShooterIOCTRE() {
-    this.m_flyWheel = new TalonFX(ShooterConstants.FLYWHEEL_MOTOR_ID, TunerConstants.kCANBus);
-    this.m_flyWheel_Follower =
-        new TalonFX(ShooterConstants.FLYWHEEL_FOLLOWER_MOTOR_ID, TunerConstants.kCANBus);
+    this.m_flyWheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_MOTOR);
+    this.m_flyWheel_Follower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
 
-    this.m_hood = new TalonFX(ShooterConstants.HOOD_MOTOR_ID, TunerConstants.kCANBus);
+    this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
 
     // Flywheel settings
     TalonFXConfiguration m_config = new TalonFXConfiguration();
