@@ -1,13 +1,11 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -152,8 +150,7 @@ public class Superstructure {
   }
 
   private void assist() {
-    drivetrain.setYTargetFromCenter(getAssistYTarget());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.Y_ASSIST);
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
@@ -207,16 +204,6 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
-  }
-
-  private Distance getAssistYTarget() {
-    return drivetrain.getPose().getY() < FieldConstants.kFieldWidth.div(2).in(Meters)
-        ? (shouldAssistLeft
-            ? FieldConstants.kBumpCenterYFromFieldCenter
-            : FieldConstants.kTrenchCenterYFromFieldCenter)
-        : (shouldAssistLeft
-            ? FieldConstants.kTrenchCenterYFromFieldCenter
-            : FieldConstants.kBumpCenterYFromFieldCenter);
   }
 
   private Rotation2d getRotationForScore() {
