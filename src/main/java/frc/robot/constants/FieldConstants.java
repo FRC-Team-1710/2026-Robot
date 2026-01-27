@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Inches;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
-import frc.robot.generated.TunerConstants;
 import java.util.HashMap;
 
 /** Field constants RELATIVE TO THE BLUE ALLIANCE (frc coordinate system) */
@@ -36,7 +35,8 @@ public class FieldConstants {
 
   public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
 
-  public HashMap<String, Translation2d> setPoints() {
+  // Add a new value and automatically adds it to the auto chooser
+  public static HashMap<String, Translation2d> AutoConstants() {
     HashMap<String, Translation2d> points = new HashMap<>();
     points.put("Trench REn, ", new Translation2d(kStartingLineDistance, kTrenchWidth.div(2)));
     points.put(
@@ -68,39 +68,5 @@ public class FieldConstants {
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
 
     return points;
-  }
-
-  // Add a translation2d to this subclass and automatically add it to the auto chooser
-  public class AutoConstants {
-
-    public static final Translation2d kRightTrenchEntrance =
-        new Translation2d(kStartingLineDistance, kTrenchWidth.div(2));
-    public static final Translation2d kRightTrenchExit =
-        new Translation2d(kStartingLineDistance.plus(kBumpDepth), kTrenchWidth.div(2));
-
-    public static final Translation2d kLeftTrenchEntrance =
-        new Translation2d(kStartingLineDistance, kFieldWidth.minus(kTrenchWidth.div(2)));
-    public static final Translation2d kLeftTrenchExit =
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth), kFieldWidth.minus(kTrenchWidth.div(2)));
-
-    public static final Translation2d kRightBumpEntrance =
-        new Translation2d(kStartingLineDistance, kBumpWidth.div(2).plus(kBumpDistanceFromWall));
-    public static final Translation2d kRightBumpExit =
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth), kBumpWidth.div(2).plus(kBumpDistanceFromWall));
-
-    public static final Translation2d kLeftBumpEntrance =
-        new Translation2d(
-            kStartingLineDistance,
-            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-    public static final Translation2d kLeftBumpExit =
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth),
-            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-    public static final Translation2d kDepot =
-        new Translation2d(kDepotLength, kDepotCenterDistanceFromWall);
-    public static final Translation2d kOutpost =
-        new Translation2d(kOutpostCenterFromWall, TunerConstants.RobotLength.div(2));
   }
 }

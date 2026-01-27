@@ -15,7 +15,8 @@ import frc.robot.lib.BLine.Path;
 import frc.robot.lib.BLine.Path.Waypoint;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
-import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class CustomAutoMaker {
   private Command customAuto = Commands.none();
@@ -30,6 +31,17 @@ public class CustomAutoMaker {
       new Trigger(() -> SmartDashboard.getBoolean("Auto/Update", false));
 
   String setPaths = "";
+
+  public String setPaths(HashMap<String, Translation2d> points, Translation2d current) {
+    for (Entry<String, Translation2d> entry : points.entrySet()) {
+      System.out.println(entry.getValue());
+      System.out.println(current);
+      if (entry.getValue().equals(current)) {
+        return entry.getKey();
+      }
+    }
+    return "no valid selection";
+  }
 
   public CustomAutoMaker(Superstructure superstructure) {
     poseChooser.setDefaultOption("Custom", new Translation2d());
@@ -51,19 +63,16 @@ public class CustomAutoMaker {
       }
     }
 
-    var fields = FieldConstants.AutoConstants.class.getFields();
-
-    for (Field field : fields) {
+    for (Entry<String, Translation2d> entry : FieldConstants.AutoConstants().entrySet()) {
       try {
         // No field needed because it's static
-        Object obj = field.get(null);
+        Object obj = entry.getValue();
         if (obj instanceof Translation2d) {
-          Translation2d translation = (Translation2d) obj;
-          poseChooser.addOption(field.getName(), translation);
+          poseChooser.addOption(entry.getKey(), entry.getValue());
         }
       } catch (Exception e) {
         DriverStation.reportError(
-            "Failed to get field " + field.getName() + " in CustomAutoMaker", e.getStackTrace());
+            "Failed to get field " + entry.getKey() + " in CustomAutoMaker", e.getStackTrace());
       }
     }
 
@@ -87,27 +96,14 @@ public class CustomAutoMaker {
                 () -> {
                   if (SmartDashboard.getBoolean("Auto/AddPath", true)) {
                     Translation2d translationToSet = poseChooser.getSelected();
-                    if (translationToSet == FieldConstants.AutoConstants.kLeftBumpEntrance
-                        || translationToSet == FieldConstants.AutoConstants.kLeftBumpExit
-                        || translationToSet == FieldConstants.AutoConstants.kRightBumpExit
-                        || translationToSet == FieldConstants.AutoConstants.kRightBumpEntrance) {
-                      setPaths = setPaths + "bump ";
-                    } else if (translationToSet == FieldConstants.AutoConstants.kLeftTrenchEntrance
-                        || translationToSet == FieldConstants.AutoConstants.kLeftTrenchExit
-                        || translationToSet == FieldConstants.AutoConstants.kRightTrenchEntrance
-                        || translationToSet == FieldConstants.AutoConstants.kRightTrenchExit) {
-                      setPaths = setPaths + "trench ";
-                    } else if (translationToSet == FieldConstants.AutoConstants.kDepot) {
-                      setPaths = setPaths + "depot ";
-                    } else if (translationToSet == FieldConstants.AutoConstants.kOutpost) {
-                      setPaths = setPaths + "outpost ";
-                    }
                     if (translationToSet == new Translation2d()) {
                       translationToSet =
                           new Translation2d(
                               SmartDashboard.getNumber("Auto/CustomX", 0),
                               SmartDashboard.getNumber("Auto/CustomY", 0));
                     }
+                    setPaths =
+                        setPaths + setPaths(FieldConstants.AutoConstants(), translationToSet);
                     customAuto =
                         Commands.sequence(
                             customAuto,
