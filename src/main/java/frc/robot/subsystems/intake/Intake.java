@@ -15,29 +15,29 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Intake {
-  private final IntakeIO io;
-  private final TimesConsumer timesConsumer;
-  private IntakeStates currentState;
+  private final IntakeIO m_io;
+  private final TimesConsumer m_timesConsumer;
+  private IntakeStates m_currentState;
 
   /** Creates a new Intake. */
   public Intake(IntakeIO io, TimesConsumer consumer) {
-    this.io = io;
-    this.timesConsumer = consumer;
+    this.m_io = io;
+    this.m_timesConsumer = consumer;
 
-    this.currentState = IntakeStates.Up;
+    this.m_currentState = IntakeStates.Up;
   }
 
   public void periodic() {
     // This method will be called once per scheduler run
-    io.setAngle(currentState.setpoint);
-    io.setIntakeMotor(currentState.speed);
+    m_io.setAngle(m_currentState.m_setpoint);
+    m_io.setIntakeMotor(m_currentState.m_speed);
   }
 
   public void setState(IntakeStates state) {
-    if (!currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
-      timesConsumer.accept(Subsystems.Intake, state.subsystemPeriodicFrequency);
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(state.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Intake, state.m_subsystemPeriodicFrequency);
     }
-    currentState = state;
+    m_currentState = state;
   }
 
   public enum IntakeStates {
@@ -45,14 +45,14 @@ public class Intake {
     Down(Milliseconds.of(60), Degrees.of(-14.5), 0),
     Intaking(Milliseconds.of(20), Degrees.of(0), .3);
 
-    private final Time subsystemPeriodicFrequency;
-    private final Angle setpoint;
-    private final double speed;
+    private final Time m_subsystemPeriodicFrequency;
+    private final Angle m_setpoint;
+    private final double m_speed;
 
     IntakeStates(Time subsystemPeriodicFrequency, Angle angle, double speed) {
-      this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.setpoint = angle;
-      this.speed = speed;
+      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
+      this.m_setpoint = angle;
+      this.m_speed = speed;
     }
   }
 }
