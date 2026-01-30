@@ -39,33 +39,39 @@ public class FieldConstants {
   // Add a new value and automatically adds it to the auto chooser
   public static HashMap<String, Translation2d> AutoConstants() {
     HashMap<String, Translation2d> points = new HashMap<>();
-    points.put("Trench REn, ", new Translation2d(kStartingLineDistance, kTrenchWidth.div(2)));
+    points.put(
+        "Trench REn, ",
+        new Translation2d(kStartingLineDistance.plus(kBumpDepth.div(2)), kTrenchWidth.div(2)));
     points.put(
         "Trench REx, ",
-        new Translation2d(kStartingLineDistance.plus(kBumpDepth), kTrenchWidth.div(2)));
+        new Translation2d(kStartingLineDistance.plus(kBumpDepth.div(2)), kTrenchWidth.div(2)));
     points.put(
         "Trench LEn, ",
-        new Translation2d(kStartingLineDistance, kFieldWidth.minus(kTrenchWidth.div(2))));
+        new Translation2d(
+            kStartingLineDistance.plus(kBumpDepth.div(2)), kFieldWidth.minus(kTrenchWidth.div(2))));
     points.put(
         "Trench LEx, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth), kFieldWidth.minus(kTrenchWidth.div(2))));
+            kStartingLineDistance.plus(kBumpDepth.div(2)), kFieldWidth.minus(kTrenchWidth.div(2))));
     points.put(
         "Bump REn, ",
-        new Translation2d(kStartingLineDistance, kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
+        new Translation2d(
+            kStartingLineDistance.plus(kBumpDepth.div(2)),
+            kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
     points.put(
         "Bump REx, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth), kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
+            kStartingLineDistance.plus(kBumpDepth.div(2)),
+            kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
     points.put(
         "Bump LEn, ",
         new Translation2d(
-            kStartingLineDistance,
+            kStartingLineDistance.plus(kBumpDepth.div(2)),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
     points.put(
         "Bump LEx, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth),
+            kStartingLineDistance.plus(kBumpDepth.div(2)),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
 
     return points;

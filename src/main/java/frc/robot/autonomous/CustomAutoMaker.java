@@ -102,6 +102,20 @@ public class CustomAutoMaker {
                               SmartDashboard.getNumber("Auto/CustomX", 0),
                               SmartDashboard.getNumber("Auto/CustomY", 0));
                     }
+                    // if (translationToSet
+                    //         .getMeasureX()
+                    //         .compareTo(
+                    //             FieldConstants.kStartingLineDistance.plus(
+                    //                 FieldConstants.kBumpWidth))
+                    //     > 0) {
+                    //   //   Commands.sequence(
+                    //   //       AutoPathBuilder.getBuilder()
+                    //   //           .build(
+                    //   //               new Path(new TranslationTarget(130,
+                    //   // translationToSet.getY()))));
+                    //   translationToSet = new Translation2d(130, translationToSet.getY());
+                    // }
+
                     setPaths =
                         setPaths + setPaths(FieldConstants.AutoConstants(), translationToSet);
                     customAuto =
