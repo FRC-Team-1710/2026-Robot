@@ -14,37 +14,6 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Shooter {
-
-  public enum SHOOTER_STATE {
-    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(200), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0)),
-    PRESET_PASS(Milliseconds.of(20), RotationsPerSecond.of(100), Degrees.of(0)),
-    PRESET_SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0));
-
-    private final Time m_subsystemPeriodicFrequency;
-    private final AngularVelocity m_velocity;
-    private final Angle m_hoodAngle;
-
-    SHOOTER_STATE(Time subsystemPeriodicFrequency, AngularVelocity velocity, Angle hoodAngle) {
-      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.m_velocity = velocity;
-      this.m_hoodAngle = hoodAngle;
-    }
-
-    Time getSubsystemPeriodicFrequency() {
-      return this.m_subsystemPeriodicFrequency;
-    }
-
-    AngularVelocity getVelocity() {
-      return this.m_velocity;
-    }
-
-    Angle getHoodAngle() {
-      return this.m_hoodAngle;
-    }
-  }
-
   private SHOOTER_STATE m_state;
 
   private final ShooterIO m_io;
@@ -99,6 +68,37 @@ public class Shooter {
 
   public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
+  }
+  
+
+  public enum SHOOTER_STATE {
+    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(200), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0)),
+    PRESET_PASS(Milliseconds.of(20), RotationsPerSecond.of(100), Degrees.of(0)),
+    PRESET_SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0));
+
+    private final Time m_subsystemPeriodicFrequency;
+    private final AngularVelocity m_velocity;
+    private final Angle m_hoodAngle;
+
+    SHOOTER_STATE(Time subsystemPeriodicFrequency, AngularVelocity velocity, Angle hoodAngle) {
+      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
+      this.m_velocity = velocity;
+      this.m_hoodAngle = hoodAngle;
+    }
+
+    Time getSubsystemPeriodicFrequency() {
+      return this.m_subsystemPeriodicFrequency;
+    }
+
+    AngularVelocity getVelocity() {
+      return this.m_velocity;
+    }
+
+    Angle getHoodAngle() {
+      return this.m_hoodAngle;
+    }
   }
 
   public void setState(SHOOTER_STATE state) {
