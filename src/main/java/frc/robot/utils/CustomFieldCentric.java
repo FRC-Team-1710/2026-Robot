@@ -247,10 +247,10 @@ public class CustomFieldCentric implements SwerveRequest {
   /** Uses the pose to determine the max speed on the bump depending on its current position */
   private LinearVelocity getMaxSpeedForBump(Pose2d currentPose) {
     // If on same half as current alliance
-    return (((currentPose.getX() > FieldConstants.kFieldLength.div(2).in(Meters)
+    return ((currentPose.getX() > FieldConstants.kFieldLength.div(2).in(Meters)
                 && Alliance.redAlliance)
             || (currentPose.getX() < FieldConstants.kFieldLength.div(2).in(Meters)
-                && !Alliance.redAlliance)))
+                && !Alliance.redAlliance))
         // If in alliance zone
         ? (((currentPose.getX() < FieldConstants.kBumpDistanceFromDS.in(Meters))
                 || (currentPose.getX()
@@ -260,6 +260,14 @@ public class CustomFieldCentric implements SwerveRequest {
             ? DrivetrainAutomationConstants.BumpDetection.kBumpFast
             : DrivetrainAutomationConstants.BumpDetection.kBumpSlow)
         : DrivetrainAutomationConstants.BumpDetection.kBumpFast;
+  }
+
+  /** Uses the pose to determine if it's going towards the alliance zone */
+  public boolean isGoingToAllianceZone(Pose2d currentPose) {
+    return (currentPose.getX() > FieldConstants.kFieldLength.div(3).times(2).in(Meters)
+            && Alliance.redAlliance)
+        || (currentPose.getX() < FieldConstants.kFieldLength.div(3).in(Meters)
+            && !Alliance.redAlliance);
   }
 
   /**

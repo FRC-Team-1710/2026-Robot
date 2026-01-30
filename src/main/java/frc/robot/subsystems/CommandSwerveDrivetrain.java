@@ -330,6 +330,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
   }
 
+  public boolean isGoingTowardsAllianceZone() {
+    return fieldCentric.isGoingToAllianceZone(getPose());
+  }
+
   public Pose2d getPose() {
     return getState().Pose;
   }
