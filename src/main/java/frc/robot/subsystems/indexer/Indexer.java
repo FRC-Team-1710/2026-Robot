@@ -31,6 +31,8 @@ public class Indexer {
   public void setState(IndexStates state) {
     if (!currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
       timesConsumer.accept(Subsystems.Indexer, state.subsystemPeriodicFrequency);
+      // Don't delete!
+      periodic();
     }
     currentState = state;
   }

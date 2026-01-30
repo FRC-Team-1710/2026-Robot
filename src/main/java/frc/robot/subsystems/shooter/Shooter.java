@@ -107,6 +107,8 @@ public class Shooter {
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
       m_timesConsumer.accept(Subsystems.Shooter, state.getSubsystemPeriodicFrequency());
+      // Don't delete!
+      periodic();
     }
     this.m_state = state;
   }
