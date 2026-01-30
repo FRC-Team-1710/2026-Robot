@@ -16,12 +16,14 @@ public final class ShooterConstants {
   /** Proportional gain (corrects speed errors) */
   public static final double kP = 0.0;
 
+  // ==================== Current Limits ====================
+  public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
+  public static final int FLYWHEEL_STATOR_CURRENT_LIMIT = 80;
+
+  public static final int HOOD_SUPPLY_CURRENT_LIMIT = 20;
+
   // ==================== Motion Magic (Speed Limits) ====================
-
-  /** Maximum rate of change of the flywheel can reach (rotations per second) */
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 100.0;
-
-  /** How fast the flywheel can speed up (rotations per second²) */
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
   private ShooterConstants() {
