@@ -47,8 +47,8 @@ public class Shooter {
     this.m_io.update();
   }
 
-  public void setVelocity(AngularVelocity velocity) {
-    this.m_velocity = velocity;
+  public void setVelocity(AngularVelocity pVelocity) {
+    this.m_velocity = pVelocity;
   }
 
   public AngularVelocity getVelocity() {
@@ -59,8 +59,8 @@ public class Shooter {
     return this.m_velocity;
   }
 
-  public void setTargetHoodAngle(Angle angle) {
-    this.m_hoodAngle = angle;
+  public void setTargetHoodAngle(Angle pAngle) {
+    this.m_hoodAngle = pAngle;
   }
 
   public Angle getTargetHoodAngle() {
@@ -92,17 +92,16 @@ public class Shooter {
     }
   }
 
-  public void setState(SHOOTER_STATE state) {
+  public void setState(SHOOTER_STATE pState) {
     if (!this.m_state.m_subsystemPeriodicFrequency.isEquivalent(
-        state.m_subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Shooter, state.m_subsystemPeriodicFrequency);
+        pState.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
-    if (state == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
+    if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
       this.m_state = SHOOTER_STATE.PRESET_SCORE;
     } else {
-      this.m_state = state;
+      this.m_state = pState;
     }
-  }
 
   public SHOOTER_STATE getState() {
     return this.m_state;
