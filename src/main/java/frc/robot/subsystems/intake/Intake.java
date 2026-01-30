@@ -36,8 +36,6 @@ public class Intake {
   public void setState(IntakeStates state) {
     if (!currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
       timesConsumer.accept(Subsystems.Intake, state.subsystemPeriodicFrequency);
-      // Don't delete!
-      periodic();
     }
     currentState = state;
   }
