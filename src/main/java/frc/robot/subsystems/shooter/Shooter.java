@@ -9,6 +9,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
@@ -60,6 +61,10 @@ public class Shooter {
 
   public AngularVelocity getTargetVelocity() {
     return this.m_velocity;
+  }
+
+  public boolean isAtTargetVelocity() {
+    return this.getVelocity().isNear(getTargetVelocity(), ShooterConstants.TARGET_ERROR_RANGE);
   }
 
   public void setTargetHoodAngle(Angle angle) {

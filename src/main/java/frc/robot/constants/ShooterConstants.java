@@ -24,6 +24,9 @@ public final class ShooterConstants {
   /** How fast the flywheel can speed up (rotations per second²) */
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
+  /** Range of error for the "isAtTargetVelocity" function */
+  public static final double TARGET_ERROR_RANGE = 1;
+
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
