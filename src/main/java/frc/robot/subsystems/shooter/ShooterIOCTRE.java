@@ -30,21 +30,37 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
 
     // Flywheel settings
-    TalonFXConfiguration m_config = new TalonFXConfiguration();
+    TalonFXConfiguration FlywheelConfig = new TalonFXConfiguration();
 
-    m_config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    m_config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    FlywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    FlywheelConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    m_config.Slot0.kS = ShooterConstants.kS; // Static friction
-    m_config.Slot0.kV = ShooterConstants.kV; // Velocity feedforward
-    m_config.Slot0.kP = ShooterConstants.kP; // Proportional gain
+    FlywheelConfig.Slot0.kS = ShooterConstants.kS; // Static friction
+    FlywheelConfig.Slot0.kV = ShooterConstants.kV; // Velocity feedforward
+    FlywheelConfig.Slot0.kP = ShooterConstants.kP; // Proportional gain
 
-    m_config.MotionMagic.MotionMagicCruiseVelocity = ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
-    m_config.MotionMagic.MotionMagicAcceleration = ShooterConstants.MOTION_MAGIC_ACCELERATION;
+    FlywheelConfig.MotionMagic.MotionMagicCruiseVelocity =
+        ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
+    FlywheelConfig.MotionMagic.MotionMagicAcceleration = ShooterConstants.MOTION_MAGIC_ACCELERATION;
 
-    TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, m_config, 2);
+    FlywheelConfig.CurrentLimits.SupplyCurrentLimit =
+        ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
+    FlywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    TalonFXUtil.applyConfigWithRetries(this.m_flyWheelFollower, m_config, 2);
+    FlywheelConfig.CurrentLimits.StatorCurrentLimit =
+        ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
+    FlywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
+    TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, FlywheelConfig, 2);
+    TalonFXUtil.applyConfigWithRetries(this.m_flyWheelFollower, FlywheelConfig, 2);
+
+    // Hood Settings
+    TalonFXConfiguration HoodConfig = new TalonFXConfiguration();
+
+    HoodConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.HOOD_SUPPLY_CURRENT_LIMIT;
+    HoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    TalonFXUtil.applyConfigWithRetries(this.m_hood, HoodConfig, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
   }
