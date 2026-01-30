@@ -14,7 +14,7 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
   @Override
   public void update(EpilogueBackend backend, TalonFX talon) {
     backend.log("Id", talon.getDeviceID());
-    backend.log("ClosedLoopError", talon.getClosedLoopError().getValueAsDouble());
+    backend.log("ClosedLoopReference", talon.getClosedLoopReference().getValueAsDouble());
     backend.log("IsProLicensed", talon.getIsProLicensed().getValueAsDouble());
     backend.log("MotorVoltage", talon.getMotorVoltage().getValueAsDouble());
     backend.log("Velocity", talon.getVelocity().getValueAsDouble());
