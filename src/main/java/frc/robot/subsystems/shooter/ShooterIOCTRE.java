@@ -56,9 +56,9 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheelFollower.stopMotor();
   }
 
-  public void setTargetVelocity(AngularVelocity velocity) {
-    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(velocity));
-    this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(velocity));
+  public void setTargetVelocity(AngularVelocity pVelocity) {
+    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(pVelocity));
+    this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(pVelocity));
   }
 
   public AngularVelocity getVelocity() {
@@ -69,8 +69,8 @@ public class ShooterIOCTRE implements ShooterIO {
     return DegreesPerSecond.of(this.m_velocityManager.Velocity);
   }
 
-  public void setHoodAngle(Angle angle) {
-    this.m_hood.setPosition(angle);
+  public void setHoodAngle(Angle pAngle) {
+    this.m_hood.setPosition(pAngle);
   }
 
   public Angle getHoodAngle() {
