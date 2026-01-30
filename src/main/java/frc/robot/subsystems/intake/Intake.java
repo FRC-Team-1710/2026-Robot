@@ -34,7 +34,8 @@ public class Intake {
   }
 
   public void setState(IntakeStates state) {
-    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(state.m_subsystemPeriodicFrequency)) {
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        state.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Intake, state.m_subsystemPeriodicFrequency);
     }
     m_currentState = state;
