@@ -1,13 +1,11 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,15 +15,22 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 
 @Logged
+@SuppressWarnings("unused")
 public class Superstructure {
   private CommandXboxController driver;
   private CommandXboxController mech;
   @NotLogged private CommandSwerveDrivetrain drivetrain;
   @NotLogged private Intake intake;
+  @NotLogged private Shooter shooter;
+  @NotLogged private Indexer indexer;
 
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
@@ -36,11 +41,15 @@ public class Superstructure {
       CommandXboxController driver,
       CommandXboxController mech,
       CommandSwerveDrivetrain drivetrain,
-      Intake intake) {
+      Intake intake,
+      Shooter shooter,
+      Indexer indexer) {
     this.driver = driver;
     this.mech = mech;
     this.drivetrain = drivetrain;
     this.intake = intake;
+    this.shooter = shooter;
+    this.indexer = indexer;
   }
 
   public void periodic() {
@@ -136,56 +145,65 @@ public class Superstructure {
   private void idle() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
   }
 
   private void assist() {
-    drivetrain.setYTargetFromCenter(getAssistYTarget());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.Y_ASSIST);
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
   }
 
   private void shoot() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
   }
 
   private void score() {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
   }
 
   private void intake() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Intaking);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
   }
 
   private void scoreWhileIntaking() {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
   }
 
   private void shootWhileIntaking() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
   }
 
   private void climb() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Up);
-  }
-
-  private Distance getAssistYTarget() {
-    return drivetrain.getPose().getY() < FieldConstants.kFieldWidth.div(2).in(Meters)
-        ? (shouldAssistLeft
-            ? FieldConstants.kBumpCenterYFromFieldCenter
-            : FieldConstants.kTrenchCenterYFromFieldCenter)
-        : (shouldAssistLeft
-            ? FieldConstants.kTrenchCenterYFromFieldCenter
-            : FieldConstants.kBumpCenterYFromFieldCenter);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
   }
 
   private Rotation2d getRotationForScore() {

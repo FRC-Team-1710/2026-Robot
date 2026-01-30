@@ -21,6 +21,9 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -29,6 +32,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
+import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import java.util.HashMap;
 
 @Logged
@@ -43,32 +47,37 @@ public class RobotContainer {
   /* Create subsystems (uses simulated versions when running in simulation) */
   private final Intake intake;
   private final Shooter shooter;
+  private final Indexer indexer;
 
   private final Superstructure superstructure;
 
-  public RobotContainer() {
+  public RobotContainer(TimesConsumer consumer) {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
     AutoPathBuilder.setDrivetrainInstance(drivetrain);
 
     switch (Mode.currentMode) {
       case REAL:
-        intake = new Intake(new IntakeIOCTRE());
-        shooter = new Shooter(new ShooterIOCTRE());
+        intake = new Intake(new IntakeIOCTRE(), consumer);
+        shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        indexer = new Indexer(new IndexerIOCTRE(), consumer);
         break;
 
       case SIMULATION:
-        intake = new Intake(new IntakeIOSIM());
-        shooter = new Shooter(new ShooterIOSIM());
+        intake = new Intake(new IntakeIOSIM(), consumer);
+        shooter = new Shooter(new ShooterIOSIM(), consumer);
+        // TODO: Add IndexerIOSIM
+        indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
 
       default:
-        intake = new Intake(new IntakeIO() {});
-        shooter = new Shooter(new ShooterIO() {});
+        intake = new Intake(new IntakeIO() {}, consumer);
+        shooter = new Shooter(new ShooterIO() {}, consumer);
+        indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake);
+    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
 
     autoChooser = new AutosChooser(superstructure);
 
@@ -118,12 +127,41 @@ public class RobotContainer {
     return autoChooser.getAuto();
   }
 
-  public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {
-    HashMap<Subsystems, Pair<Runnable, Time>> map = new HashMap<>();
+  public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {
+    HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> map = new HashMap<>();
     map.put(
         Subsystems.Superstructure,
-        new Pair<Runnable, Time>(superstructure::periodic, Milliseconds.of(20)));
-    map.put(Subsystems.Drive, new Pair<Runnable, Time>(drivetrain::periodic, Milliseconds.of(20)));
+        new Pair<Runnable, Pair<Time, Time>>(
+            superstructure::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 1))));
+    map.put(
+        Subsystems.Intake,
+        new Pair<Runnable, Pair<Time, Time>>(
+            intake::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0))));
+    map.put(
+        Subsystems.Shooter,
+        new Pair<Runnable, Pair<Time, Time>>(
+            shooter::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0))));
+    map.put(
+        Subsystems.Indexer,
+        new Pair<Runnable, Pair<Time, Time>>(
+            indexer::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
+    map.put(
+        Subsystems.Drive,
+        new Pair<Runnable, Pair<Time, Time>>(
+            drivetrain::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 5))));
     return map;
   }
 }
