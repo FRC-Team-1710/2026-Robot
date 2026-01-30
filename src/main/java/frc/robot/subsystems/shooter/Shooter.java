@@ -43,7 +43,7 @@ public class Shooter {
     Angle getHoodAngle() {
       return this.m_hoodAngle;
     }
-  };
+  }
 
   private SHOOTER_STATE m_state;
 
@@ -55,7 +55,6 @@ public class Shooter {
   private Angle m_hoodAngle = Degrees.of(0);
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
-
     this.m_io = io;
     this.m_timesConsumer = consumer;
     this.m_state = SHOOTER_STATE.STOP;
