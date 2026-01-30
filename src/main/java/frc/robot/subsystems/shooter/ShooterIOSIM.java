@@ -44,8 +44,8 @@ public class ShooterIOSIM implements ShooterIO {
     this.m_velocity = DegreesPerSecond.of(0);
   }
 
-  public void setTargetVelocity(AngularVelocity velocity) {
-    this.m_velocity = velocity;
+  public void setTargetVelocity(AngularVelocity pVelocity) {
+    this.m_velocity = pVelocity;
   }
 
   public AngularVelocity getVelocity() {
@@ -56,8 +56,8 @@ public class ShooterIOSIM implements ShooterIO {
     return this.m_velocity;
   }
 
-  public void setHoodAngle(Angle angle) {
-    this.m_hoodAngle = angle;
+  public void setHoodAngle(Angle pAngle) {
+    this.m_hoodAngle = pAngle;
   }
 
   public Angle getHoodAngle() {
