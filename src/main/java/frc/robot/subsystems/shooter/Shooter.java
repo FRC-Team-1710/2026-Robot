@@ -69,7 +69,6 @@ public class Shooter {
   public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
   }
-  
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
