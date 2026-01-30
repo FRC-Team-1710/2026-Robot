@@ -16,7 +16,7 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
-import frc.robot.constants.MotorID;
+import frc.robot.constants.CanIdConstants;
 
 @Logged
 @SuppressWarnings("unused")
@@ -31,8 +31,8 @@ public class IntakeIOCTRE implements IntakeIO {
   private Angle angleSetpoint;
 
   public IntakeIOCTRE() {
-    intakeMotor = new TalonFX(MotorID.Intake.INTAKE_MOTOR);
-    deploymentMotor = new TalonFX(MotorID.Intake.DEPLOYMENT_MOTOR);
+    intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
+    deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR);
 
     request = new MotionMagicVoltage(0).withSlot(0).withEnableFOC(true);
 

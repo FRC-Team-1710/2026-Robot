@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -22,7 +21,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
@@ -38,6 +36,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
+import frc.robot.utils.SwerveTelemetry;
 import java.util.function.Supplier;
 
 /**
@@ -50,10 +49,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
-  private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
-  private AngularVelocity MaxAngularRate = RotationsPerSecond.of(2);
+  private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
-  private final CustomFieldCentric fieldCentric = new CustomFieldCentric();
+  private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
+  private AngularVelocity MaxAngularRate = TunerConstants.kMaxAngularRate;
+
+  private final CustomFieldCentric fieldCentric;
 
   private DriveStates currentState = DriveStates.DRIVER_CONTROLLED;
 
@@ -159,6 +160,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -180,6 +182,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -212,6 +215,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -252,6 +256,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                   MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
               .withDriveState(currentState));
     }
+
+    swerveTelemetry.currentSpeeds = getRobotSpeeds();
+    swerveTelemetry.desiredSpeeds = getTargetFieldSpeeds();
+    swerveTelemetry.currentStates = getModuleStates();
+    swerveTelemetry.desiredStates = getModuleTargets();
+    swerveTelemetry.rotation = getRotation();
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
@@ -379,14 +389,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     this.inputController = controller;
   }
 
-  /**
-   * Set the {@link DriveStates#Y_ASSIST} target relative to the center of the field (not side
-   * relative)
-   */
-  public void setYTargetFromCenter(Distance target) {
-    fieldCentric.withYTargetFromCenter(target);
-  }
-
   /** Set the {@link DriveStates#ROTATION_LOCK} target */
   public void setRotationTarget(Rotation2d target) {
     fieldCentric.withTargetRotation(target);
@@ -398,7 +400,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public enum DriveStates {
     DRIVER_CONTROLLED,
-    Y_ASSIST,
     ROTATION_LOCK,
   }
 }
