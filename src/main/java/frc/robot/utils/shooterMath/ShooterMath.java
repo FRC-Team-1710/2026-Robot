@@ -1,4 +1,4 @@
-package frc.robot.utils.ShooterMath;
+package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
