@@ -14,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -166,17 +167,18 @@ public class CustomFieldCentric implements SwerveRequest {
                     .times(DrivetrainAutomationConstants.kDriverTranslationOverrideMultiplier)
                     .plus(
                         MetersPerSecond.of(
-                            clamp(
+                            MathUtil.clamp(
                                 yAssistPID.calculate(
                                     parameters.currentPose.getY(), currentBumpLocation.getY()),
-                                maxBumpSpeed))),
+                                -maxBumpSpeed, maxBumpSpeed))),
                 angularVelocity
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
-                            clamp(
+                            MathUtil.clamp(
                                 rotationLockPID.calculate(currentRadians),
-                                DrivetrainAutomationConstants.kRotationPIDMax.in(
+                                -DrivetrainAutomationConstants.kRotationPIDMax.in(
+                                    RadiansPerSecond), DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
       case ROTATION_LOCK:
@@ -190,10 +192,11 @@ public class CustomFieldCentric implements SwerveRequest {
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
-                            clamp(
+                            MathUtil.clamp(
                                 rotationLockPID.calculate(
                                     parameters.currentPose.getRotation().getRadians()),
-                                DrivetrainAutomationConstants.kRotationPIDMax.in(
+                                -DrivetrainAutomationConstants.kRotationPIDMax.in(
+                                    RadiansPerSecond ),DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
       default:
@@ -202,11 +205,6 @@ public class CustomFieldCentric implements SwerveRequest {
     }
 
     return driveRequest.withSpeeds(wantedSpeeds).apply(parameters, modulesToApply);
-  }
-
-  /** Clamps value between -maxAbs and maxAbs */
-  private double clamp(double value, double maxAbs) {
-    return Math.min(Math.max(value, -maxAbs), maxAbs);
   }
 
   /**

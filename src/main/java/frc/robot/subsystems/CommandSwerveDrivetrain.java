@@ -253,7 +253,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withVelocityX(MaxSpeed.times(-scaledTranslationInputs.get(0, 0)))
               .withVelocityY(MaxSpeed.times(-scaledTranslationInputs.get(1, 0)))
               .withRotationalRate(
-                  MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
+                  MaxAngularRate.times(
+                      -rescaleRotation(
+                          inputController.getRightX()
+                              + (inputController.povLeft().getAsBoolean()
+                                  ? 1
+                                  : (inputController.povRight().getAsBoolean() ? -1 : 0)))))
               .withDriveState(currentState));
     }
 
@@ -271,7 +276,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public double rescaleRotation(double rotation) {
-    return Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation);
+    return MathUtil.clamp(Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation), -1, 1);
   }
 
   private void startSimThread() {
