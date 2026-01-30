@@ -102,6 +102,7 @@ public class Shooter {
     } else {
       this.m_state = pState;
     }
+  }
 
   public SHOOTER_STATE getState() {
     return this.m_state;
