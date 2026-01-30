@@ -170,15 +170,16 @@ public class CustomFieldCentric implements SwerveRequest {
                             MathUtil.clamp(
                                 yAssistPID.calculate(
                                     parameters.currentPose.getY(), currentBumpLocation.getY()),
-                                -maxBumpSpeed, maxBumpSpeed))),
+                                -maxBumpSpeed,
+                                maxBumpSpeed))),
                 angularVelocity
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
                             MathUtil.clamp(
                                 rotationLockPID.calculate(currentRadians),
-                                -DrivetrainAutomationConstants.kRotationPIDMax.in(
-                                    RadiansPerSecond), DrivetrainAutomationConstants.kRotationPIDMax.in(
+                                -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
+                                DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
       case ROTATION_LOCK:
@@ -195,8 +196,8 @@ public class CustomFieldCentric implements SwerveRequest {
                             MathUtil.clamp(
                                 rotationLockPID.calculate(
                                     parameters.currentPose.getRotation().getRadians()),
-                                -DrivetrainAutomationConstants.kRotationPIDMax.in(
-                                    RadiansPerSecond ),DrivetrainAutomationConstants.kRotationPIDMax.in(
+                                -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
+                                DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
       default:
