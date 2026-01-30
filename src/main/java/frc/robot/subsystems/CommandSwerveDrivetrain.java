@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -46,8 +45,6 @@ import java.util.function.Supplier;
  */
 @Logged
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-  public static final boolean kAutoBumpAlignment = false;
-
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -55,9 +52,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
-  private AngularVelocity MaxAngularRate = RotationsPerSecond.of(2);
+  private AngularVelocity MaxAngularRate = TunerConstants.kMaxAngularRate;
 
-  private final CustomFieldCentric fieldCentric = new CustomFieldCentric();
+  private final CustomFieldCentric fieldCentric;
 
   private DriveStates currentState = DriveStates.DRIVER_CONTROLLED;
 
@@ -163,6 +160,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -184,6 +182,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -216,6 +215,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
