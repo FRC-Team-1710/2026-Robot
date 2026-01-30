@@ -14,7 +14,7 @@ public interface ShooterIO {
 
   public default void stop() {}
 
-  public default void setTargetVelocity(AngularVelocity velocity) {}
+  public default void setTargetVelocity(AngularVelocity pVelocity) {}
 
   public default AngularVelocity getVelocity() {
     return null;
@@ -24,7 +24,7 @@ public interface ShooterIO {
     return null;
   }
 
-  public default void setHoodAngle(Angle angle) {}
+  public default void setHoodAngle(Angle pAngle) {}
 
   public default Angle getHoodAngle() {
     return null;
