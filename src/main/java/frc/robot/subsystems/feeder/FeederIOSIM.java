@@ -5,19 +5,19 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.utils.MechanismUtil.FlywheelMechanism;
+import frc.robot.utils.MechanismUtil.WheelMechanism;
 
 @Logged
 public class FeederIOSIM implements FeederIO {
 
   private AngularVelocity m_velocity;
 
-  private final FlywheelMechanism m_feederMotorMechanism;
-  private final FlywheelMechanism m_feederMotorFollowerMechanism;
+  private final WheelMechanism m_feederMotorMechanism;
+  private final WheelMechanism m_feederMotorFollowerMechanism;
 
   public FeederIOSIM() {
-    this.m_feederMotorMechanism = new FlywheelMechanism("Feeder L", 0.05, -0.15);
-    this.m_feederMotorFollowerMechanism = new FlywheelMechanism("Feeder R", 0.05, 0.15);
+    this.m_feederMotorMechanism = new WheelMechanism("Feeder L", 0.05, 0.0, -0.15);
+    this.m_feederMotorFollowerMechanism = new WheelMechanism("Feeder R", 0.05, 0.0, 0.15);
   }
 
   public void update() {
