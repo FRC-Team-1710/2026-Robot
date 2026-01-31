@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -12,6 +14,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
@@ -37,6 +41,9 @@ public class IntakeIOSIM implements IntakeIO {
 
     intakeVisualSim =
         new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
+
+    SmartDashboard.putNumber("Intake/JamTest/Velocity", 0);
+    SmartDashboard.putNumber("Intake/JamTest/Current", 0);
   }
 
   public void setAngle(Angle angle) {
@@ -55,5 +62,13 @@ public class IntakeIOSIM implements IntakeIO {
   public void setIntakeMotor(double speed) {
     intakeVisualSim.updateRoller(speed * 20); // updates roller visuals
     Robot.telemetry().log("RollerSpeed", speed);
+  }
+
+  public AngularVelocity getRollerVelocity() {
+    return RotationsPerSecond.of(SmartDashboard.getNumber("Intake/JamTest/Velocity", 0));
+  }
+
+  public Current getRollerCurrent() {
+    return Amps.of(SmartDashboard.getNumber("Intake/JamTest/Current", 0));
   }
 }
