@@ -65,7 +65,12 @@ public class Shooter {
 
   public boolean isAtTargetVelocity() {
     return this.getVelocity()
-        .isNear(getTargetVelocity(), ShooterConstants.TARGET_ERROR_RANGE.magnitude());
+        .isNear(getTargetVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE);
+  }
+
+  public boolean isHoodAtTargetAngle() {
+    return this.getHoodAngle()
+        .isNear(getTargetHoodAngle(), ShooterConstants.HOOD_TARGET_ERROR_RANGE);
   }
 
   public void setTargetHoodAngle(Angle pAngle) {
@@ -74,6 +79,10 @@ public class Shooter {
 
   public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
+  }
+
+  public Angle getHoodAngle() {
+    return this.m_io.getHoodAngle();
   }
 
   public enum SHOOTER_STATE {
