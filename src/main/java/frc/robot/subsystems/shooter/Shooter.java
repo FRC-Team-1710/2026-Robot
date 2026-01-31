@@ -64,7 +64,8 @@ public class Shooter {
   }
 
   public boolean isAtTargetVelocity() {
-    return this.getVelocity().isNear(getTargetVelocity(), ShooterConstants.TARGET_ERROR_RANGE);
+    return this.getVelocity()
+        .isNear(getTargetVelocity(), ShooterConstants.TARGET_ERROR_RANGE.magnitude());
   }
 
   public void setTargetHoodAngle(Angle angle) {
