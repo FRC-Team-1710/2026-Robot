@@ -92,16 +92,6 @@ public class RobotContainer {
                 () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
 
     driver
-        .povRight()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistRight))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
-
-    driver
-        .povLeft()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistLeft))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
-
-    driver
         .rightTrigger()
         .and(driver.leftTrigger().negate())
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Shoot));

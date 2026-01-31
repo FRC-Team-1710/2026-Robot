@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -24,6 +23,9 @@ public class Shooter {
   private AngularVelocity m_velocity = RotationsPerSecond.of(0);
   private Angle m_hoodAngle = Degrees.of(0);
 
+  private boolean m_isGoingTowardsAllianceZone = false;
+  private boolean m_didIntake = false;
+
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
@@ -38,14 +40,9 @@ public class Shooter {
         break;
 
       default:
-        this.m_io.setTargetVelocity(this.m_state.getVelocity());
-        this.m_io.setHoodAngle(this.m_state.getHoodAngle());
+        this.m_io.setTargetVelocity(this.m_state.m_velocity);
+        this.m_io.setHoodAngle(this.m_state.m_hoodAngle);
         break;
-    }
-
-    // Stop motor if velocity is 0
-    if (this.getTargetVelocity().in(DegreesPerSecond) == 0) {
-      this.m_io.stop();
     }
 
     this.m_io.update();
@@ -84,13 +81,20 @@ public class Shooter {
   public Angle getHoodAngle() {
     return this.m_io.getHoodAngle();
   }
+  
+  public void setGoingTowardsAllianceZone(boolean isGoingTowardsAllianceZone) {
+    this.m_isGoingTowardsAllianceZone = isGoingTowardsAllianceZone;
+  }
+
+  public void setDidIntake(boolean didIntake) {
+    this.m_didIntake = didIntake;
+  }
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(200), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0)),
-    PRESET_PASS(Milliseconds.of(20), RotationsPerSecond.of(100), Degrees.of(0)),
-    PRESET_SHOOT(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0));
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(250), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(750), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -101,27 +105,18 @@ public class Shooter {
       this.m_velocity = velocity;
       this.m_hoodAngle = hoodAngle;
     }
-
-    Time getSubsystemPeriodicFrequency() {
-      return this.m_subsystemPeriodicFrequency;
-    }
-
-    AngularVelocity getVelocity() {
-      return this.m_velocity;
-    }
-
-    Angle getHoodAngle() {
-      return this.m_hoodAngle;
-    }
   }
 
   public void setState(SHOOTER_STATE pState) {
-    if (!this.m_state
-        .getSubsystemPeriodicFrequency()
-        .isEquivalent(pState.getSubsystemPeriodicFrequency())) {
-      m_timesConsumer.accept(Subsystems.Shooter, pState.getSubsystemPeriodicFrequency());
+    if (!this.m_state.m_subsystemPeriodicFrequency.isEquivalent(
+        pState.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
-    this.m_state = pState;
+    if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
+      this.m_state = SHOOTER_STATE.PRESET_SCORE;
+    } else {
+      this.m_state = pState;
+    }
   }
 
   public SHOOTER_STATE getState() {
