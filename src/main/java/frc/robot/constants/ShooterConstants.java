@@ -4,6 +4,12 @@
 
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+
 public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
@@ -25,6 +31,11 @@ public final class ShooterConstants {
   // ==================== Motion Magic (Speed Limits) ====================
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 100.0;
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
+
+  /** Range of error for the "isAtTargetVelocity" function */
+  public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);
+
+  public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
 
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");

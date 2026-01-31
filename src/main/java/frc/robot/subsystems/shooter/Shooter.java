@@ -8,6 +8,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
@@ -59,12 +60,26 @@ public class Shooter {
     return this.m_velocity;
   }
 
+  public boolean isAtTargetVelocity() {
+    return this.getVelocity()
+        .isNear(getTargetVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE);
+  }
+
+  public boolean isHoodAtTargetAngle() {
+    return this.getHoodAngle()
+        .isNear(getTargetHoodAngle(), ShooterConstants.HOOD_TARGET_ERROR_RANGE);
+  }
+
   public void setTargetHoodAngle(Angle pAngle) {
     this.m_hoodAngle = pAngle;
   }
 
   public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
+  }
+
+  public Angle getHoodAngle() {
+    return this.m_io.getHoodAngle();
   }
 
   public void setGoingTowardsAllianceZone(boolean isGoingTowardsAllianceZone) {
