@@ -24,6 +24,7 @@ import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
+import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -66,8 +67,7 @@ public class RobotContainer {
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM(), consumer);
         shooter = new Shooter(new ShooterIOSIM(), consumer);
-        // TODO: Add IndexerIOSIM
-        indexer = new Indexer(new IndexerIO() {}, consumer);
+        indexer = new Indexer(new IndexerIOSIM(), consumer);
         break;
 
       default:
