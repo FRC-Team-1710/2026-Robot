@@ -1,11 +1,34 @@
 package frc.robot.subsystems.feeder;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.utils.MechanismUtil.FlywheelMechanism;
 
 @Logged
 public class FeederIOSIM implements FeederIO {
 
-  public FeederIOSIM() {}
+  private AngularVelocity m_velocity;
 
-  public void update() {}
+  private final FlywheelMechanism m_feederMotorMechanism;
+  private final FlywheelMechanism m_feederMotorFollowerMechanism;
+
+  public FeederIOSIM() {
+    this.m_feederMotorMechanism = new FlywheelMechanism("Feeder L", 0.05, -0.15);
+    this.m_feederMotorFollowerMechanism = new FlywheelMechanism("Feeder R", 0.05, 0.15);
+  }
+
+  public void update() {
+    this.m_feederMotorMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
+    this.m_feederMotorFollowerMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
+
+    SmartDashboard.putData("Feeder 1", this.m_feederMotorMechanism.getMechanism());
+    SmartDashboard.putData("Feeder 2", this.m_feederMotorFollowerMechanism.getMechanism());
+  }
+
+  public void setVelocity(AngularVelocity pVelocity) {
+    this.m_velocity = pVelocity;
+  }
 }
