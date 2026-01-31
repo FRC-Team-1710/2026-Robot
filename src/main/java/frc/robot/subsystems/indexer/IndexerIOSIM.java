@@ -4,31 +4,31 @@
 
 package frc.robot.subsystems.indexer;
 
-
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
+import frc.robot.utils.MechanismUtil.IndexerVisualSim;
 
-public class IndexerIOSIM extends IndexerIOCTRE {
-   
-   private DCMotorSim sim = 
-   new DCMotorSim(
-    //fill in kA value later when doing PID stuff
-    LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX44(2), 0, 0),
-   DCMotor.getKrakenX44(1));
-   
-   private double appliedVolts = 0.0;
+@Logged
+public class IndexerIOSIM implements IndexerIO {
 
-//Tells the sim to update every 0.02 seconds with data of the mtors position and velocity.
-private void updateInputs(IndexerIOInputs inputs) {
-   sim.setInputVoltage(appliedVolts);
-   sim.update(0.02);
-   inputs.position = sim.getAngularPositionRad();
-   inputs.velocity = sim.getAngularVelocityRadPerSec();
-   inputs.appliedVolts = appliedVolts;
-} 
+  private final IndexerVisualSim IndexerVisualSim;
+  private final DCMotor gearbox;
+  private double speed = 0.0;
+
+  public IndexerIOSIM() {
+    gearbox = DCMotor.getKrakenX60(1);
+    this.IndexerVisualSim = new IndexerVisualSim("Indexer", 0.125);
+  }
+
+  public void setSpeed(double speed) {
+    this.speed = speed;
+  }
+
+  public void updateVisual() {
+    IndexerVisualSim.updateIndexer(speed * 20);
+    Robot.telemetry().log("Indexer Speed", speed);
+    SmartDashboard.putData("Indexer Visual", this.IndexerVisualSim.getMechanism());
+  }
 }
-
-@Override
-private
-

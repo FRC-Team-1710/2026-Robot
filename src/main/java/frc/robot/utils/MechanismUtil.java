@@ -538,13 +538,13 @@ public class MechanismUtil {
     // ==================== Visualization Constants ====================
 
     /** Width of the canvas for the mechanism visualization in pixels */
-    private static final double CANVAS_WIDTH = 400.0;
+    private static final double CANVAS_WIDTH = 1.0;
 
     /** Height of the canvas for the mechanism visualization in pixels */
-    private static final double CANVAS_HEIGHT = 400.0;
+    private static final double CANVAS_HEIGHT = 1.0;
 
     /** X position of the mechanism root on the canvas */
-    private static final double ROOT_X = 200.0;
+    private static final double ROOT_X = 0.5;
 
     /** Y position of the mechanism root on the canvas */
     private static final double ROOT_Y = 0.5;

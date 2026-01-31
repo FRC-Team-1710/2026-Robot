@@ -4,12 +4,13 @@
 
 package frc.robot.subsystems.indexer;
 
+import edu.wpi.first.epilogue.Logged;
+
+@Logged
 public interface IndexerIO {
   public default void setIndexMotor(double speed) {}
 
-  public final class IndexerIOInputs {
-    public double position = 0.0;
-    public double velocity = 0.0;
-    public double appliedVolts = 0.0;
-  }
+  public default void updateVisual() {}
+
+  public default void setSpeed(double speed) {}
 }
