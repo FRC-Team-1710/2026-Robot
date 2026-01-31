@@ -4,6 +4,10 @@
 
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Degrees;
+
+import edu.wpi.first.units.measure.Angle;
+
 public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
@@ -27,7 +31,7 @@ public final class ShooterConstants {
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
   /** Range of error for the "isAtTargetVelocity" function */
-  public static final double TARGET_ERROR_RANGE = 1;
+  public static final Angle TARGET_ERROR_RANGE = Degrees.of(0);
 
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
