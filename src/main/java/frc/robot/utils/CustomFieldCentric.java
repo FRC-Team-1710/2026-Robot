@@ -14,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -166,16 +167,18 @@ public class CustomFieldCentric implements SwerveRequest {
                     .times(DrivetrainAutomationConstants.kDriverTranslationOverrideMultiplier)
                     .plus(
                         MetersPerSecond.of(
-                            clamp(
+                            MathUtil.clamp(
                                 yAssistPID.calculate(
                                     parameters.currentPose.getY(), currentBumpLocation.getY()),
+                                -maxBumpSpeed,
                                 maxBumpSpeed))),
                 angularVelocity
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
-                            clamp(
+                            MathUtil.clamp(
                                 rotationLockPID.calculate(currentRadians),
+                                -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
                                 DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
@@ -190,9 +193,10 @@ public class CustomFieldCentric implements SwerveRequest {
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
-                            clamp(
+                            MathUtil.clamp(
                                 rotationLockPID.calculate(
                                     parameters.currentPose.getRotation().getRadians()),
+                                -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
                                 DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
@@ -202,11 +206,6 @@ public class CustomFieldCentric implements SwerveRequest {
     }
 
     return driveRequest.withSpeeds(wantedSpeeds).apply(parameters, modulesToApply);
-  }
-
-  /** Clamps value between -maxAbs and maxAbs */
-  private double clamp(double value, double maxAbs) {
-    return Math.min(Math.max(value, -maxAbs), maxAbs);
   }
 
   /**
@@ -248,10 +247,10 @@ public class CustomFieldCentric implements SwerveRequest {
   /** Uses the pose to determine the max speed on the bump depending on its current position */
   private LinearVelocity getMaxSpeedForBump(Pose2d currentPose) {
     // If on same half as current alliance
-    return (((currentPose.getX() > FieldConstants.kFieldLength.div(2).in(Meters)
+    return ((currentPose.getX() > FieldConstants.kFieldLength.div(2).in(Meters)
                 && Alliance.redAlliance)
             || (currentPose.getX() < FieldConstants.kFieldLength.div(2).in(Meters)
-                && !Alliance.redAlliance)))
+                && !Alliance.redAlliance))
         // If in alliance zone
         ? (((currentPose.getX() < FieldConstants.kBumpDistanceFromDS.in(Meters))
                 || (currentPose.getX()
@@ -261,6 +260,14 @@ public class CustomFieldCentric implements SwerveRequest {
             ? DrivetrainAutomationConstants.BumpDetection.kBumpFast
             : DrivetrainAutomationConstants.BumpDetection.kBumpSlow)
         : DrivetrainAutomationConstants.BumpDetection.kBumpFast;
+  }
+
+  /** Uses the pose to determine if it's going towards the alliance zone */
+  public boolean isGoingToAllianceZone(Pose2d currentPose) {
+    return (currentPose.getX() > FieldConstants.kFieldLength.div(3).times(2).in(Meters)
+            && Alliance.redAlliance)
+        || (currentPose.getX() < FieldConstants.kFieldLength.div(3).in(Meters)
+            && !Alliance.redAlliance);
   }
 
   /**
