@@ -51,8 +51,8 @@ public class Shooter {
     this.m_io.update();
   }
 
-  public void setVelocity(AngularVelocity velocity) {
-    this.m_velocity = velocity;
+  public void setVelocity(AngularVelocity pVelocity) {
+    this.m_velocity = pVelocity;
   }
 
   public AngularVelocity getVelocity() {
@@ -67,8 +67,8 @@ public class Shooter {
     return this.getVelocity().isNear(getTargetVelocity(), ShooterConstants.TARGET_ERROR_RANGE);
   }
 
-  public void setTargetHoodAngle(Angle angle) {
-    this.m_hoodAngle = angle;
+  public void setTargetHoodAngle(Angle pAngle) {
+    this.m_hoodAngle = pAngle;
   }
 
   public Angle getTargetHoodAngle() {
@@ -105,13 +105,13 @@ public class Shooter {
     }
   }
 
-  public void setState(SHOOTER_STATE state) {
+  public void setState(SHOOTER_STATE pState) {
     if (!this.m_state
         .getSubsystemPeriodicFrequency()
-        .isEquivalent(state.getSubsystemPeriodicFrequency())) {
-      m_timesConsumer.accept(Subsystems.Shooter, state.getSubsystemPeriodicFrequency());
+        .isEquivalent(pState.getSubsystemPeriodicFrequency())) {
+      m_timesConsumer.accept(Subsystems.Shooter, pState.getSubsystemPeriodicFrequency());
     }
-    this.m_state = state;
+    this.m_state = pState;
   }
 
   public SHOOTER_STATE getState() {
