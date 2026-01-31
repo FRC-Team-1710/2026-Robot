@@ -150,86 +150,51 @@ public class MechanismUtil {
 
   public static class WheelMechanism {
     // ==================== Visualization Constants ====================
-    private static final double CANVAS_WIDTH = 1.0;
-    private static final double CANVAS_HEIGHT = 1.0;
-
     private static final double SPOKE_WIDTH = 2.0;
     private static final int NUM_SPOKES = 16;
 
-    /** Color of flywheel when not spinning or slow */
     private static final Color8Bit IDLE_COLOR = new Color8Bit(Color.kRed);
-
-    /** Color of flywheel when spinning at target speed */
     private static final Color8Bit ACTIVE_COLOR = new Color8Bit(Color.kGreen);
 
     // ==================== Visualization Components ====================
+    private final Mechanism2d m_mech;
 
-    /** 2D mechanism visualization */
-    private final Mechanism2d mech;
+    private final MechanismLigament2d[] m_spokes;
 
-    /** Visual representation of the flywheel spokes that rotate with simulation */
-    private final MechanismLigament2d[] spokes;
-
-    /** Current rotation angle for visual animation in degrees */
-    private double visualAngleDeg = 0.0;
+    private double m_visualAngleDeg = 0.0;
 
     public WheelMechanism(String name, double pRadius, double pX, double pY) {
-      // Create the 2D mechanism visualization canvas
-      mech = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
+      this.m_mech = new Mechanism2d(1, 1);
 
       // Half of the robots width
-      MechanismRoot2d root = mech.getRoot(name + "Root", pX + 0.5, pY);
+      MechanismRoot2d root = this.m_mech.getRoot(name + "Root", pX + 0.5, pY);
 
-      // Build the visual representation: multiple spokes radiating from center
-      spokes = new MechanismLigament2d[NUM_SPOKES];
+      this.m_spokes = new MechanismLigament2d[NUM_SPOKES];
       for (int i = 0; i < NUM_SPOKES; i++) {
-        // Calculate evenly spaced angles for spokes (360° / NUM_SPOKES)
         double spokeAngle = (360.0 / NUM_SPOKES) * i;
 
-        // Create spoke at calculated angle
-        spokes[i] =
+        this.m_spokes[i] =
             root.append(
                 new MechanismLigament2d("Spoke" + i, pRadius, spokeAngle, SPOKE_WIDTH, IDLE_COLOR));
       }
     }
 
-    /**
-     * Gets the Mechanism2d object for publishing to SmartDashboard.
-     *
-     * @return The Mechanism2d visualization
-     */
     public Mechanism2d getMechanism() {
-      return mech;
+      return this.m_mech;
     }
 
-    /**
-     * Updates the visual representation of the flywheel.
-     *
-     * <p>Rotates the spokes based on current velocity and changes color based on whether the
-     * flywheel is at its target speed.
-     *
-     * @param velocityRadPerSec The current angular velocity in radians per second
-     * @param dt The time step in seconds
-     * @param atTarget Whether the flywheel is at its target speed
-     */
     public void update(double velocityRadPerSec, double dt, boolean atTarget) {
-      // Update visual rotation angle (accumulate over time)
-      // Calculate angle change this cycle in radians, then convert to degrees
       double angleChangeRad = velocityRadPerSec * dt;
-      visualAngleDeg += Units.radiansToDegrees(angleChangeRad);
+      this.m_visualAngleDeg += Units.radiansToDegrees(angleChangeRad);
 
-      // Keep angle in 0-360 range to prevent overflow
-      visualAngleDeg %= 360.0;
+      this.m_visualAngleDeg %= 360.0;
 
-      // Determine color based on whether at target speed (green when ready, red when
-      // not)
       Color8Bit currentColor = atTarget ? ACTIVE_COLOR : IDLE_COLOR;
 
-      // Update each spoke's angle and color
       for (int i = 0; i < NUM_SPOKES; i++) {
-        double spokeAngle = visualAngleDeg + ((360.0 / NUM_SPOKES) * i);
-        spokes[i].setAngle(spokeAngle);
-        spokes[i].setColor(currentColor);
+        double spokeAngle = this.m_visualAngleDeg + ((360.0 / NUM_SPOKES) * i);
+        this.m_spokes[i].setAngle(spokeAngle);
+        this.m_spokes[i].setColor(currentColor);
       }
     }
   }
