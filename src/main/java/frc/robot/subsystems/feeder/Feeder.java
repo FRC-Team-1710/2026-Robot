@@ -11,10 +11,11 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 @Logged
 public class Feeder {
   private FEEDER_STATE m_state;
-
   private final FeederIO m_io;
 
   private final TimesConsumer m_timesConsumer;
+
+  private AngularVelocity m_velocity;
 
   public Feeder(FeederIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -25,7 +26,10 @@ public class Feeder {
   public void periodic() {
     switch (this.m_state) {
       default:
+        this.m_velocity = this.m_state.getVelocity();
     }
+
+    this.m_io.setVelocity(this.m_velocity);
 
     this.m_io.update();
   }
@@ -57,7 +61,7 @@ public class Feeder {
     if (!this.m_state
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
-      m_timesConsumer.accept(Subsystems.Shooter, state.getSubsystemPeriodicFrequency());
+      m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     */
     this.m_state = state;
