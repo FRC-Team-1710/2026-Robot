@@ -36,42 +36,30 @@ public class FieldConstants {
 
   public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
 
+  public static final Distance kRobotLength = Inches.of(46); // TODO: check measurement
+
   // Add a new value and automatically adds it to the auto chooser
   public static HashMap<String, Translation2d> AutoConstants() {
     HashMap<String, Translation2d> points = new HashMap<>();
     points.put(
-        "Trench REn, ",
-        new Translation2d(kStartingLineDistance.plus(kBumpDepth.div(2)), kTrenchWidth.div(2)));
-    points.put(
-        "Trench REx, ",
-        new Translation2d(kStartingLineDistance.plus(kBumpDepth.div(2)), kTrenchWidth.div(2)));
-    points.put(
-        "Trench LEn, ",
+        " B Bump REn, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth.div(2)), kFieldWidth.minus(kTrenchWidth.div(2))));
-    points.put(
-        "Trench LEx, ",
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth.div(2)), kFieldWidth.minus(kTrenchWidth.div(2))));
-    points.put(
-        "Bump REn, ",
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth.div(2)),
+            kStartingLineDistance.minus(kBumpDepth.div(2)),
             kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
     points.put(
-        "Bump REx, ",
+        "B Bump REx, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth.div(2)),
+            kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
             kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
     points.put(
-        "Bump LEn, ",
+        "B Bump LEn, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth.div(2)),
+            kStartingLineDistance.minus(kBumpDepth.div(2)),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
     points.put(
-        "Bump LEx, ",
+        "B Bump LEx, ",
         new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth.div(2)),
+            kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
 
     return points;

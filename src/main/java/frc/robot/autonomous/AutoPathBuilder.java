@@ -25,7 +25,11 @@ public class AutoPathBuilder {
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
                 new PIDController(2.0, 0.0, 0.0) // Cross-track PID
                 )
-            .withShouldFlip(() -> Alliance.redAlliance); // Auto-flip for red alliance
+            .withShouldFlip(
+                () ->
+                    Alliance
+                        .redAlliance); // Auto-flip for red alliance during auto, meaning that the
+    // field is now identical to blue alliance for auto
     // .withPoseReset(drivetrain::resetPose); // Reset odometry at path start
   }
 

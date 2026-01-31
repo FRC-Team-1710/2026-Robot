@@ -34,8 +34,6 @@ public class CustomAutoMaker {
 
   public String setPaths(HashMap<String, Translation2d> points, Translation2d current) {
     for (Entry<String, Translation2d> entry : points.entrySet()) {
-      System.out.println(entry.getValue());
-      System.out.println(current);
       if (entry.getValue().equals(current)) {
         return entry.getKey();
       }
@@ -102,20 +100,6 @@ public class CustomAutoMaker {
                               SmartDashboard.getNumber("Auto/CustomX", 0),
                               SmartDashboard.getNumber("Auto/CustomY", 0));
                     }
-                    // if (translationToSet
-                    //         .getMeasureX()
-                    //         .compareTo(
-                    //             FieldConstants.kStartingLineDistance.plus(
-                    //                 FieldConstants.kBumpWidth))
-                    //     > 0) {
-                    //   //   Commands.sequence(
-                    //   //       AutoPathBuilder.getBuilder()
-                    //   //           .build(
-                    //   //               new Path(new TranslationTarget(130,
-                    //   // translationToSet.getY()))));
-                    //   translationToSet = new Translation2d(130, translationToSet.getY());
-                    // }
-
                     setPaths =
                         setPaths + setPaths(FieldConstants.AutoConstants(), translationToSet);
                     customAuto =
