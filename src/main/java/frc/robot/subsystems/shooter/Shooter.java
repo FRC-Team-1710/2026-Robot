@@ -81,7 +81,7 @@ public class Shooter {
   public Angle getHoodAngle() {
     return this.m_io.getHoodAngle();
   }
-  
+
   public void setGoingTowardsAllianceZone(boolean isGoingTowardsAllianceZone) {
     this.m_isGoingTowardsAllianceZone = isGoingTowardsAllianceZone;
   }
