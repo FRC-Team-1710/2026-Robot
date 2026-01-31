@@ -148,32 +148,12 @@ public class MechanismUtil {
     }
   }
 
-  /**
-   * Helper class for creating and updating a flywheel mechanism visualization.
-   *
-   * <p>This class encapsulates the Mechanism2d visualization for a flywheel with rotating spokes.
-   * It provides a simple interface for updating the flywheel's rotation based on its velocity and
-   * changing color based on whether it's at target speed.
-   */
-  public static class FlywheelMechanism {
+  public static class WheelMechanism {
     // ==================== Visualization Constants ====================
+    private static final double CANVAS_WIDTH = 1.0;
+    private static final double CANVAS_HEIGHT = 1.0;
 
-    /** Width of the canvas for the mechanism visualization in pixels */
-    private static final double CANVAS_WIDTH = 400.0;
-
-    /** Height of the canvas for the mechanism visualization in pixels */
-    private static final double CANVAS_HEIGHT = 400.0;
-
-    /** X position of the mechanism root on the canvas */
-    private static final double ROOT_X = 200.0;
-
-    /** Y position of the mechanism root on the canvas */
-    private static final double ROOT_Y = 0.5;
-
-    /** Width of each spoke in the flywheel visualization in pixels */
     private static final double SPOKE_WIDTH = 2.0;
-
-    /** Number of spokes in the flywheel visualization */
     private static final int NUM_SPOKES = 16;
 
     /** Color of flywheel when not spinning or slow */
@@ -193,16 +173,12 @@ public class MechanismUtil {
     /** Current rotation angle for visual animation in degrees */
     private double visualAngleDeg = 0.0;
 
-    /**
-     * Constructs a new FlywheelMechanism visualization.
-     *
-     * @param name The name to use for the mechanism visualization
-     * @param flywheelRadius The visual radius of the flywheel in pixels
-     */
-    public FlywheelMechanism(String name, double flywheelRadius, double offset) {
+    public WheelMechanism(String name, double pRadius, double pX, double pY) {
       // Create the 2D mechanism visualization canvas
       mech = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
-      MechanismRoot2d root = mech.getRoot(name + "Root", ROOT_X, ROOT_Y + offset);
+
+      // Half of the robots width
+      MechanismRoot2d root = mech.getRoot(name + "Root", pX + 0.5, pY);
 
       // Build the visual representation: multiple spokes radiating from center
       spokes = new MechanismLigament2d[NUM_SPOKES];
@@ -213,8 +189,7 @@ public class MechanismUtil {
         // Create spoke at calculated angle
         spokes[i] =
             root.append(
-                new MechanismLigament2d(
-                    "Spoke" + i, flywheelRadius, spokeAngle, SPOKE_WIDTH, IDLE_COLOR));
+                new MechanismLigament2d("Spoke" + i, pRadius, spokeAngle, SPOKE_WIDTH, IDLE_COLOR));
       }
     }
 
