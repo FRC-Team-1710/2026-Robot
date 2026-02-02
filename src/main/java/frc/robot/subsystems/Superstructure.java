@@ -221,12 +221,16 @@ public class Superstructure {
 
   /** The wanted states of superstructure */
   public enum WantedStates {
+    // DO NOT RENAME (unless AutosChooser is updated as well)
     Default(),
     Shoot(),
     Intake(),
     IntakeAndShoot(),
     Climb(),
     DefaultAuto(),
+    ShootAuto(),
+    IntakeAuto(),
+    ClimbAuto(),
   }
 
   /** The current states of superstructure */
