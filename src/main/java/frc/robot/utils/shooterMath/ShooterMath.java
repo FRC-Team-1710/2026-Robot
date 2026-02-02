@@ -2,6 +2,7 @@ package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
@@ -26,9 +27,9 @@ public class ShooterMath {
   private static final Translation2d kHUB_CENTER_BLUE = FieldConstants.kHubCenterBlue;
 
   // RED ALLIANCE
-  private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterBlue;
+  private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterRed;
 
-  private static final boolean kBlueAlliance = !Alliance.redAlliance;
+  private static boolean kBlueAlliance = true;
 
   // ===================== Class Variables =====================
   /* Input variables */
@@ -107,5 +108,13 @@ public class ShooterMath {
   */
   public static void input(Pose3d robotPose) {
     m_robotPose = robotPose;
+  }
+
+  public static boolean getAlliance() {
+    return kBlueAlliance;
+  }
+
+  public static void setAlliance(boolean blueAlliance) {
+    kBlueAlliance = blueAlliance;
   }
 }
