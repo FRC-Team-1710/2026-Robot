@@ -4,12 +4,16 @@
 
 package frc.robot.autonomous;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
+import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import java.util.HashMap;
 
@@ -18,20 +22,35 @@ public class AutosChooser {
   private final HashMap<Auto, Command> autoCommands;
   private final SendableChooser<Auto> autoChooser;
 
-  private final CustomAutoMaker customAutoMaker;
+  private final FollowPath.Builder pathBuilder;
 
-  public AutosChooser(Superstructure superstructure) {
+  public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
+    pathBuilder =
+        new FollowPath.Builder(
+                drivetrain, // The drive subsystem to require
+                drivetrain::getPose, // Supplier for current robot pose
+                drivetrain::getRobotSpeeds, // Supplier for current speeds
+                (speeds) ->
+                    drivetrain.setControl(
+                        drivetrain.bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
+                new PIDController(5.0, 0.0, 0.0), // Translation PID
+                new PIDController(3.0, 0.0, 0.0), // Rotation PID
+                new PIDController(2.0, 0.0, 0.0) // Cross-track PID
+                )
+            .withShouldFlip(() -> Alliance.redAlliance);
+
     autoCommands = new HashMap<>();
     autoCommands.put(Auto.NONE, Commands.none());
+
     autoChooser = new SendableChooser<>();
-    SmartDashboard.putData("Auto/AutoChooser", autoChooser);
     autoChooser.setDefaultOption("None", Auto.NONE);
+
+    // Add preset autos hare//
     addPath(Auto.CUSTOM, Commands.none());
     customAutoMaker = new CustomAutoMaker(superstructure);
 
     // Put preset autos hare//
-    addPath(Auto.TEST_PATH, testPath());
-    addPath(Auto.MY_LAST_BRAINCELL, myLastBraincell());
+    addPath(Auto.TEST_PATH, Commands.none());
   }
 
   public void setCustom(Command command) {
@@ -45,7 +64,8 @@ public class AutosChooser {
 
   public Command getAuto() {
     return autoChooser.getSelected() == Auto.CUSTOM
-        ? customAutoMaker.getAuto()
+        ? pathBuilder.build(
+            CustomAutoUnpacker.unpack(SmartDashboard.getString("Auto/CustomInput", "")))
         : autoCommands.get(autoChooser.getSelected());
   }
 

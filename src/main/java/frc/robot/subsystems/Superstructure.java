@@ -35,7 +35,7 @@ public class Superstructure {
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
-  private boolean shouldAssistLeft = false;
+  private boolean didIntake = false;
 
   public Superstructure(
       CommandXboxController driver,
@@ -53,8 +53,12 @@ public class Superstructure {
   }
 
   public void periodic() {
+    shooter.setGoingTowardsAllianceZone(drivetrain.isGoingTowardsAllianceZone());
+    shooter.setDidIntake(didIntake);
+
     currentState = handleStateTransitions();
     applyStates();
+
     applyRumble();
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
@@ -90,12 +94,6 @@ public class Superstructure {
     switch (wantedState) {
       case Default:
         return CurrentStates.Idle;
-      case AssistRight:
-        shouldAssistLeft = false;
-        return CurrentStates.Assist;
-      case AssistLeft:
-        shouldAssistLeft = true;
-        return CurrentStates.Assist;
       case Shoot:
         return drivetrain.inAllianceZone() ? CurrentStates.Score : CurrentStates.Shoot;
       case Intake:
@@ -117,9 +115,6 @@ public class Superstructure {
     switch (currentState) {
       case Idle:
         idle();
-        break;
-      case Assist:
-        assist();
         break;
       case Shoot:
         shoot();
@@ -149,13 +144,6 @@ public class Superstructure {
     indexer.setState(IndexStates.Idle);
   }
 
-  private void assist() {
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    intake.setState(IntakeStates.Up);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-  }
-
   private void shoot() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
@@ -163,6 +151,8 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void score() {
@@ -172,6 +162,8 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void intake() {
@@ -179,6 +171,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
+
+    didIntake = true;
   }
 
   private void scoreWhileIntaking() {
@@ -188,6 +182,8 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void shootWhileIntaking() {
@@ -197,6 +193,8 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void climb() {
@@ -223,20 +221,21 @@ public class Superstructure {
 
   /** The wanted states of superstructure */
   public enum WantedStates {
+    // DO NOT RENAME (unless AutosChooser is updated as well)
     Default(),
-    AssistRight(),
-    AssistLeft(),
     Shoot(),
     Intake(),
     IntakeAndShoot(),
     Climb(),
     DefaultAuto(),
+    ShootAuto(),
+    IntakeAuto(),
+    ClimbAuto(),
   }
 
   /** The current states of superstructure */
   public enum CurrentStates {
     Idle(),
-    Assist(),
     Shoot(),
     Score(),
     Intake(),

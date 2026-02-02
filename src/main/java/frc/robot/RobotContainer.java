@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.autonomous.AutoPathBuilder;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
@@ -24,6 +23,7 @@ import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
+import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -54,7 +54,6 @@ public class RobotContainer {
   public RobotContainer(TimesConsumer consumer) {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
-    AutoPathBuilder.setDrivetrainInstance(drivetrain);
 
     switch (Mode.currentMode) {
       case REAL:
@@ -66,8 +65,7 @@ public class RobotContainer {
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM(), consumer);
         shooter = new Shooter(new ShooterIOSIM(), consumer);
-        // TODO: Add IndexerIOSIM
-        indexer = new Indexer(new IndexerIO() {}, consumer);
+        indexer = new Indexer(new IndexerIOSIM(), consumer);
         break;
 
       default:
@@ -79,7 +77,7 @@ public class RobotContainer {
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
 
-    autoChooser = new AutosChooser(superstructure);
+    autoChooser = new AutosChooser(superstructure, drivetrain);
 
     configureBindings();
   }
@@ -90,16 +88,6 @@ public class RobotContainer {
         .onTrue(
             drivetrain.runOnce(
                 () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
-
-    driver
-        .povRight()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistRight))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
-
-    driver
-        .povLeft()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistLeft))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
 
     driver
         .rightTrigger()
