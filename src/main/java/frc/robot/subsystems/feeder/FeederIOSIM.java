@@ -16,8 +16,8 @@ public class FeederIOSIM implements FeederIO {
   private final WheelMechanism m_feederMotorFollowerMechanism;
 
   public FeederIOSIM() {
-    this.m_feederMotorMechanism = new WheelMechanism("Feeder L", 0.05, 0.5, -0.15);
-    this.m_feederMotorFollowerMechanism = new WheelMechanism("Feeder R", 0.05, 0.5, 0.15);
+    this.m_feederMotorMechanism = new WheelMechanism("Feeder L", 0.05, 0.15, 0.35);
+    this.m_feederMotorFollowerMechanism = new WheelMechanism("Feeder R", 0.05, -0.15, 0.35);
   }
 
   public void update() {
