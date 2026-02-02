@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -8,9 +9,13 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.Robot;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 public class Shooter {
@@ -33,6 +38,12 @@ public class Shooter {
   }
 
   public void periodic() {
+
+    ShootState math = ShooterMath.calculateShootState();
+
+    this.setTargetHoodAngle(Degrees.of(math.desiredAngle()));
+    this.setVelocity(DegreesPerSecond.of(math.desiredRPM()));
+
     switch (this.m_state) {
       case SHOOT:
         this.m_io.setTargetVelocity(this.getTargetVelocity());
@@ -43,7 +54,6 @@ public class Shooter {
         this.m_io.setTargetVelocity(this.m_state.m_velocity);
         this.m_io.setHoodAngle(this.m_state.m_hoodAngle);
         break;
-    }
 
     this.m_io.update();
   }
