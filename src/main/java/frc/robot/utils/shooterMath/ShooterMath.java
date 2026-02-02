@@ -2,6 +2,7 @@ package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
 
@@ -27,10 +28,11 @@ public class ShooterMath {
   // RED ALLIANCE
   private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterBlue;
 
+  private static final boolean kBlueAlliance = !Alliance.redAlliance;
+
   // ===================== Class Variables =====================
   /* Input variables */
   private static Pose3d m_robotPose = new Pose3d();
-  private static boolean m_blueAlliance = true;
 
   /** Record representing the shoot state with velocity and angle. */
   public static record ShootState(double desiredRPM, double desiredAngle) {}
@@ -41,7 +43,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        m_blueAlliance
+        kBlueAlliance
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD;
@@ -59,7 +61,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        m_blueAlliance
+        kBlueAlliance
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return kE * Math.pow(kF, x_distance);
@@ -105,10 +107,5 @@ public class ShooterMath {
   */
   public static void input(Pose3d robotPose) {
     m_robotPose = robotPose;
-  }
-
-  /** Sets the alliance color for calculations. */
-  public static void setAlliance(boolean blueAlliance) {
-    m_blueAlliance = blueAlliance;
   }
 }
