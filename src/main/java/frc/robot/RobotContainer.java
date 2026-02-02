@@ -21,6 +21,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederIO;
+import frc.robot.subsystems.feeder.FeederIOCTRE;
+import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
@@ -48,6 +52,7 @@ public class RobotContainer {
   private final Intake intake;
   private final Shooter shooter;
   private final Indexer indexer;
+  private final Feeder feeder;
 
   private final Superstructure superstructure;
 
@@ -61,11 +66,13 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOCTRE(), consumer);
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
         indexer = new Indexer(new IndexerIOCTRE(), consumer);
+        feeder = new Feeder(new FeederIOCTRE(), consumer);
         break;
 
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM(), consumer);
         shooter = new Shooter(new ShooterIOSIM(), consumer);
+        feeder = new Feeder(new FeederIOSIM(), consumer);
         // TODO: Add IndexerIOSIM
         indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
@@ -73,6 +80,7 @@ public class RobotContainer {
       default:
         intake = new Intake(new IntakeIO() {}, consumer);
         shooter = new Shooter(new ShooterIO() {}, consumer);
+        feeder = new Feeder(new FeederIO(), consumer);
         indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
     }
