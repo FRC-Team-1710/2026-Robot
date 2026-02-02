@@ -16,8 +16,6 @@ public class Feeder {
 
   private final TimesConsumer m_timesConsumer;
 
-  private AngularVelocity m_velocity;
-
   public Feeder(FeederIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
@@ -26,11 +24,13 @@ public class Feeder {
 
   public void periodic() {
     switch (this.m_state) {
-      default:
-        this.m_velocity = this.m_state.getVelocity();
+      case STOP:
+        this.m_io.stop();
+      case FEEDDING:
+        this.m_io.setVelocity(true);
+      case REVERSE:
+        this.m_io.setVelocity(false);
     }
-
-    this.m_io.setVelocity(this.m_velocity);
 
     this.m_io.update();
   }

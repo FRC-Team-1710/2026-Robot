@@ -1,5 +1,6 @@
 package frc.robot.subsystems.feeder;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
@@ -28,7 +29,11 @@ public class FeederIOSIM implements FeederIO {
     SmartDashboard.putData("Feeder 2", this.m_feederMotorFollowerMechanism.getMechanism());
   }
 
-  public void setVelocity(AngularVelocity pVelocity) {
-    this.m_velocity = pVelocity;
+  public void setVelocity(boolean clockwise) {
+    this.m_velocity = clockwise ? DegreesPerSecond.of(0.25) : DegreesPerSecond.of(-0.25);
+  }
+
+  public void stop() {
+    this.m_velocity = DegreesPerSecond.of(0);
   }
 }
