@@ -16,6 +16,8 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.constants.CanIdConstants;
 
 @Logged
@@ -74,5 +76,13 @@ public class IntakeIOCTRE implements IntakeIO {
 
   public void setIntakeMotor(double speed) {
     intakeMotor.set(speed);
+  }
+
+  public AngularVelocity getRollerVelocity() {
+    return intakeMotor.getRotorVelocity().getValue();
+  }
+
+  public Current getRollerCurrent() {
+    return intakeMotor.getStatorCurrent().getValue();
   }
 }

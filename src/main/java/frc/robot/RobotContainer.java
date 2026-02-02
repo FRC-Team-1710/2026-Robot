@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.autonomous.AutoPathBuilder;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
@@ -21,9 +20,14 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederIO;
+import frc.robot.subsystems.feeder.FeederIOCTRE;
+import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
+import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -48,38 +52,40 @@ public class RobotContainer {
   private final Intake intake;
   private final Shooter shooter;
   private final Indexer indexer;
+  private final Feeder feeder;
 
   private final Superstructure superstructure;
 
   public RobotContainer(TimesConsumer consumer) {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
-    AutoPathBuilder.setDrivetrainInstance(drivetrain);
 
     switch (Mode.currentMode) {
       case REAL:
         intake = new Intake(new IntakeIOCTRE(), consumer);
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer = new Indexer(new IndexerIOCTRE(), consumer);
         break;
 
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM(), consumer);
         shooter = new Shooter(new ShooterIOSIM(), consumer);
-        // TODO: Add IndexerIOSIM
-        indexer = new Indexer(new IndexerIO() {}, consumer);
+        feeder = new Feeder(new FeederIOSIM(), consumer);
+        indexer = new Indexer(new IndexerIOSIM(), consumer);
         break;
 
       default:
         intake = new Intake(new IntakeIO() {}, consumer);
         shooter = new Shooter(new ShooterIO() {}, consumer);
+        feeder = new Feeder(new FeederIO() {}, consumer);
         indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
+    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
 
-    autoChooser = new AutosChooser(superstructure);
+    autoChooser = new AutosChooser(superstructure, drivetrain);
 
     configureBindings();
   }
@@ -90,16 +96,6 @@ public class RobotContainer {
         .onTrue(
             drivetrain.runOnce(
                 () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
-
-    driver
-        .povRight()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistRight))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
-
-    driver
-        .povLeft()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistLeft))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
 
     driver
         .rightTrigger()
@@ -156,6 +152,13 @@ public class RobotContainer {
             new Pair<Time, Time>(
                 Milliseconds.of(60),
                 Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
+    map.put(
+        Subsystems.Feeder,
+        new Pair<Runnable, Pair<Time, Time>>(
+            feeder::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0))));
     map.put(
         Subsystems.Drive,
         new Pair<Runnable, Pair<Time, Time>>(

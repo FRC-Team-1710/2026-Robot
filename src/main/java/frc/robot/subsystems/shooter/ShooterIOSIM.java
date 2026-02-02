@@ -7,8 +7,8 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.utils.MechanismUtil.FlywheelMechanism;
 import frc.robot.utils.MechanismUtil.HoodMechanism;
+import frc.robot.utils.MechanismUtil.WheelMechanism;
 
 @Logged
 public class ShooterIOSIM implements ShooterIO {
@@ -16,14 +16,14 @@ public class ShooterIOSIM implements ShooterIO {
   private AngularVelocity m_velocity;
   private Angle m_hoodAngle;
 
-  private final FlywheelMechanism m_flyWheelMechanism;
-  private final FlywheelMechanism m_flyWheelFollowerMechanism;
+  private final WheelMechanism m_flyWheelMechanism;
+  private final WheelMechanism m_flyWheelFollowerMechanism;
 
   private final HoodMechanism m_hoodMechanism;
 
   public ShooterIOSIM() {
-    this.m_flyWheelMechanism = new FlywheelMechanism("Flywheel 1", 0.1, -0.25);
-    this.m_flyWheelFollowerMechanism = new FlywheelMechanism("Flywheel 2", 0.1, 0.25);
+    this.m_flyWheelMechanism = new WheelMechanism("Flywheel 1", 0.1, -0.25, 0.5);
+    this.m_flyWheelFollowerMechanism = new WheelMechanism("Flywheel 2", 0.1, 0.25, 0.5);
 
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
   }
