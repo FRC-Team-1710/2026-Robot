@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.constants.FieldConstants;
+import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.Superstructure;
 import java.util.HashMap;
 
@@ -28,7 +30,8 @@ public class AutosChooser {
     customAutoMaker = new CustomAutoMaker(superstructure);
 
     // Put preset autos hare//
-    addPath(Auto.TEST_PATH, Commands.none());
+    addPath(Auto.TEST_PATH, testPath());
+    addPath(Auto.MY_LAST_BRAINCELL, myLastBraincell());
   }
 
   public void setCustom(Command command) {
@@ -46,9 +49,38 @@ public class AutosChooser {
         : autoCommands.get(autoChooser.getSelected());
   }
 
+  public Command myLastBraincell() {
+    return Commands.sequence(
+        AutoPathBuilder.getBuilder()
+            .build(
+                new Path(
+                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REn, ")))),
+        AutoPathBuilder.getBuilder()
+            .build(
+                new Path(
+                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REx, ")))),
+        AutoPathBuilder.getBuilder()
+            .build(
+                new Path(
+                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEx, ")))),
+        AutoPathBuilder.getBuilder()
+            .build(
+                new Path(
+                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
+  }
+
+  public Command testPath() {
+    return Commands.sequence(
+        AutoPathBuilder.getBuilder()
+            .build(
+                new Path(
+                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
+  }
+
   public enum Auto {
     NONE(),
     CUSTOM(),
-    TEST_PATH()
+    TEST_PATH(),
+    MY_LAST_BRAINCELL()
   }
 }

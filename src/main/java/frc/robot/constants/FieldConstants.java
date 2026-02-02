@@ -42,22 +42,22 @@ public class FieldConstants {
   public static HashMap<String, Translation2d> AutoConstants() {
     HashMap<String, Translation2d> points = new HashMap<>();
     points.put(
-        " B Bump REn, ",
+        "Bump REn, ",
         new Translation2d(
             kStartingLineDistance.minus(kBumpDepth.div(2)),
             kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
     points.put(
-        "B Bump REx, ",
+        "Bump REx, ",
         new Translation2d(
             kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
             kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
     points.put(
-        "B Bump LEn, ",
+        "Bump LEn, ",
         new Translation2d(
             kStartingLineDistance.minus(kBumpDepth.div(2)),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
     points.put(
-        "B Bump LEx, ",
+        "Bump LEx, ",
         new Translation2d(
             kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
             kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
