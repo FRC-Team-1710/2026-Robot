@@ -14,6 +14,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -37,6 +38,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.SwerveTelemetry;
+import frc.robot.utils.shooterMath.ShooterMath;
 import java.util.function.Supplier;
 
 /**
@@ -262,6 +264,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveTelemetry.currentStates = getModuleStates();
     swerveTelemetry.desiredStates = getModuleTargets();
     swerveTelemetry.rotation = getRotation();
+
+    // TODO make a more reliable pose
+    ShooterMath.input(new Pose3d(getPose()));
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {

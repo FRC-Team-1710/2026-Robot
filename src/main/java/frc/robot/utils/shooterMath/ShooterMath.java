@@ -2,6 +2,7 @@ package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
 
 /** Utility class for shooter-related mathematical calculations. */
@@ -21,7 +22,7 @@ public class ShooterMath {
 
   /** Position of the hub's center */
   // BLUE ALLIANCE
-  private static final Translation2d kHUB_CENTER_BLUE = new Translation2d(0, 0);
+  private static final Translation2d kHUB_CENTER_BLUE = FieldConstants.kHubCenterBlue;
 
   // RED ALLIANCE
   private static final Translation2d kHUB_CENTER_RED = new Translation2d(0, 0);
