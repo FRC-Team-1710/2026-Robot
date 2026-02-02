@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autonomous.AutoPathBuilder;
 import frc.robot.autonomous.AutosChooser;
+import frc.robot.constants.Alliance;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
@@ -33,6 +34,7 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.shooterMath.ShooterMath;
 import java.util.HashMap;
 
 @Logged
@@ -78,6 +80,9 @@ public class RobotContainer {
     }
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
+
+    // Sets the alliance for the calculations in ShooterMath.java
+    ShooterMath.setAlliance(!Alliance.redAlliance);
 
     autoChooser = new AutosChooser(superstructure);
 
