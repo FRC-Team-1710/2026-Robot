@@ -15,12 +15,16 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 @SuppressWarnings("unused")
@@ -31,10 +35,17 @@ public class Superstructure {
   @NotLogged private Intake intake;
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
+  @NotLogged private Feeder feeder;
 
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
+  // Contains the RPM and Angle for the shooter
+  private ShootState shootState;
+  private double rpm;
+  private double angle;
+
+  private boolean shouldAssistLeft = false;
   private boolean didIntake = false;
 
   public Superstructure(
@@ -43,13 +54,15 @@ public class Superstructure {
       CommandSwerveDrivetrain drivetrain,
       Intake intake,
       Shooter shooter,
-      Indexer indexer) {
+      Indexer indexer,
+      Feeder feeder) {
     this.driver = driver;
     this.mech = mech;
     this.drivetrain = drivetrain;
     this.intake = intake;
     this.shooter = shooter;
     this.indexer = indexer;
+    this.feeder = feeder;
   }
 
   public void periodic() {
@@ -60,6 +73,10 @@ public class Superstructure {
     applyStates();
 
     applyRumble();
+
+    shootState = ShooterMath.calculateShootState();
+    rpm = shootState.desiredRPM();
+    angle = shootState.desiredAngle();
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
@@ -140,6 +157,7 @@ public class Superstructure {
   private void idle() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
   }
@@ -148,6 +166,7 @@ public class Superstructure {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
@@ -159,6 +178,7 @@ public class Superstructure {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
@@ -169,6 +189,7 @@ public class Superstructure {
   private void intake() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
 
@@ -179,6 +200,7 @@ public class Superstructure {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
@@ -190,6 +212,7 @@ public class Superstructure {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
@@ -202,6 +225,7 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
   }
 
   private Rotation2d getRotationForScore() {
