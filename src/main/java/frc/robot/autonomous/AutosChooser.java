@@ -47,8 +47,6 @@ public class AutosChooser {
 
     // Add preset autos hare//
     addPath(Auto.CUSTOM, Commands.none());
-    customAutoMaker = new CustomAutoMaker(superstructure);
-
     // Put preset autos hare//
     addPath(Auto.TEST_PATH, Commands.none());
   }
