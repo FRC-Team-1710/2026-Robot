@@ -35,8 +35,12 @@ public class CustomAutoUnpacker {
     double endRotTol = Double.parseDouble(base[1]);
 
     Path.PathConstraints c = new Path.PathConstraints();
-    c.setEndTranslationToleranceMeters(endTransTol);
-    c.setEndRotationToleranceDeg(endRotTol);
+    if (endTransTol != 0) {
+      c.setEndTranslationToleranceMeters(endTransTol);
+    }
+    if (endRotTol != 0) {
+      c.setEndRotationToleranceDeg(endRotTol);
+    }
 
     // Ranged constraints
     c.setMaxVelocityMetersPerSec(unpackRanged(parts[1]));
