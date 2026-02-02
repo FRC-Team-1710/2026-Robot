@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
@@ -57,13 +58,11 @@ public class Feeder {
   }
 
   public void setState(FEEDER_STATE state) {
-    /*
     if (!this.m_state
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
-    */
     this.m_state = state;
   }
 

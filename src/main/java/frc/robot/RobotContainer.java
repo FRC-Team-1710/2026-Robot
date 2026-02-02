@@ -65,8 +65,8 @@ public class RobotContainer {
       case REAL:
         intake = new Intake(new IntakeIOCTRE(), consumer);
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
-        indexer = new Indexer(new IndexerIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
+        indexer = new Indexer(new IndexerIOCTRE(), consumer);
         break;
 
       case SIMULATION:
@@ -80,12 +80,12 @@ public class RobotContainer {
       default:
         intake = new Intake(new IntakeIO() {}, consumer);
         shooter = new Shooter(new ShooterIO() {}, consumer);
-        feeder = new Feeder(new FeederIO(), consumer);
+        feeder = new Feeder(new FeederIO() {}, consumer);
         indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
+    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
 
     autoChooser = new AutosChooser(superstructure);
 
@@ -154,6 +154,13 @@ public class RobotContainer {
             new Pair<Time, Time>(
                 Milliseconds.of(60),
                 Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
+    map.put(
+        Subsystems.Feeder,
+        new Pair<Runnable, Pair<Time, Time>>(
+            feeder::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0))));
     map.put(
         Subsystems.Drive,
         new Pair<Runnable, Pair<Time, Time>>(
