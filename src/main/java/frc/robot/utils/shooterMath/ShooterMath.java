@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
-import java.lang.ref.WeakReference;
+import java.util.function.BooleanSupplier;
 
 /** Utility class for shooter-related mathematical calculations. */
 public class ShooterMath {
@@ -29,8 +29,7 @@ public class ShooterMath {
   // RED ALLIANCE
   private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterRed;
 
-  private static WeakReference<Boolean> kRedAlliance =
-      new WeakReference<Boolean>(Alliance.redAlliance);
+  private static final BooleanSupplier kRedAlliance = () -> Alliance.redAlliance;
 
   // ===================== Class Variables =====================
   /* Input variables */
@@ -45,7 +44,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        !kRedAlliance.get()
+        !kRedAlliance.getAsBoolean()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD;
@@ -63,7 +62,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        !kRedAlliance.get()
+        !kRedAlliance.getAsBoolean()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return kE * Math.pow(kF, x_distance);
@@ -115,6 +114,6 @@ public class ShooterMath {
   }
 
   public static boolean getAlliance() {
-    return !kRedAlliance.get();
+    return !kRedAlliance.getAsBoolean();
   }
 }
