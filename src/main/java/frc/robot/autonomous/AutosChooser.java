@@ -69,30 +69,15 @@ public class AutosChooser {
 
   public Command myLastBraincell() {
     return Commands.sequence(
-        AutoPathBuilder.getBuilder()
-            .build(
-                new Path(
-                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REn, ")))),
-        AutoPathBuilder.getBuilder()
-            .build(
-                new Path(
-                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REx, ")))),
-        AutoPathBuilder.getBuilder()
-            .build(
-                new Path(
-                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEx, ")))),
-        AutoPathBuilder.getBuilder()
-            .build(
-                new Path(
-                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
-  }
-
-  public Command testPath() {
-    return Commands.sequence(
-        AutoPathBuilder.getBuilder()
-            .build(
-                new Path(
-                    new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
+        pathBuilder.build(
+            new Path(new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REn, ")))),
+        pathBuilder.build(
+            new Path(new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REx, ")))),
+        pathBuilder.build(
+            new Path(new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEx, ")))),
+        pathBuilder.build(
+            new Path(
+                new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
   }
 
   public enum Auto {
