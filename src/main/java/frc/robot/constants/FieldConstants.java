@@ -27,6 +27,8 @@ public class FieldConstants {
 
   public static final Translation2d kHubCenterBlue =
       new Translation2d(Inches.of(182.11125), kFieldWidth.div(2));
+  public static final Translation2d kHubCenterRed =
+      new Translation2d(Inches.of(469.11125), kFieldWidth.div(2));
 
   public static final Distance kDepotWidth = Inches.of(42);
   public static final Distance kDepotLength = Inches.of(24);

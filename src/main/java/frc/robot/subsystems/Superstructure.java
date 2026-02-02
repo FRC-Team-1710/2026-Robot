@@ -23,6 +23,8 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 @SuppressWarnings("unused")
@@ -38,6 +40,12 @@ public class Superstructure {
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
+  // Contains the RPM and Angle for the shooter
+  private ShootState shootState;
+  private double rpm;
+  private double angle;
+
+  private boolean shouldAssistLeft = false;
   private boolean didIntake = false;
 
   public Superstructure(
@@ -65,6 +73,10 @@ public class Superstructure {
     applyStates();
 
     applyRumble();
+
+    shootState = ShooterMath.calculateShootState();
+    rpm = shootState.desiredRPM();
+    angle = shootState.desiredAngle();
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
