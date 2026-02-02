@@ -34,6 +34,7 @@ public final class ShooterConstants {
 
   // ======================== Shooter Physical Constants ===========================
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
+
   /** Range of error for the "isAtTargetVelocity" function */
   public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);
 
