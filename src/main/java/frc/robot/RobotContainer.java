@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.autonomous.AutoPathBuilder;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Subsystems;
@@ -55,7 +54,6 @@ public class RobotContainer {
   public RobotContainer(TimesConsumer consumer) {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
-    AutoPathBuilder.setDrivetrainInstance(drivetrain);
 
     switch (Mode.currentMode) {
       case REAL:
@@ -79,7 +77,7 @@ public class RobotContainer {
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
 
-    autoChooser = new AutosChooser(superstructure);
+    autoChooser = new AutosChooser(superstructure, drivetrain);
 
     configureBindings();
   }
