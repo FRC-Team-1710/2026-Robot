@@ -25,7 +25,7 @@ public class ShooterMath {
   private static final Translation2d kHUB_CENTER_BLUE = FieldConstants.kHubCenterBlue;
 
   // RED ALLIANCE
-  private static final Translation2d kHUB_CENTER_RED = new Translation2d(0, 0);
+  private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterBlue;
 
   // ===================== Class Variables =====================
   /* Input variables */
