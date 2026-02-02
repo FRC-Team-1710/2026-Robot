@@ -20,7 +20,6 @@ public class Shooter {
 
   private final TimesConsumer m_timesConsumer;
 
-
   private AngularVelocity m_velocity = RotationsPerSecond.of(0);
   private Angle m_hoodAngle = Degrees.of(0);
 

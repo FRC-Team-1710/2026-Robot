@@ -2,10 +2,10 @@ package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
+import java.lang.ref.WeakReference;
 
 /** Utility class for shooter-related mathematical calculations. */
 public class ShooterMath {
@@ -29,7 +29,8 @@ public class ShooterMath {
   // RED ALLIANCE
   private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterRed;
 
-  private static boolean kBlueAlliance = true;
+  private static WeakReference<Boolean> kRedAlliance =
+      new WeakReference<Boolean>(Alliance.redAlliance);
 
   // ===================== Class Variables =====================
   /* Input variables */
@@ -44,7 +45,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        kBlueAlliance
+        !kRedAlliance.get()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD;
@@ -62,26 +63,28 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        kBlueAlliance
+        !kRedAlliance.get()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return kE * Math.pow(kF, x_distance);
   }
 
-  /** Converts velocity in meters per second to RPM based on the shooter wheel diameter. 
+  /**
+   * Converts velocity in meters per second to RPM based on the shooter wheel diameter.
+   *
    * @param vMetersPerSec Velocity in meters per second
    * @return Velocity in revolutions per minute
-  */
+   */
   public static double velocityToRPM(double vMetersPerSec) {
     double circumference = Math.PI * ShooterConstants.WHEEL_DIAMETER;
-    return (vMetersPerSec / circumference) * 60.0; // Convert meters per second to revolutions per minute
+    return (vMetersPerSec / circumference)
+        * 60.0; // Convert meters per second to revolutions per minute
   }
 
   /**
    * Calculates the shoot state (velocity and angle) based on the horizontal distance to the target.
-   * 
+   *
    * @param robotPose The current pose of the robot.
-   * 
    * @return {@code ShootState} containing desired flywheel RPM and angle
    */
   public static ShootState calculateShootState(Pose3d robotPose) {
@@ -93,7 +96,7 @@ public class ShooterMath {
   /**
    * Calculates the shoot state (velocity and angle) based on the robot's current pose and alliance
    * color.
-   * 
+   *
    * @return {@code ShootState} containing desired flywheel RPM and angle
    */
   public static ShootState calculateShootState() {
@@ -102,19 +105,16 @@ public class ShooterMath {
     return new ShootState(desiredRPM, desiredAngle);
   }
 
-  /** Inputs the robot's current pose for calculations. 
-   * 
+  /**
+   * Inputs the robot's current pose for calculations.
+   *
    * @param robotPose The current pose of the robot.
-  */
+   */
   public static void input(Pose3d robotPose) {
     m_robotPose = robotPose;
   }
 
   public static boolean getAlliance() {
-    return kBlueAlliance;
-  }
-
-  public static void setAlliance(boolean blueAlliance) {
-    kBlueAlliance = blueAlliance;
+    return !kRedAlliance.get();
   }
 }
