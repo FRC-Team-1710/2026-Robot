@@ -25,20 +25,15 @@ public class FeederIOCTRE implements FeederIO {
     this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
     this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_FOLLOWER_MOTOR);
 
-    // Flywheel settings
-    TalonFXConfiguration m_config = new TalonFXConfiguration();
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-    m_config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    m_config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    m_config.Slot0.kS = FeederConstants.kS;
-    m_config.Slot0.kV = FeederConstants.kV;
-    m_config.Slot0.kP = FeederConstants.kP;
+    config.MotionMagic.MotionMagicCruiseVelocity = FeederConstants.MOTION_MAGIC_CRUISE_VELOCITY;
+    config.MotionMagic.MotionMagicAcceleration = FeederConstants.MOTION_MAGIC_ACCELERATION;
 
-    m_config.MotionMagic.MotionMagicCruiseVelocity = FeederConstants.MOTION_MAGIC_CRUISE_VELOCITY;
-    m_config.MotionMagic.MotionMagicAcceleration = FeederConstants.MOTION_MAGIC_ACCELERATION;
-
-    TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, m_config, 2);
+    TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
     this.m_feederLeft.setControl(
