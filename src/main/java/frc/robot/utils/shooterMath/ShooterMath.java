@@ -105,4 +105,9 @@ public class ShooterMath {
   public static void input(Pose3d robotPose) {
     m_robotPose = robotPose;
   }
+
+  /** Sets the alliance color for calculations. */
+  public static void setAlliance(boolean blueAlliance) {
+    m_blueAlliance = blueAlliance;
+  }
 }
