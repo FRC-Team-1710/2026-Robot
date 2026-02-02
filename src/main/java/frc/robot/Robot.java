@@ -29,6 +29,7 @@ import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
+import frc.robot.utils.LogEverything;
 import java.util.HashMap;
 
 @Logged
@@ -95,6 +96,8 @@ public class Robot extends DynamicTimedRobot {
     hootAutoReplay.update();
 
     MatchState.updateAutonomousWinner();
+
+    LogEverything.logEverythingPossible();
   }
 
   @Override

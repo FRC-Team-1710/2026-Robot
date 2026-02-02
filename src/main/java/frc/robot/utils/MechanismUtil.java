@@ -473,4 +473,83 @@ public class MechanismUtil {
       }
     }
   }
+
+  public static class IndexerVisualSim {
+    // ==================== Visualization Constants ====================
+
+    /** Width of the canvas for the mechanism visualization in pixels */
+    private static final double CANVAS_WIDTH = 1.0;
+
+    /** Height of the canvas for the mechanism visualization in pixels */
+    private static final double CANVAS_HEIGHT = 1.0;
+
+    /** X position of the mechanism root on the canvas */
+    private static final double ROOT_X = 0.5;
+
+    /** Y position of the mechanism root on the canvas */
+    private static final double ROOT_Y = 0.5;
+
+    /** Width of each spoke in the flywheel visualization in pixels */
+    private static final double SPOKE_WIDTH = 2.0;
+
+    /** Number of spokes in the flywheel visualization */
+    private static final int NUM_SPOKES = 16;
+
+    /** Color of flywheel when not spinning or slow */
+    private static final Color8Bit IDLE_COLOR = new Color8Bit(Color.kRed);
+
+    /** Color of flywheel when spinning at target speed */
+    private static final Color8Bit SPINNING_COLOR = new Color8Bit(Color.kGreen);
+
+    // ==================== Visualization Components ====================
+
+    /** 2D mechanism visualization */
+    private final Mechanism2d index;
+
+    /** Visual representation of the flywheel spokes that rotate with simulation */
+    private final MechanismLigament2d[] spokes;
+
+    /** Current rotation angle for visual animation in degrees */
+    private double visualAngleDeg = 0.0;
+
+    public IndexerVisualSim(String name, double rollerRadius) {
+      index = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
+      MechanismRoot2d root = index.getRoot(name + "Root", ROOT_X, ROOT_Y);
+
+      // Create spokes for the flywheel visualization
+      spokes = new MechanismLigament2d[NUM_SPOKES];
+      for (int i = 0; i < NUM_SPOKES; i++) {
+        double spokeAngle = (360.0 / NUM_SPOKES) * i;
+
+        // Create spoke at calculated angle
+        spokes[i] =
+            root.append(
+                new MechanismLigament2d(
+                    "Spoke" + i, rollerRadius, spokeAngle, SPOKE_WIDTH, IDLE_COLOR));
+      }
+    }
+
+    /**
+     * Gets the Mechanism2d object for publishing to SmartDashboard.
+     *
+     * @return The Mechanism2d visualization
+     */
+    public Mechanism2d getMechanism() {
+      return index;
+    }
+
+    /**
+     * Updates the visual representation of the indexer flywheel.
+     *
+     * @param speed The speed of the indexer flywheel
+     */
+    public void updateIndexer(double speed) {
+      // Update each spoke's angle and color based on speed
+      for (int i = 0; i < NUM_SPOKES; i++) {
+        spokes[i].setAngle(spokes[i].getAngle() + speed);
+        Color8Bit currentColor = (speed > 0.0) ? SPINNING_COLOR : IDLE_COLOR;
+        spokes[i].setColor(currentColor);
+      }
+    }
+  }
 }
