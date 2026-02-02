@@ -39,6 +39,8 @@ public class Superstructure {
 
   // Contains the RPM and Angle for the shooter
   private ShootState shootState;
+  private double rpm;
+  private double angle;
 
   private boolean shouldAssistLeft = false;
 
@@ -63,6 +65,8 @@ public class Superstructure {
     applyRumble();
 
     shootState = ShooterMath.calculateShootState();
+    rpm = shootState.desiredRPM();
+    angle = shootState.desiredAngle();
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
