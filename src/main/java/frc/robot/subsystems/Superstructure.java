@@ -36,6 +36,7 @@ public class Superstructure {
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
+  private boolean blueAlliance;
   private double shooterRPM;
   private double angle;
 
@@ -61,6 +62,10 @@ public class Superstructure {
     applyStates();
     applyRumble();
 
+    if (DriverStation.getAlliance().isPresent()) {
+      ShooterMath.setAlliance(DriverStation.getAlliance().get() == DriverStation.Alliance.Blue);
+    }
+    blueAlliance = ShooterMath.getAlliance();
     shooterRPM = ShooterMath.calculateShootState().desiredRPM();
     angle = ShooterMath.calculateShootState().desiredAngle();
 
