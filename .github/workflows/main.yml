@@ -34,3 +34,42 @@ jobs:
 
       - name: Compile and run tests on robot code
         run: bash ./gradlew build
+
+      - name: Notify ntfy
+        if: always()
+        env:
+          NTFY_URL: ${{ secrets.NTFY_URL }}
+          STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ "$STATUS" = "success" ]; then
+            ICON="✅"
+            PRIORITY="3"
+            TAGS="white_check_mark,robot"
+          elif [ "$STATUS" = "cancelled" ]; then
+            ICON="⚠️"
+            PRIORITY="3"
+            TAGS="warning,robot"
+          else
+            ICON="❌"
+            PRIORITY="5"
+            TAGS="x,robot"
+          fi
+      
+          SHORT_SHA="$(echo "$SHA" | cut -c1-7)"
+      
+          printf "Repo: %s\nBranch: %s\nActor: %s\nCommit: %s\n" \
+            "$REPO" "$BRANCH" "$ACTOR" "$SHORT_SHA" \
+          | curl -sS \
+              -H "Title: ${ICON} ${WORKFLOW} (${STATUS})" \
+              -H "Priority: ${PRIORITY}" \
+              -H "Tags: ${TAGS}" \
+              -H "Click: ${RUN_URL}" \
+              --data-binary @- \
+              "$NTFY_URL"
+
