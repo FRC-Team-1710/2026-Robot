@@ -9,8 +9,6 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.Robot;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -54,6 +52,7 @@ public class Shooter {
         this.m_io.setTargetVelocity(this.m_state.m_velocity);
         this.m_io.setHoodAngle(this.m_state.m_hoodAngle);
         break;
+    }
 
     this.m_io.update();
   }
