@@ -34,3 +34,32 @@ jobs:
 
       - name: Compile and run tests on robot code
         run: bash ./gradlew build
+
+      - name: Notify Teams
+        if: always()
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ "$STATUS" = "success" ]; then
+            ICON="✅"
+          elif [ "$STATUS" = "cancelled" ]; then
+            ICON="⚠️"
+          else
+            ICON="❌"
+          fi
+
+          SHORT_SHA="$(echo "$SHA" | cut -c1-7)"
+
+          curl -sS -H "Content-Type: application/json" -d @- "$TEAMS_WEBHOOK_URL" << JSON
+          {
+            "text": "${ICON} *${WORKFLOW}* — *${STATUS}*\n\n🤖 Repo: ${REPO}\n🌿 Branch: ${BRANCH}\n👤 Actor: ${ACTOR}\n\n🔗 Run: ${RUN_URL}\n🔗 Commit (${SHORT_SHA}): ${COMMIT_URL}"
+          }
+          JSON
