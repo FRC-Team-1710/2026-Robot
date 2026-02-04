@@ -7,7 +7,7 @@ public class Velocity3d {
   private double v_y;
   private double v_z;
 
-  public Velocity3d kZero = new Velocity3d();
+  public static final Velocity3d kZero = new Velocity3d();
 
   /** Default constructor initializes to zero velocity */
   public Velocity3d() {
@@ -81,7 +81,7 @@ public class Velocity3d {
   }
 
   /** Creates a Velocity3d from a Velocity2d by adding a zero Z component. */
-  public Velocity3d from(Velocity2d velocity2d) {
+  public static Velocity3d from(Velocity2d velocity2d) {
     return new Velocity3d(velocity2d.getX(), velocity2d.getY(), 0);
   }
 }

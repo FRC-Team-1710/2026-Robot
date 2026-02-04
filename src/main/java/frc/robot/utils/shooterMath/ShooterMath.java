@@ -29,7 +29,7 @@ public class ShooterMath {
   // RED ALLIANCE
   private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterRed;
 
-  private static final BooleanSupplier kRedAlliance = () -> Alliance.redAlliance;
+  private static BooleanSupplier m_RedAlliance = () -> Alliance.redAlliance;
 
   // ===================== Class Variables =====================
   /* Input variables */
@@ -44,7 +44,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        !kRedAlliance.getAsBoolean()
+        !m_RedAlliance.getAsBoolean()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD;
@@ -62,7 +62,7 @@ public class ShooterMath {
     Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
-        !kRedAlliance.getAsBoolean()
+        !m_RedAlliance.getAsBoolean()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return kE * Math.pow(kF, x_distance);
@@ -114,6 +114,6 @@ public class ShooterMath {
   }
 
   public static boolean getAlliance() {
-    return !kRedAlliance.getAsBoolean();
+    return !m_RedAlliance.getAsBoolean();
   }
 }
