@@ -22,7 +22,7 @@ public class IndexerIOSIM implements IndexerIO {
     this.IndexerVisualSim = new IndexerVisualSim("Indexer", 0.125);
   }
 
-  public void setSpeed(double speed) {
+  public void setIndexMotor(double speed) {
     this.speed = speed;
   }
 

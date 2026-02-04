@@ -31,7 +31,8 @@ public class CanIdConstants {
 
   /** Constants for indexer */
   public static class Indexer {
-    public static final int INDEXER_MOTOR = 30;
+    public static final int INDEXER_MOTOR_PRIMARY = 30;
+    public static final int INDEXER_MOTOR_SECONDARY = 31;
   }
 
   /** Constants for shooter */

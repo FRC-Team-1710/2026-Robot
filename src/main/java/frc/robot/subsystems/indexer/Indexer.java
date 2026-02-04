@@ -25,7 +25,7 @@ public class Indexer {
 
   public void periodic() {
     // This method will be called once per scheduler run
-    io.setSpeed(currentState.speed);
+    io.setIndexMotor(currentState.speed);
     io.updateVisual();
   }
 
@@ -37,7 +37,7 @@ public class Indexer {
   }
 
   public enum IndexStates {
-    Indexing(Milliseconds.of(20), 0),
+    Indexing(Milliseconds.of(20), 2),
 
     Idle(Milliseconds.of(60), 0);
 
