@@ -139,7 +139,9 @@ public class Robot extends DynamicTimedRobot {
   public void teleopPeriodic() {}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    m_robotContainer.fuelSim.updateSim();
+  }
 
   @Override
   public void teleopExit() {}
