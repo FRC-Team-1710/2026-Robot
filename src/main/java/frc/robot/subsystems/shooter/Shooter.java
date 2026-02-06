@@ -41,15 +41,18 @@ public class Shooter {
       case SHOOT:
         ShootState math = ShooterMath.calculateShootState();
 
-        this.m_io.setTargetVelocity(DegreesPerSecond.of(math.desiredAngle()));
-        this.m_io.setHoodAngle(Degrees.of(math.desiredRPM()));
+        this.m_velocity = DegreesPerSecond.of(math.desiredAngle());
+        this.m_hoodAngle = Degrees.of(math.desiredRPM());
         break;
 
       default:
-        this.m_io.setTargetVelocity(this.m_state.m_velocity);
-        this.m_io.setHoodAngle(this.m_state.m_hoodAngle);
+        this.m_velocity = this.m_state.m_velocity;
+        this.m_hoodAngle = this.m_state.m_hoodAngle;
         break;
     }
+
+    this.m_io.setTargetVelocity(this.m_velocity);
+    this.m_io.setHoodAngle(this.m_hoodAngle);
 
     this.m_io.update();
   }
