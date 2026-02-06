@@ -21,11 +21,16 @@ public class Velocity3d {
     this.v_z = v_z;
   }
 
-  /** Create a Velocity3d from a velocity magnitude and a Rotation3d */
+  /** Create a Velocity3d from a velocity magnitude and a Rotation3d direction */
   public Velocity3d(double velocity, Rotation3d rotation) {
-    this.v_x = velocity * Math.cos(rotation.getY()) * Math.cos(rotation.getZ());
-    this.v_y = velocity * Math.sin(rotation.getX()) * Math.cos(rotation.getZ());
-    this.v_z = velocity * Math.sin(rotation.getZ());
+    var mat = rotation.toMatrix(); // 3x3 matrix
+    double dirX = mat.get(0, 0); // first column = x-axis direction in world frame
+    double dirY = mat.get(1, 0);
+    double dirZ = mat.get(2, 0);
+
+    this.v_x = velocity * dirX;
+    this.v_y = velocity * dirY;
+    this.v_z = velocity * dirZ;
   }
 
   /** Returns the X component of the velocity. */
