@@ -11,6 +11,7 @@ java {
 }
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
+def isCI = project.hasProperty("ci") || System.getenv("CI") != null
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -137,8 +138,14 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
-tasks.named('build') {
-    dependsOn 'spotlessApply'
+// tasks.named('build') {
+//     dependsOn 'spotlessApply'
+// }
+
+if (!isCI) {
+    tasks.named("build") {
+        dependsOn("spotlessApply")
+    }
 }
 
 // Spotless code formatting configuration
