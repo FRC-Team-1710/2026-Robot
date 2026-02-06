@@ -259,7 +259,7 @@ public class VisionUtil {
           && !invalidAmbiguity(poseEst);
     }
   }
-* /
+
   /** Record containing a pose estimate and its associated standard deviations. */
   public record VisionMeasurement(PoseEstimate poseEstimate, Vector<N3> visionMeasurementStdDevs) {}
 
