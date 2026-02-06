@@ -39,43 +39,43 @@ jobs:
         if: always()
         shell: bash
         env:
-            TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-            STATUS: ${{ job.status }}
-            REPO: ${{ github.repository }}
-            WORKFLOW: ${{ github.workflow }}
-            ACTOR: ${{ github.actor }}
-            BRANCH: ${{ github.ref_name }}
-            RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
-            SHA: ${{ github.sha }}
-         run: |
-            set -euo pipefail
-        
-            if [ "$STATUS" = "success" ]; then
-              ICON="✅"
-            elif [ "$STATUS" = "cancelled" ]; then
-              ICON="⚠️"
-            else
-              ICON="❌"
-            fi
-        
-            SHORT_SHA="$(echo "$SHA" | cut -c1-7)"
-        
-            payload=$(printf '%s' \
-              "{\"text\":\"${ICON} *${WORKFLOW}* — *${STATUS}*\\n\\n🤖 Repo: ${REPO}\\n🌿 Branch: ${BRANCH}\\n👤 Actor: ${ACTOR}\\n\\n🔗 Run: ${RUN_URL}\\n🔗 Commit (${SHORT_SHA}): ${COMMIT_URL}\"}")
-        
-            http_code=$(
-              curl -sS -o response.txt -w "%{http_code}" \
-                -H "Content-Type: application/json" \
-                -d "$payload" \
-                "$TEAMS_WEBHOOK_URL"
-            )
-        
-            echo "Teams webhook HTTP status: $http_code"
-            echo "Response body:"
-            cat response.txt || true
-        
-            if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
-              echo "❌ Teams webhook rejected the message"
-              exit 1
-            fi
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+      
+          if [ "$STATUS" = "success" ]; then
+            ICON="✅"
+          elif [ "$STATUS" = "cancelled" ]; then
+            ICON="⚠️"
+          else
+            ICON="❌"
+          fi
+      
+          SHORT_SHA="$(echo "$SHA" | cut -c1-7)"
+      
+          payload=$(printf '%s' \
+            "{\"text\":\"${ICON} *${WORKFLOW}* — *${STATUS}*\\n\\n🤖 Repo: ${REPO}\\n🌿 Branch: ${BRANCH}\\n👤 Actor: ${ACTOR}\\n\\n🔗 Run: ${RUN_URL}\\n🔗 Commit (${SHORT_SHA}): ${COMMIT_URL}\"}")
+      
+          http_code=$(
+            curl -sS -o response.txt -w "%{http_code}" \
+              -H "Content-Type: application/json" \
+              -d "$payload" \
+              "$TEAMS_WEBHOOK_URL"
+          )
+      
+          echo "Teams webhook HTTP status: $http_code"
+          echo "Response body:"
+          cat response.txt || true
+      
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "❌ Teams webhook rejected the message"
+            exit 1
+          fi
