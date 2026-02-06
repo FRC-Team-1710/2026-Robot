@@ -33,11 +33,7 @@ public class FeederIOCTRE implements FeederIO {
 
   public void update() {}
 
-  public void setVelocity(boolean clockwise) {
-    this.m_feederRight.set(clockwise ? 0.25 : -0.25);
-  }
-
-  public void stop() {
-    this.m_feederRight.stopMotor();
+  public void setFeeder(double percent) {
+    this.m_feederRight.set(percent);
   }
 }
