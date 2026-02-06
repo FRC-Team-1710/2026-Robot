@@ -1,6 +1,7 @@
 package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public class Velocity3d {
   private double v_x;
@@ -88,5 +89,9 @@ public class Velocity3d {
   /** Creates a Velocity3d from a Velocity2d by adding a zero Z component. */
   public static Velocity3d from(Velocity2d velocity2d) {
     return new Velocity3d(velocity2d.getX(), velocity2d.getY(), 0);
+  }
+
+  public static Velocity3d from(ChassisSpeeds fieldSpeeds) {
+    return new Velocity3d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond, 0);
   }
 }
