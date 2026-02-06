@@ -37,15 +37,12 @@ public class Shooter {
 
   public void periodic() {
 
-    ShootState math = ShooterMath.calculateShootState();
-
-    this.setTargetHoodAngle(Degrees.of(math.desiredAngle()));
-    this.setVelocity(DegreesPerSecond.of(math.desiredRPM()));
-
     switch (this.m_state) {
       case SHOOT:
-        this.m_io.setTargetVelocity(this.getTargetVelocity());
-        this.m_io.setHoodAngle(this.getTargetHoodAngle());
+        ShootState math = ShooterMath.calculateShootState();
+
+        this.m_io.setTargetVelocity(DegreesPerSecond.of(math.desiredAngle()));
+        this.m_io.setHoodAngle(Degrees.of(math.desiredRPM()));
         break;
 
       default:
@@ -55,10 +52,6 @@ public class Shooter {
     }
 
     this.m_io.update();
-  }
-
-  public void setVelocity(AngularVelocity pVelocity) {
-    this.m_velocity = pVelocity;
   }
 
   public AngularVelocity getVelocity() {
@@ -77,10 +70,6 @@ public class Shooter {
   public boolean isHoodAtTargetAngle() {
     return this.getHoodAngle()
         .isNear(getTargetHoodAngle(), ShooterConstants.HOOD_TARGET_ERROR_RANGE);
-  }
-
-  public void setTargetHoodAngle(Angle pAngle) {
-    this.m_hoodAngle = pAngle;
   }
 
   public Angle getTargetHoodAngle() {
