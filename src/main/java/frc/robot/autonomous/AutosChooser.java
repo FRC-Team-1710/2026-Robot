@@ -22,7 +22,7 @@ public class AutosChooser {
   private final HashMap<Auto, Command> autoCommands;
   private final SendableChooser<Auto> autoChooser;
 
-  private final FollowPath.Builder pathBuilder;
+  private static FollowPath.Builder pathBuilder;
 
   public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     pathBuilder =
@@ -45,10 +45,14 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
+    SmartDashboard.putData(autoChooser);
+
     // Add preset autos hare//
     addPath(Auto.CUSTOM, Commands.none());
     // Put preset autos hare//
     addPath(Auto.TEST_PATH, Commands.none());
+
+    addPath(Auto.SPINNN, spinnn());
   }
 
   public void setCustom(Command command) {
@@ -80,10 +84,14 @@ public class AutosChooser {
                 new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
   }
 
+  public static Command spinnn() {
+    return Commands.sequence(pathBuilder.build(new Path("spinnn")));
+  }
+
   public enum Auto {
     NONE(),
     CUSTOM(),
     TEST_PATH(),
-    MY_LAST_BRAINCELL()
+    SPINNN()
   }
 }

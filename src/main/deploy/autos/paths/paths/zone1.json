@@ -1,0 +1,130 @@
+{
+  "path_elements": [
+    {
+      "type": "translation",
+      "x_meters": 3.768748984565395,
+      "y_meters": 5.489654752233955,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 0.0,
+      "lib_key": ""
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 0.8127251538796265,
+      "lib_key": ""
+    },
+    {
+      "type": "translation",
+      "x_meters": 0.25038992688870976,
+      "y_meters": 5.959857839155157,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 3.115393988627133,
+      "y_meters": 5.931360682372054,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 5.923403736799351,
+      "y_meters": 5.845869212022744,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 8.303956133225022,
+      "y_meters": 5.917112103980502,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 5.95294069861901,
+      "y_meters": 5.7746263200649866,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": -0.0,
+      "lib_key": ""
+    },
+    {
+      "type": "translation",
+      "x_meters": 3.0879366368805847,
+      "y_meters": 5.660637692932575,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 0.0,
+      "lib_key": ""
+    },
+    {
+      "type": "translation",
+      "x_meters": 5.920284321689687,
+      "y_meters": 5.347168968318441,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 8.286588139723802,
+      "y_meters": 4.905463038180342,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "translation",
+      "x_meters": 3.104264825345247,
+      "y_meters": 5.560897644191713,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 1.0,
+      "lib_key": ""
+    },
+    {
+      "type": "translation",
+      "x_meters": 2.137441104792849,
+      "y_meters": 5.4326604386677495,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 1.0,
+      "lib_key": ""
+    },
+    {
+      "type": "translation",
+      "x_meters": 1.4128432168968312,
+      "y_meters": 4.0932940698619005,
+      "intermediate_handoff_radius_meters": 0.2
+    }
+  ],
+  "constraints": {
+    "max_velocity_meters_per_sec": [
+      {
+        "value": 2.0,
+        "start_ordinal": 0,
+        "end_ordinal": 1
+      },
+      {
+        "value": 2.0,
+        "start_ordinal": 4,
+        "end_ordinal": 4
+      },
+      {
+        "value": 2.0,
+        "start_ordinal": 8,
+        "end_ordinal": 8
+      },
+      {
+        "value": 2.0,
+        "start_ordinal": 10,
+        "end_ordinal": 11
+      }
+    ]
+  }
+}
