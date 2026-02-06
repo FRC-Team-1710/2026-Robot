@@ -21,6 +21,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Alliance;
@@ -87,6 +88,8 @@ public class Robot extends DynamicTimedRobot {
         epilogueConfig.loggingPeriodOffset);
 
     addAllSubsystems(m_robotContainer.getAllSubsystems());
+
+    SmartDashboard.putBoolean("Reset Fuel Sim", false);
   }
 
   @Override
@@ -140,6 +143,14 @@ public class Robot extends DynamicTimedRobot {
 
   @Override
   public void simulationPeriodic() {
+    // Reset Fuel
+    if (SmartDashboard.getBoolean("Reset Fuel Sim", false)) {
+      SmartDashboard.putBoolean("Reset Fuel Sim", false);
+
+      m_robotContainer.fuelSim.clearFuel();
+      m_robotContainer.fuelSim.spawnStartingFuel();
+    }
+
     m_robotContainer.fuelSim.updateSim();
   }
 
