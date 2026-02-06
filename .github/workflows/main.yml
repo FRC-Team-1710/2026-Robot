@@ -48,7 +48,7 @@ jobs:
             RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
             SHA: ${{ github.sha }}
-          run: |
+         run: |
             set -euo pipefail
         
             if [ "$STATUS" = "success" ]; then
