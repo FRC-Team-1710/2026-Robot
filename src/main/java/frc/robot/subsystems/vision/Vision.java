@@ -6,10 +6,11 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.constants.FieldConstants;
 import java.util.Optional;
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
@@ -30,10 +31,7 @@ public class Vision extends SubsystemBase {
 
   private final HootAutoReplay autoReplay;
 
-  public Vision(
-      String cameraName,
-      Transform3d robotToCamera,
-      CommandSwerveDrivetrain drivetrain) {
+  public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
 
     this.drivetrain = drivetrain;
 
@@ -41,7 +39,7 @@ public class Vision extends SubsystemBase {
 
     poseEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.aprilTags,
+            FieldConstants.kAprilTags,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             camera,
             robotToCamera);
@@ -109,8 +107,7 @@ public class Vision extends SubsystemBase {
 
     avgTagDistance =
         result.getTargets().stream()
-            .mapToDouble(t ->
-                t.getBestCameraToTarget().getTranslation().getNorm())
+            .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
             .average()
             .orElse(0.0);
 
@@ -136,9 +133,7 @@ public class Vision extends SubsystemBase {
     thetaStdDev *= distanceScale;
 
     drivetrain.addVisionMeasurement(
-        robotPose,
-        robotPoseTimestamp,
-        VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        robotPose, robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
   private void reset() {
