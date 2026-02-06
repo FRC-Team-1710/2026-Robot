@@ -282,4 +282,8 @@ public class Superstructure {
   public Command setWantedStateCommand(WantedStates state) {
     return Commands.runOnce(() -> setWantedState(state));
   }
+
+  public CurrentStates getCurrentState() {
+    return currentState;
+  }
 }
