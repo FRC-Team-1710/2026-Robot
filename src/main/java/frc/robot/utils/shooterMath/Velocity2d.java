@@ -66,7 +66,7 @@ public class Velocity2d {
   }
 
   /** Creates a Velocity2d from a Velocity3d by dropping the Z component. */
-  public Velocity2d from(Velocity3d velocity3d) {
+  public static Velocity2d from(Velocity3d velocity3d) {
     return new Velocity2d(velocity3d.getX(), velocity3d.getY());
   }
 }
