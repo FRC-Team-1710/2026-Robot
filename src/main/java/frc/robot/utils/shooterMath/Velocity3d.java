@@ -1,7 +1,10 @@
 package frc.robot.utils.shooterMath;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 public class Velocity3d {
   private double v_x;
@@ -23,15 +26,15 @@ public class Velocity3d {
   }
 
   /** Create a Velocity3d from a velocity magnitude and a Rotation3d direction */
-  public Velocity3d(double velocity, Rotation3d rotation) {
+  public Velocity3d(LinearVelocity velocity, Rotation3d rotation) {
     var mat = rotation.toMatrix(); // 3x3 matrix
     double dirX = mat.get(0, 0); // first column = x-axis direction in world frame
     double dirY = mat.get(1, 0);
     double dirZ = mat.get(2, 0);
 
-    this.v_x = velocity * dirX;
-    this.v_y = velocity * dirY;
-    this.v_z = velocity * dirZ;
+    this.v_x = velocity.in(MetersPerSecond) * dirX;
+    this.v_y = velocity.in(MetersPerSecond) * dirY;
+    this.v_z = velocity.in(MetersPerSecond) * dirZ;
   }
 
   /** Returns the X component of the velocity. */

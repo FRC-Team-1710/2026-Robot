@@ -6,6 +6,8 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,8 +44,8 @@ public class Superstructure {
 
   // Contains the RPM and Angle for the shooter
   private ShootState shootState;
-  private double shooterRPM;
-  private double angle;
+  private AngularVelocity shooterRPM;
+  private Angle angle;
 
   private boolean shouldAssistLeft = false;
   private boolean didIntake = false;
