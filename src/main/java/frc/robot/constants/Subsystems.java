@@ -6,6 +6,7 @@ public enum Subsystems {
   Superstructure(),
   Drive(),
   Intake(),
+  Feeder(),
   Shooter(),
   Indexer(),
 }

@@ -1,13 +1,11 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,12 +15,16 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 @SuppressWarnings("unused")
@@ -33,11 +35,18 @@ public class Superstructure {
   @NotLogged private Intake intake;
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
+  @NotLogged private Feeder feeder;
 
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
 
+  // Contains the RPM and Angle for the shooter
+  private ShootState shootState;
+  private double shooterRPM;
+  private double angle;
+
   private boolean shouldAssistLeft = false;
+  private boolean didIntake = false;
 
   public Superstructure(
       CommandXboxController driver,
@@ -45,19 +54,29 @@ public class Superstructure {
       CommandSwerveDrivetrain drivetrain,
       Intake intake,
       Shooter shooter,
-      Indexer indexer) {
+      Indexer indexer,
+      Feeder feeder) {
     this.driver = driver;
     this.mech = mech;
     this.drivetrain = drivetrain;
     this.intake = intake;
     this.shooter = shooter;
     this.indexer = indexer;
+    this.feeder = feeder;
   }
 
   public void periodic() {
+    shooter.setGoingTowardsAllianceZone(drivetrain.isGoingTowardsAllianceZone());
+    shooter.setDidIntake(didIntake);
+
     currentState = handleStateTransitions();
     applyStates();
+
     applyRumble();
+
+    ShootState shootState = ShooterMath.calculateShootState();
+    shooterRPM = shootState.desiredRPM();
+    angle = shootState.desiredAngle();
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
@@ -92,12 +111,6 @@ public class Superstructure {
     switch (wantedState) {
       case Default:
         return CurrentStates.Idle;
-      case AssistRight:
-        shouldAssistLeft = false;
-        return CurrentStates.Assist;
-      case AssistLeft:
-        shouldAssistLeft = true;
-        return CurrentStates.Assist;
       case Shoot:
         return drivetrain.inAllianceZone() ? CurrentStates.Score : CurrentStates.Shoot;
       case Intake:
@@ -119,9 +132,6 @@ public class Superstructure {
     switch (currentState) {
       case Idle:
         idle();
-        break;
-      case Assist:
-        assist();
         break;
       case Shoot:
         shoot();
@@ -147,14 +157,7 @@ public class Superstructure {
   private void idle() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Up);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-  }
-
-  private void assist() {
-    drivetrain.setYTargetFromCenter(getAssistYTarget());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.Y_ASSIST);
-    intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
   }
@@ -163,43 +166,58 @@ public class Superstructure {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void score() {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void intake() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
+
+    didIntake = true;
   }
 
   private void scoreWhileIntaking() {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void shootWhileIntaking() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
   }
 
   private void climb() {
@@ -207,16 +225,7 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
-  }
-
-  private Distance getAssistYTarget() {
-    return drivetrain.getPose().getY() < FieldConstants.kFieldWidth.div(2).in(Meters)
-        ? (shouldAssistLeft
-            ? FieldConstants.kBumpCenterYFromFieldCenter
-            : FieldConstants.kTrenchCenterYFromFieldCenter)
-        : (shouldAssistLeft
-            ? FieldConstants.kTrenchCenterYFromFieldCenter
-            : FieldConstants.kBumpCenterYFromFieldCenter);
+    feeder.setState(FEEDER_STATE.STOP);
   }
 
   private Rotation2d getRotationForScore() {
@@ -236,20 +245,21 @@ public class Superstructure {
 
   /** The wanted states of superstructure */
   public enum WantedStates {
+    // DO NOT RENAME (unless AutosChooser is updated as well)
     Default(),
-    AssistRight(),
-    AssistLeft(),
     Shoot(),
     Intake(),
     IntakeAndShoot(),
     Climb(),
     DefaultAuto(),
+    ShootAuto(),
+    IntakeAuto(),
+    ClimbAuto(),
   }
 
   /** The current states of superstructure */
   public enum CurrentStates {
     Idle(),
-    Assist(),
     Shoot(),
     Score(),
     Intake(),
@@ -271,5 +281,9 @@ public class Superstructure {
    */
   public Command setWantedStateCommand(WantedStates state) {
     return Commands.runOnce(() -> setWantedState(state));
+  }
+
+  public CurrentStates getCurrentState() {
+    return currentState;
   }
 }

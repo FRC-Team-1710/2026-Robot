@@ -10,20 +10,27 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.autonomous.AutoPathBuilder;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
+import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederIO;
+import frc.robot.subsystems.feeder.FeederIOCTRE;
+import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
+import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
@@ -32,12 +39,16 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
+import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import java.util.HashMap;
 
 @Logged
 public class RobotContainer {
   private final CommandXboxController driver = new CommandXboxController(0);
   private final CommandXboxController mech = new CommandXboxController(1);
+
+  public FuelSim fuelSim;
 
   private final AutosChooser autoChooser;
 
@@ -47,38 +58,69 @@ public class RobotContainer {
   private final Intake intake;
   private final Shooter shooter;
   private final Indexer indexer;
+  private final Feeder feeder;
 
   private final Superstructure superstructure;
 
-  public RobotContainer() {
+  public RobotContainer(TimesConsumer consumer) {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
-    AutoPathBuilder.setDrivetrainInstance(drivetrain);
 
     switch (Mode.currentMode) {
       case REAL:
-        intake = new Intake(new IntakeIOCTRE());
-        shooter = new Shooter(new ShooterIOCTRE());
-        indexer = new Indexer(new IndexerIOCTRE());
+        intake = new Intake(new IntakeIOCTRE(), consumer);
+        shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        feeder = new Feeder(new FeederIOCTRE(), consumer);
+        indexer = new Indexer(new IndexerIOCTRE(), consumer);
         break;
 
       case SIMULATION:
-        intake = new Intake(new IntakeIOSIM());
-        shooter = new Shooter(new ShooterIOSIM());
-        // TODO: Add IndexerIOSIM
-        indexer = new Indexer(new IndexerIO() {});
+        intake = new Intake(new IntakeIOSIM(), consumer);
+        shooter = new Shooter(new ShooterIOSIM(), consumer);
+        feeder = new Feeder(new FeederIOSIM(), consumer);
+        indexer = new Indexer(new IndexerIOSIM(), consumer);
         break;
 
       default:
-        intake = new Intake(new IntakeIO() {});
-        shooter = new Shooter(new ShooterIO() {});
-        indexer = new Indexer(new IndexerIO() {});
+        intake = new Intake(new IntakeIO() {}, consumer);
+        shooter = new Shooter(new ShooterIO() {}, consumer);
+        feeder = new Feeder(new FeederIO() {}, consumer);
+        indexer = new Indexer(new IndexerIO() {}, consumer);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer);
+    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
 
-    autoChooser = new AutosChooser(superstructure);
+    // Fuel Simulation
+    if (Mode.currentMode == CurrentMode.SIMULATION) {
+      fuelSim = new FuelSim("FeulSim");
+      fuelSim.spawnStartingFuel();
+
+      double width = Units.inchesToMeters(39.875);
+      double length = Units.inchesToMeters(27.875);
+
+      fuelSim.registerRobot(
+          width,
+          length,
+          Units.inchesToMeters(6.75),
+          drivetrain::getPose,
+          drivetrain::getFieldSpeeds);
+
+      fuelSim.registerIntake(
+          -width / 2,
+          width / 2,
+          length / 2,
+          length / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
+          () -> superstructure.getCurrentState() == CurrentStates.Intake);
+
+      fuelSim.setSubticks(5);
+
+      fuelSim.start();
+
+      fuelSim.enableAirResistance();
+    }
+
+    autoChooser = new AutosChooser(superstructure, drivetrain);
 
     configureBindings();
   }
@@ -89,16 +131,6 @@ public class RobotContainer {
         .onTrue(
             drivetrain.runOnce(
                 () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
-
-    driver
-        .povRight()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistRight))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
-
-    driver
-        .povLeft()
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.AssistLeft))
-        .onFalse(superstructure.setWantedStateCommand(WantedStates.Default));
 
     driver
         .rightTrigger()
@@ -126,15 +158,48 @@ public class RobotContainer {
     return autoChooser.getAuto();
   }
 
-  public HashMap<Subsystems, Pair<Runnable, Time>> getAllSubsystems() {
-    HashMap<Subsystems, Pair<Runnable, Time>> map = new HashMap<>();
+  public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {
+    HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> map = new HashMap<>();
     map.put(
         Subsystems.Superstructure,
-        new Pair<Runnable, Time>(superstructure::periodic, Milliseconds.of(20)));
-    map.put(Subsystems.Drive, new Pair<Runnable, Time>(drivetrain::periodic, Milliseconds.of(20)));
-    map.put(Subsystems.Intake, new Pair<Runnable, Time>(intake::periodic, Milliseconds.of(20)));
-    map.put(Subsystems.Shooter, new Pair<Runnable, Time>(shooter::periodic, Milliseconds.of(20)));
-    map.put(Subsystems.Indexer, new Pair<Runnable, Time>(indexer::periodic, Milliseconds.of(20)));
+        new Pair<Runnable, Pair<Time, Time>>(
+            superstructure::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 1))));
+    map.put(
+        Subsystems.Intake,
+        new Pair<Runnable, Pair<Time, Time>>(
+            intake::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0))));
+    map.put(
+        Subsystems.Shooter,
+        new Pair<Runnable, Pair<Time, Time>>(
+            shooter::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0))));
+    map.put(
+        Subsystems.Indexer,
+        new Pair<Runnable, Pair<Time, Time>>(
+            indexer::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
+    map.put(
+        Subsystems.Feeder,
+        new Pair<Runnable, Pair<Time, Time>>(
+            feeder::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(60),
+                Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0))));
+    map.put(
+        Subsystems.Drive,
+        new Pair<Runnable, Pair<Time, Time>>(
+            drivetrain::periodic,
+            new Pair<Time, Time>(
+                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 5))));
     return map;
   }
 }

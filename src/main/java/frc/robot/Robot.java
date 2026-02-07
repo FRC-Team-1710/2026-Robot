@@ -20,15 +20,20 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
+import frc.robot.constants.Mode;
+import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
+import frc.robot.utils.LogEverything;
 import java.util.HashMap;
 
 @Logged
+@SuppressWarnings("unused")
 public class Robot extends DynamicTimedRobot {
   private Command m_autonomousCommand;
 
@@ -36,10 +41,12 @@ public class Robot extends DynamicTimedRobot {
   private final HootAutoReplay hootAutoReplay =
       new HootAutoReplay().withTimestampReplay().withJoystickReplay();
 
+  private final PowerDistribution pdhLogging = new PowerDistribution();
+
   public Robot() {
     Alliance.updateRedAlliance();
 
-    m_robotContainer = new RobotContainer();
+    m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
     DataLogManager.start();
 
     var epilogueConfig = new EpilogueConfiguration();
@@ -48,7 +55,7 @@ public class Robot extends DynamicTimedRobot {
         EpilogueBackend.multi(
             new HootEpilogueBackend(), new NTEpilogueBackend(NetworkTableInstance.getDefault()));
 
-    if (isSimulation()) {
+    if (Mode.currentMode == CurrentMode.SIMULATION) {
       epilogueConfig.minimumImportance = Importance.DEBUG;
       epilogueConfig.errorHandler = ErrorHandler.crashOnError();
     } else {
@@ -89,6 +96,8 @@ public class Robot extends DynamicTimedRobot {
     hootAutoReplay.update();
 
     MatchState.updateAutonomousWinner();
+
+    LogEverything.logEverythingPossible();
   }
 
   @Override
@@ -130,7 +139,9 @@ public class Robot extends DynamicTimedRobot {
   public void teleopPeriodic() {}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    m_robotContainer.fuelSim.updateSim();
+  }
 
   @Override
   public void teleopExit() {}
@@ -147,15 +158,13 @@ public class Robot extends DynamicTimedRobot {
   public void testExit() {}
 
   /** A map of all subsystems with their period */
-  public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Time>> subsystems) {
-    int id = 0;
+  public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> subsystems) {
     for (Subsystems key : subsystems.keySet()) {
-      id++;
       addSubsystem(
           key,
           subsystems.get(key).getFirst(),
-          subsystems.get(key).getSecond(),
-          Seconds.of(0.02 / Subsystems.values().length).times(id));
+          subsystems.get(key).getSecond().getFirst(),
+          subsystems.get(key).getSecond().getSecond());
     }
   }
 
