@@ -13,8 +13,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autonomous.AutosChooser;
+import frc.robot.constants.Alliance;
+import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
@@ -107,10 +110,10 @@ public class RobotContainer {
           drivetrain::getFieldSpeeds);
 
       fuelSim.registerIntake(
-          -width / 2,
           width / 2,
+          width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
+          -length / 2,
           length / 2,
-          length / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
           () -> superstructure.getCurrentState() == CurrentStates.Intake);
 
       fuelSim.setSubticks(5);
@@ -129,8 +132,10 @@ public class RobotContainer {
     driver
         .start()
         .onTrue(
-            drivetrain.runOnce(
-                () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
+            Commands.runOnce(
+                    () ->
+                        drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero)))
+                .ignoringDisable(true));
 
     driver
         .rightTrigger()
@@ -152,6 +157,16 @@ public class RobotContainer {
         .negate()
         .and(driver.rightTrigger().negate())
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
+
+    mech.rightBumper()
+        .onTrue(
+            Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
+                .ignoringDisable(true));
+
+    mech.leftBumper()
+        .onTrue(
+            Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
+                .ignoringDisable(true));
   }
 
   public Command getAutonomousCommand() {

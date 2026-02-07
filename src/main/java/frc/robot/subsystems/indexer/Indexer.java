@@ -37,7 +37,7 @@ public class Indexer {
   }
 
   public enum IndexStates {
-    Indexing(Milliseconds.of(20), 0),
+    Indexing(Milliseconds.of(20), 0.5),
 
     Idle(Milliseconds.of(60), 0);
 

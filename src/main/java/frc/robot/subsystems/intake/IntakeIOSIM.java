@@ -25,21 +25,21 @@ import frc.robot.utils.MechanismUtil.IntakeVisualSim;
 @Logged
 public class IntakeIOSIM implements IntakeIO {
   /** Creates a new IntakeIOSIM. */
-  private final DCMotor gearbox;
+  private final DCMotor m_gearbox;
 
-  private final SingleJointedArmSim armPhysicsSim;
-  private final IntakeVisualSim intakeVisualSim;
-  private Angle angleSetpoint;
+  private final SingleJointedArmSim m_armPhysicsSim;
+  private final IntakeVisualSim m_intakeVisualSim;
+  private Angle m_angleSetpoint;
 
-  private final ProfiledPIDController PID =
+  private final ProfiledPIDController m_PID =
       new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
 
   public IntakeIOSIM() {
-    gearbox = DCMotor.getKrakenX60(1);
-    armPhysicsSim =
-        new SingleJointedArmSim(gearbox, 25, 0.004, 10, -45, 90, false, 45, new double[2]);
+    m_gearbox = DCMotor.getKrakenX60(1);
+    m_armPhysicsSim =
+        new SingleJointedArmSim(m_gearbox, 25, 0.004, 10, -45, 90, false, 45, new double[2]);
 
-    intakeVisualSim =
+    m_intakeVisualSim =
         new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
 
     SmartDashboard.putNumber("Intake/JamTest/Velocity", 0);
@@ -47,20 +47,20 @@ public class IntakeIOSIM implements IntakeIO {
   }
 
   public void setAngle(Angle angle) {
-    angleSetpoint = angle;
-    if (angleSetpoint == null) return;
-    armPhysicsSim.setInputVoltage(
-        PID.calculate(armPhysicsSim.getAngleRads(), angleSetpoint.in(Radians)));
-    armPhysicsSim.update(0.02);
-    intakeVisualSim.updateArm(
-        Units.radiansToDegrees(armPhysicsSim.getAngleRads()),
-        Math.abs(angleSetpoint.in(Radians) - armPhysicsSim.getAngleRads())
+    m_angleSetpoint = angle;
+    if (m_angleSetpoint == null) return;
+    m_armPhysicsSim.setInputVoltage(
+        m_PID.calculate(m_armPhysicsSim.getAngleRads(), m_angleSetpoint.in(Radians)));
+    m_armPhysicsSim.update(0.02);
+    m_intakeVisualSim.updateArm(
+        Units.radiansToDegrees(m_armPhysicsSim.getAngleRads()),
+        Math.abs(m_angleSetpoint.in(Radians) - m_armPhysicsSim.getAngleRads())
             < Units.degreesToRadians(1)); // updates visuals
-    SmartDashboard.putData("ArmVisuals", intakeVisualSim.getMechanism());
+    SmartDashboard.putData("ArmVisuals", m_intakeVisualSim.getMechanism());
   }
 
   public void setIntakeMotor(double speed) {
-    intakeVisualSim.updateRoller(speed * 20); // updates roller visuals
+    m_intakeVisualSim.updateRoller(speed * 20); // updates roller visuals
     Robot.telemetry().log("RollerSpeed", speed);
   }
 
