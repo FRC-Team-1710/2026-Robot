@@ -263,17 +263,65 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
   }
 
-  public void idleAuto() {
+  private void idleAuto() {
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
   }
 
-  public void shootAuto() {
+  private void shootAuto() {
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDDING);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void scoreAuto() {
+    intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void intakeAuto() {
+    intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.STOP);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = true;
+  }
+
+  private void scoreWhileIntakingAuto() {
+    intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void shootWhileIntakingAuto() {
+    intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void climbAuto() {
+    intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
   }
