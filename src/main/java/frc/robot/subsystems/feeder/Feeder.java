@@ -26,7 +26,7 @@ public class Feeder {
     switch (this.m_state) {
       case STOP:
         this.m_io.stop();
-      case FEEDDING:
+      case FEEDING:
         this.m_io.setVelocity(true);
       case REVERSE:
         this.m_io.setVelocity(false);
@@ -37,7 +37,7 @@ public class Feeder {
 
   public enum FEEDER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0)),
-    FEEDDING(Milliseconds.of(60), RotationsPerSecond.of(10)),
+    FEEDING(Milliseconds.of(60), RotationsPerSecond.of(10)),
     REVERSE(Milliseconds.of(60), RotationsPerSecond.of(-10));
 
     private final Time m_subsystemPeriodicFrequency;
