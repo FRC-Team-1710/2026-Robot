@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
-import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
@@ -24,7 +22,6 @@ import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 @SuppressWarnings("unused")
@@ -39,11 +36,6 @@ public class Superstructure {
 
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
-
-  // Contains the RPM and Angle for the shooter
-  private ShootState shootState;
-  private double shooterRPM;
-  private double angle;
 
   private boolean shouldAssistLeft = false;
   private boolean didIntake = false;
@@ -73,10 +65,6 @@ public class Superstructure {
     applyStates();
 
     applyRumble();
-
-    ShootState shootState = ShooterMath.calculateShootState();
-    shooterRPM = shootState.desiredRPM();
-    angle = shootState.desiredAngle();
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
@@ -327,18 +315,7 @@ public class Superstructure {
   }
 
   private Rotation2d getRotationForScore() {
-    // TODO: Account for robot velocity for shooting on the move
-    Translation2d targetPose =
-        Alliance.redAlliance
-            ? FieldConstants.kHubCenterBlue.rotateAround(
-                new Translation2d(
-                    FieldConstants.kFieldLength.div(2), FieldConstants.kFieldWidth.div(2)),
-                Rotation2d.k180deg)
-            : FieldConstants.kHubCenterBlue;
-    return Rotation2d.fromRadians(
-        Math.atan2(
-            targetPose.getY() - drivetrain.getPose().getY(),
-            targetPose.getX() - drivetrain.getPose().getX()));
+    return ShooterMath.getRobotRotation();
   }
 
   /** The wanted states of superstructure */

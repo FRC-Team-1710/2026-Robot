@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -13,7 +12,6 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 public class Shooter {
@@ -39,10 +37,8 @@ public class Shooter {
 
     switch (this.m_state) {
       case SHOOT:
-        ShootState math = ShooterMath.calculateShootState();
-
-        this.m_velocity = DegreesPerSecond.of(math.desiredAngle());
-        this.m_hoodAngle = Degrees.of(math.desiredRPM());
+        this.m_velocity = ShooterMath.getShooterRPM();
+        this.m_hoodAngle = ShooterMath.getShooterAngle();
         break;
 
       default:
