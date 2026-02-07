@@ -69,6 +69,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+  /* Override default swerve request for a higher priority one (used in auto) */
+  private boolean autonomousRequestOverride = false;
 
   // SysId routines
 
@@ -227,7 +229,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @return Command to run
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-    return Commands.run(() -> this.setControl(requestSupplier.get()));
+    return Commands.run(() -> this.applyRequest(requestSupplier.get()));
+  }
+
+  public void applyRequest(SwerveRequest request) {
+    if (!DriverStation.isAutonomous() || !autonomousRequestOverride) {
+      this.setControl(request);
+    }
+  }
+
+  public void applyPriorityRequestAuto(SwerveRequest request) {
+    if (DriverStation.isAutonomous() && autonomousRequestOverride) {
+      this.setControl(request);
+    }
   }
 
   public void periodic() {
@@ -282,6 +296,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public double rescaleRotation(double rotation) {
     return MathUtil.clamp(Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation), -1, 1);
+  }
+
+  public void setAutonomousRequestOverride(boolean override) {
+    this.autonomousRequestOverride = override;
   }
 
   private void startSimThread() {

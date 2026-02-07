@@ -33,7 +33,7 @@ public class AutosChooser {
                 drivetrain::getPose, // Supplier for current robot pose
                 drivetrain::getRobotSpeeds, // Supplier for current speeds
                 (speeds) ->
-                    drivetrain.setControl(
+                    drivetrain.applyRequest(
                         drivetrain.bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
                 new PIDController(5.0, 0.0, 0.0), // Translation PID
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
