@@ -44,7 +44,11 @@ public class MatchState {
         }
       }
     }
-    // Already active or no FMS
+    /*
+      Already active, no FMS, or unknown auto winner.
+      If auto winner is unknown, don't assume an inactive
+      hub (rather shoot into inactive than not shoot in active)
+    */
     return Seconds.of(0);
   }
 
@@ -76,12 +80,22 @@ public class MatchState {
         }
       }
     }
+
+    if (autonomousWinnerIsRed.isEmpty()) {
+      // Assume active to not disable robot performance if auto winner is unknown
+      return Seconds.of(999);
+    }
+
     // Already inactive or no FMS
     return Seconds.of(0);
   }
 
   public static boolean fmsAttached() {
     return simulatePracticeMatch || DriverStation.isFMSAttached();
+  }
+
+  public static void setAutoWinner(boolean redAlliance) {
+    autonomousWinnerIsRed = Optional.of(true);
   }
 
   public static void updateAutonomousWinner() {

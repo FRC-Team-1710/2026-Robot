@@ -280,7 +280,7 @@ public class Superstructure {
    * @return a command that sets the wanted state
    */
   public Command setWantedStateCommand(WantedStates state) {
-    return Commands.runOnce(() -> setWantedState(state));
+    return Commands.runOnce(() -> setWantedState(state)).ignoringDisable(true);
   }
 
   public CurrentStates getCurrentState() {
