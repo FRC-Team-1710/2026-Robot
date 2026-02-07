@@ -3,6 +3,8 @@ package frc.robot.utils.shooterMath;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.LinearVelocity;
 
@@ -91,5 +93,13 @@ public class Velocity3d {
 
   public static Velocity3d from(ChassisSpeeds fieldSpeeds) {
     return new Velocity3d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond, 0);
+  }
+
+  public Translation3d toTranslation3d() {
+    return new Translation3d(v_x, v_y, v_z);
+  }
+
+  public Transform3d toTransform3d() {
+    return new Transform3d(v_x, v_y, v_z, Rotation3d.kZero);
   }
 }

@@ -8,9 +8,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
@@ -122,9 +124,15 @@ public class ShooterMath {
    * @return {@code ShootState} containing desired flywheel RPM and angle
    */
   public static void calculate() {
-    m_shootVelocity = findShooterVelocity3d(m_robotPose).minus(m_robotVelocity);
+    m_shootVelocity = findShooterVelocity3d(m_robotPose).plus(m_robotVelocity).inverse();
     m_shootState = calculateShootState(m_shootVelocity);
     m_robotRotation = new Rotation2d(m_shootVelocity.getX(), m_shootVelocity.getY());
+
+    Robot.telemetry()
+        .log(
+            "ShooterMath",
+            m_shootVelocity.toTranslation3d().plus(m_robotPose.getTranslation()),
+            Translation3d.struct);
   }
 
   /**

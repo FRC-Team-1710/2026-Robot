@@ -169,6 +169,6 @@ public class Robot extends DynamicTimedRobot {
   }
 
   public static EpilogueBackend telemetry() {
-    return Epilogue.getConfig().backend;
+    return Epilogue.getConfig().backend.getNested("Outputs");
   }
 }
