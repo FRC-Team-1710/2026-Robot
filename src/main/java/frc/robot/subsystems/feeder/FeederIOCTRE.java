@@ -23,17 +23,17 @@ public class FeederIOCTRE implements FeederIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
 
-    this.m_feederLeft.setControl(
+    this.m_feederRight.setControl(
         new Follower(CanIdConstants.Feeder.FEEDER_MOTOR, MotorAlignmentValue.Opposed));
   }
 
   public void update() {}
 
   public void setFeeder(double percent) {
-    this.m_feederRight.set(percent);
+    this.m_feederLeft.set(percent);
   }
 }
