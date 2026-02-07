@@ -4,6 +4,7 @@
 
 package frc.robot.autonomous;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -59,6 +60,19 @@ public class AutosChooser {
         FollowPath.registerEventTrigger(state.name(), () -> superstructure.setWantedState(state));
       }
     }
+
+    FollowPath.registerEventTrigger(
+        "RemoveOverride",
+        () -> {
+          drivetrain.setAutonomousRequestOverride(false);
+        });
+
+    FollowPath.registerEventTrigger(
+        "HoldPosition",
+        () -> {
+          drivetrain.setAutonomousRequestOverride(true);
+          drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
+        });
 
     FollowPath.setPoseLoggingConsumer(
         (data) ->
