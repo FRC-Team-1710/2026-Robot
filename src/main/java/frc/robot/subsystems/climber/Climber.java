@@ -4,8 +4,15 @@
 
 package frc.robot.subsystems.climber;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Milliseconds;
+
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.constants.Subsystems;
+import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Climber {
@@ -16,15 +23,18 @@ public class Climber {
   private double m_wiggle = 1;
   private double speed = 0.5;
 
-  private ClimberStates m_state = ClimberStates.DOWN;
+  private final TimesConsumer timesConsumer;
 
-  public Climber(ClimberIO io) {
+  private ClimberStates m_currentState = ClimberStates.DOWN;
+
+  public Climber(ClimberIO io, TimesConsumer timesConsumer) {
     this.m_io = io;
+    this.timesConsumer = timesConsumer;
   }
 
   public void periodic() {
     double m_currentPosition = m_io.getDegrees();
-    double wantedAngle = m_state.m_angle;
+    double wantedAngle = m_currentState.m_angle.in(Degrees);
 
     if (wantedAngle - m_wiggle < m_currentPosition && m_currentPosition < wantedAngle + m_wiggle) {
       m_io.setSpeed(0);
@@ -37,14 +47,23 @@ public class Climber {
     }
   }
 
+  public void setState(ClimberStates state) {
+    if (!m_currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
+      timesConsumer.accept(Subsystems.Climber, state.subsystemPeriodicFrequency);
+    }
+    m_currentState = state;
+  }
+
   public enum ClimberStates {
-    UP(0),
-    DOWN(180);
+    UP(Milliseconds.of(60), Degrees.of(0)),
+    DOWN(Milliseconds.of(20), Degrees.of(90));
 
-    private final double m_angle;
+    private final Time subsystemPeriodicFrequency;
+    private final Angle m_angle;
 
-    ClimberStates(double angle) {
+    ClimberStates(Time subsystemPeriodicFrequency, Angle angle) {
       this.m_angle = angle;
+      this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
     }
   }
 }

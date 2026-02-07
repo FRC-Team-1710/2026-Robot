@@ -23,6 +23,10 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIO;
+import frc.robot.subsystems.climber.ClimberIOCTRE;
+import frc.robot.subsystems.climber.ClimberIOSIM;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.FeederIO;
 import frc.robot.subsystems.feeder.FeederIOCTRE;
@@ -59,6 +63,7 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Indexer indexer;
   private final Feeder feeder;
+  private final Climber climber;
 
   private final Superstructure superstructure;
 
@@ -72,6 +77,7 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer = new Indexer(new IndexerIOCTRE(), consumer);
+        climber = new Climber(new ClimberIOCTRE(), consumer);
         break;
 
       case SIMULATION:
@@ -79,6 +85,7 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOSIM(), consumer);
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer = new Indexer(new IndexerIOSIM(), consumer);
+        climber = new Climber(new ClimberIOSIM(), consumer);
         break;
 
       default:
@@ -86,11 +93,12 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIO() {}, consumer);
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer = new Indexer(new IndexerIO() {}, consumer);
+        climber = new Climber(new ClimberIO() {}, consumer);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
-
+    superstructure =
+        new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder, climber);
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
       fuelSim = new FuelSim("FeulSim");
@@ -194,6 +202,10 @@ public class RobotContainer {
             new Pair<Time, Time>(
                 Milliseconds.of(60),
                 Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0))));
+    map.put(
+        Subsystems.Climber,
+        new Pair<Runnable, Pair<Time, Time>>(
+            climber::periodic, new Pair<Time, Time>(Milliseconds.of(60), Milliseconds.of(0))));
     map.put(
         Subsystems.Drive,
         new Pair<Runnable, Pair<Time, Time>>(

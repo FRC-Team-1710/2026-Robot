@@ -13,7 +13,7 @@ import frc.robot.constants.CanIdConstants;
 public class ClimberIOCTRE implements ClimberIO {
   private TalonFX m_motor;
 
-  ClimberIOCTRE() {
+  public ClimberIOCTRE() {
     m_motor = new TalonFX(CanIdConstants.Climber.CLIMBER_MOTOR);
   }
 

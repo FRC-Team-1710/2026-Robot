@@ -15,6 +15,8 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.Climber.ClimberStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
 import frc.robot.subsystems.indexer.Indexer;
@@ -36,6 +38,7 @@ public class Superstructure {
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
   @NotLogged private Feeder feeder;
+  @NotLogged private frc.robot.subsystems.climber.Climber climber;
 
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
@@ -55,7 +58,8 @@ public class Superstructure {
       Intake intake,
       Shooter shooter,
       Indexer indexer,
-      Feeder feeder) {
+      Feeder feeder,
+      Climber climber) {
     this.driver = driver;
     this.mech = mech;
     this.drivetrain = drivetrain;
@@ -63,6 +67,7 @@ public class Superstructure {
     this.shooter = shooter;
     this.indexer = indexer;
     this.feeder = feeder;
+    this.climber = climber;
   }
 
   public void periodic() {
@@ -160,6 +165,7 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
+    climber.setState(ClimberStates.UP);
   }
 
   private void shoot() {
@@ -170,6 +176,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    climber.setState(ClimberStates.UP);
 
     didIntake = false;
   }
@@ -182,6 +189,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    climber.setState(ClimberStates.UP);
 
     didIntake = false;
   }
@@ -192,6 +200,7 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
+    climber.setState(ClimberStates.UP);
 
     didIntake = true;
   }
@@ -204,6 +213,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    climber.setState(ClimberStates.UP);
 
     didIntake = false;
   }
@@ -216,6 +226,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    climber.setState(ClimberStates.UP);
 
     didIntake = false;
   }
@@ -226,6 +237,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
+    climber.setState(ClimberStates.DOWN);
   }
 
   private Rotation2d getRotationForScore() {
