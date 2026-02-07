@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -36,6 +37,8 @@ public class Superstructure {
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
   @NotLogged private Feeder feeder;
+
+  private final Timer timer = new Timer();
 
   private WantedStates wantedState = WantedStates.Default;
   private CurrentStates currentState = CurrentStates.Idle;
@@ -160,6 +163,9 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
+
+    timer.reset();
+    timer.start();
   }
 
   private void shoot() {
@@ -168,7 +174,7 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
+    indexer.setState(timer.hasElapsed(0.25) ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
@@ -180,7 +186,7 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
+    indexer.setState(timer.hasElapsed(0.25) ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
@@ -194,6 +200,9 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = true;
+
+    timer.reset();
+    timer.start();
   }
 
   private void scoreWhileIntaking() {
@@ -202,7 +211,7 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
+    indexer.setState(timer.hasElapsed(0.25) ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
@@ -214,7 +223,7 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
+    indexer.setState(timer.hasElapsed(0.25) ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
@@ -226,6 +235,9 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
+
+    timer.reset();
+    timer.start();
   }
 
   private Rotation2d getRotationForScore() {
