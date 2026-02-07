@@ -25,6 +25,9 @@ public class FeederIOCTRE implements FeederIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
+    config.CurrentLimits.StatorCurrentLimit = 40;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+
     TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
 
     this.m_feederRight.setControl(

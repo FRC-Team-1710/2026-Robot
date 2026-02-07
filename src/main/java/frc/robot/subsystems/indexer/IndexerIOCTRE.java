@@ -25,6 +25,9 @@ public class IndexerIOCTRE implements IndexerIO {
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
+    motorConfig.CurrentLimits.StatorCurrentLimit = 50;
+    motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
     IndexMotor.getConfigurator().apply(motorConfig);
   }
 
