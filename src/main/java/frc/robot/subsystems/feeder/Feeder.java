@@ -1,10 +1,8 @@
 package frc.robot.subsystems.feeder;
 
 import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -23,27 +21,20 @@ public class Feeder {
   }
 
   public void periodic() {
-    switch (this.m_state) {
-      case STOP:
-        this.m_io.stop();
-      case FEEDDING:
-        this.m_io.setVelocity(true);
-      case REVERSE:
-        this.m_io.setVelocity(false);
-    }
+    this.m_io.setFeeder(this.m_state.m_velocity);
 
     this.m_io.update();
   }
 
   public enum FEEDER_STATE {
-    STOP(Milliseconds.of(60), RotationsPerSecond.of(0)),
-    FEEDDING(Milliseconds.of(60), RotationsPerSecond.of(10)),
-    REVERSE(Milliseconds.of(60), RotationsPerSecond.of(-10));
+    STOP(Milliseconds.of(60), 0),
+    FEEDING(Milliseconds.of(20), 0.5),
+    REVERSE(Milliseconds.of(20), -0.25);
 
     private final Time m_subsystemPeriodicFrequency;
-    private final AngularVelocity m_velocity;
+    private final double m_velocity;
 
-    FEEDER_STATE(Time pSubsystemPeriodicFrequency, AngularVelocity pVelocity) {
+    FEEDER_STATE(Time pSubsystemPeriodicFrequency, double pVelocity) {
       this.m_subsystemPeriodicFrequency = pSubsystemPeriodicFrequency;
       this.m_velocity = pVelocity;
     }
@@ -52,7 +43,7 @@ public class Feeder {
       return this.m_subsystemPeriodicFrequency;
     }
 
-    AngularVelocity getVelocity() {
+    double getVelocity() {
       return this.m_velocity;
     }
   }
