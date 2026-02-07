@@ -121,6 +121,18 @@ public class Superstructure {
             : CurrentStates.ShootWhileIntaking;
       case Climb:
         return CurrentStates.Climb;
+      case DefaultAuto:
+        return CurrentStates.IdleAuto;
+      case ShootAuto:
+        return drivetrain.inAllianceZone() ? CurrentStates.ScoreAuto : CurrentStates.ShootAuto;
+      case IntakeAuto:
+        return CurrentStates.IntakeAuto;
+      case IntakeAndShootAuto:
+        return drivetrain.inAllianceZone()
+            ? CurrentStates.ScoreWhileIntakingAuto
+            : CurrentStates.ShootWhileIntakingAuto;
+      case ClimbAuto:
+        return CurrentStates.ClimbAuto;
       default:
         DriverStation.reportError("Switch from WantedState to CurrentState failed!", false);
         return CurrentStates.Idle;
@@ -150,6 +162,29 @@ public class Superstructure {
         break;
       case Climb:
         climb();
+        break;
+      case IdleAuto:
+        idleAuto();
+        break;
+      case ShootAuto:
+        shootAuto();
+        break;
+      case ScoreAuto:
+        scoreAuto();
+        break;
+      case IntakeAuto:
+        intakeAuto();
+        break;
+      case ScoreWhileIntakingAuto:
+        scoreWhileIntakingAuto();
+        break;
+      case ShootWhileIntakingAuto:
+        shootWhileIntakingAuto();
+        break;
+      case ClimbAuto:
+        climbAuto();
+        break;
+      default:
         break;
     }
   }
@@ -228,6 +263,69 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
   }
 
+  private void idleAuto() {
+    intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.STOP);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
+  }
+
+  private void shootAuto() {
+    intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void scoreAuto() {
+    intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.FEEDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void intakeAuto() {
+    intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.STOP);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = true;
+  }
+
+  private void scoreWhileIntakingAuto() {
+    intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void shootWhileIntakingAuto() {
+    intake.setState(IntakeStates.Intaking);
+    feeder.setState(FEEDER_STATE.FEEDING);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    // TODO: Add auto shoot here
+    indexer.setState(IndexStates.Idle);
+
+    didIntake = false;
+  }
+
+  private void climbAuto() {
+    intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
+  }
+
   private Rotation2d getRotationForScore() {
     // TODO: Account for robot velocity for shooting on the move
     Translation2d targetPose =
@@ -254,6 +352,7 @@ public class Superstructure {
     DefaultAuto(),
     ShootAuto(),
     IntakeAuto(),
+    IntakeAndShootAuto(),
     ClimbAuto(),
   }
 
@@ -265,7 +364,14 @@ public class Superstructure {
     Intake(),
     ShootWhileIntaking(),
     ScoreWhileIntaking(),
-    Climb()
+    Climb(),
+    IdleAuto(),
+    ShootAuto(),
+    ScoreAuto(),
+    IntakeAuto(),
+    ShootWhileIntakingAuto(),
+    ScoreWhileIntakingAuto(),
+    ClimbAuto(),
   }
 
   /**

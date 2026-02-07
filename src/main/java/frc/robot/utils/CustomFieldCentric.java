@@ -74,7 +74,7 @@ public class CustomFieldCentric implements SwerveRequest {
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
-    // Enable PID wrap from -180 to 180
+    // Enable PID wrap from -180 to 180 deg
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
