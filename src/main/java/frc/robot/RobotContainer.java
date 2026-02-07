@@ -107,10 +107,10 @@ public class RobotContainer {
           drivetrain::getFieldSpeeds);
 
       fuelSim.registerIntake(
-          -width / 2,
           width / 2,
+          width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
+          -length / 2,
           length / 2,
-          length / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
           () -> superstructure.getCurrentState() == CurrentStates.Intake);
 
       fuelSim.setSubticks(5);
