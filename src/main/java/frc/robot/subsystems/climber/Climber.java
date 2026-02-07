@@ -4,8 +4,10 @@
 
 package frc.robot.subsystems.climber;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DriverStation;
 
+@Logged
 public class Climber {
   /** Creates a new Climber. */
   private ClimberIO m_io;

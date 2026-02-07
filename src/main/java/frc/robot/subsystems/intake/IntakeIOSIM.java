@@ -24,7 +24,6 @@ import frc.robot.utils.MechanismUtil.IntakeVisualSim;
 
 @Logged
 public class IntakeIOSIM implements IntakeIO {
-  /** Creates a new IntakeIOSIM. */
   private final DCMotor gearbox;
 
   private final SingleJointedArmSim armPhysicsSim;
@@ -34,6 +33,7 @@ public class IntakeIOSIM implements IntakeIO {
   private final ProfiledPIDController PID =
       new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
 
+  /** Creates a new IntakeIOSIM. */
   public IntakeIOSIM() {
     gearbox = DCMotor.getKrakenX60(1);
     armPhysicsSim =

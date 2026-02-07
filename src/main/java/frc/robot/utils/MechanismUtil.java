@@ -445,14 +445,6 @@ public class MechanismUtil {
      * @param atTarget Whether the arm is at its target position
      */
     public void updateArm(double angleDeg, boolean atTarget) {
-      // Update the visual representation of the arm
-      // The arm ligament is relative to the pivot, which sits at 90° absolute (on top
-      // of vertical
-      // tower)
-      // Encoder angle is absolute (0° = right, 90° = up per unit circle)
-      // So subtract 90° to convert: encoder 0° → visual -90° (relative to pivot) = 0°
-      // absolute
-      // (right)
       armLigament.setAngle(angleDeg - ANGLE_OFFSET);
 
       // Change color based on whether at target position (green = ready, yellow =
@@ -550,6 +542,90 @@ public class MechanismUtil {
         Color8Bit currentColor = (speed > 0.0) ? SPINNING_COLOR : IDLE_COLOR;
         spokes[i].setColor(currentColor);
       }
+    }
+  }
+
+  public class ClimberVisualSim {
+    // ==================== Visualization Constants ====================
+
+    /** Width of the canvas for the mechanism visualization in pixels */
+    private static final double CANVAS_WIDTH = 400.0;
+
+    /** Height of the canvas for the mechanism visualization in pixels */
+    private static final double CANVAS_HEIGHT = 400.0;
+
+    /** X position of the mechanism root on the canvas */
+    private static final double ROOT_X = 200.4;
+
+    /** Y position of the mechanism root on the canvas */
+    private static final double ROOT_Y = .2;
+
+    /** Visual width of the arm ligament in pixels */
+    private static final double ARM_WIDTH = 8.0;
+
+    /** Color of arm when not at target position */
+    private static final Color8Bit MOVING_COLOR = new Color8Bit(Color.kYellow);
+
+    /** Color of arm when at target position */
+    private static final Color8Bit AT_TARGET_COLOR = new Color8Bit(Color.kGreen);
+
+    /**
+     * Angle offset to convert from unit circle coordinates to mechanism ligament coordinates.
+     *
+     * <p>The arm ligament is attached to a pivot at 90° (on top of vertical tower), but encoder
+     * angles follow unit circle convention (0° = right, 90° = up). This offset converts between the
+     * two coordinate systems.
+     */
+    private static final double ANGLE_OFFSET = 0;
+
+    // ==================== Visualization Components ====================
+
+    /** 2D mechanism visualization */
+    private final Mechanism2d subsystem;
+
+    /** Visual representation of the arm that updates with simulation */
+    private final MechanismLigament2d armLigament;
+
+    /**
+     * Constructs a new ArmMechanism visualization.
+     *
+     * @param name The name to use for the mechanism visualization
+     * @param armVisualLength The length of the arm in pixels
+     * @param rollerRadius The radius of the roller in pixels
+     */
+    public ClimberVisualSim(String name, double armVisualLength, double rollerRadius) {
+      // Root
+      subsystem = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
+      MechanismRoot2d root = subsystem.getRoot(name + "Root", ROOT_X, ROOT_Y);
+
+      // Deplopyment Arm
+      armLigament =
+          root.append(new MechanismLigament2d("Arm", armVisualLength, 0, ARM_WIDTH, MOVING_COLOR));
+    }
+
+    /**
+     * Gets the Mechanism2d object for publishing to SmartDashboard.
+     *
+     * @return The Mechanism2d visualization
+     */
+    public Mechanism2d getMechanism() {
+      return subsystem;
+    }
+
+    /**
+     * Updates the visual representation of the arm.
+     *
+     * @param angleDeg The current angle of the arm in degrees (unit circle convention: 0° = right,
+     *     90° = up)
+     * @param atTarget Whether the arm is at its target position
+     */
+    public void updateArm(double angleDeg, boolean atTarget) {
+      armLigament.setAngle(angleDeg - ANGLE_OFFSET);
+
+      // Change color based on whether at target position (green = ready, yellow =
+      // moving)
+      Color8Bit currentColor = atTarget ? AT_TARGET_COLOR : MOVING_COLOR;
+      armLigament.setColor(currentColor);
     }
   }
 }
