@@ -5,15 +5,19 @@
 package frc.robot.autonomous;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.WantedStates;
 import java.util.HashMap;
 
 /** Add your docs here. */
@@ -45,11 +49,28 @@ public class AutosChooser {
     autoChooser.setDefaultOption("None", Auto.NONE);
 
     SmartDashboard.putData(autoChooser);
-
-    // Add preset autos hare//
-    addPath(Auto.CUSTOM, Commands.none());
     // Put preset autos hare//
     addPath(Auto.TEST_PATH, Commands.none());
+    SmartDashboard.putString("Auto/CustomInput", "");
+    SmartDashboard.putData("Auto/AutoChooser", autoChooser);
+
+    for (WantedStates state : WantedStates.values()) {
+      if (state.name().contains("Auto")) {
+        FollowPath.registerEventTrigger(state.name(), () -> superstructure.setWantedState(state));
+      }
+    }
+
+    FollowPath.setPoseLoggingConsumer(
+        (data) ->
+            Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond(), Pose2d.struct));
+    FollowPath.setTranslationListLoggingConsumer(
+        (data) ->
+            Robot.telemetry()
+                .log("Auto/" + data.getFirst(), data.getSecond(), Translation2d.struct));
+    FollowPath.setBooleanLoggingConsumer(
+        (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
+    FollowPath.setDoubleLoggingConsumer(
+        (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
   }
 
   public void setCustom(Command command) {
