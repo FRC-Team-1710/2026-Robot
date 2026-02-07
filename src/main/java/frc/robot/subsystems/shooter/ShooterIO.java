@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -17,16 +20,16 @@ public interface ShooterIO {
   public default void setTargetVelocity(AngularVelocity pVelocity) {}
 
   public default AngularVelocity getVelocity() {
-    return null;
+    return RotationsPerSecond.of(0);
   }
 
   public default AngularVelocity getTargetVelocity() {
-    return null;
+    return RotationsPerSecond.of(0);
   }
 
   public default void setHoodAngle(Angle pAngle) {}
 
   public default Angle getHoodAngle() {
-    return null;
+    return Degrees.of(0);
   }
 }

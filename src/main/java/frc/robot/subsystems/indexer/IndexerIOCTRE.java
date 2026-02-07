@@ -28,7 +28,7 @@ public class IndexerIOCTRE implements IndexerIO {
     IndexMotor.getConfigurator().apply(motorConfig);
   }
 
-  public void setIndexMotor(double speed) {
+  public void setSpeed(double speed) {
     IndexMotor.set(speed);
   }
 }
