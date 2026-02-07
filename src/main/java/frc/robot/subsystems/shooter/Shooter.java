@@ -12,7 +12,6 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 public class Shooter {
@@ -38,10 +37,8 @@ public class Shooter {
 
     switch (this.m_state) {
       case SHOOT:
-        ShootState math = ShooterMath.calculateShootState();
-
-        this.m_velocity = math.desiredRPM();
-        this.m_hoodAngle = math.desiredAngle();
+        this.m_velocity = ShooterMath.getShooterRPM();
+        this.m_hoodAngle = ShooterMath.getShooterAngle();
         break;
 
       default:

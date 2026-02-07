@@ -1,6 +1,8 @@
 package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -39,13 +41,20 @@ public class ShooterMath {
 
   private static BooleanSupplier m_RedAlliance = () -> Alliance.redAlliance;
 
+  /** Record representing the shoot state with velocity and angle. */
+  public static record ShootState(AngularVelocity desiredRPM, Angle desiredAngle) {}
+
   // ===================== Class Variables =====================
   /* Input variables */
   private static Pose3d m_robotPose = new Pose3d();
   private static Velocity3d m_robotVelocity = new Velocity3d();
 
-  /** Record representing the shoot state with velocity and angle. */
-  public static record ShootState(AngularVelocity desiredRPM, Angle desiredAngle) {}
+  /* Intermediate Variables */
+  private static Velocity3d m_shootVelocity;
+
+  /* Output Variables */
+  private static ShootState m_shootState;
+  private static Rotation2d m_robotRotation;
 
   /** Calculates the shooter velocity based on the horizontal distance to the target. */
   public static LinearVelocity findShooterVelocity(Pose3d robotPose) {
@@ -62,7 +71,11 @@ public class ShooterMath {
   /** Calculates the shooter velocity based on the robot's pose and alliance color. */
   public static Velocity3d findShooterVelocity3d(Pose3d robotPose) {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
-    return new Velocity3d(findShooterVelocity(robotPose), robotPose.getRotation());
+    Translation2d hubPosition = !m_RedAlliance.getAsBoolean()
+            ? kHUB_CENTER_BLUE
+            : kHUB_CENTER_RED;
+    Rotation2d hubAngle = robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
+    return new Velocity3d(findShooterVelocity(robotPose), new Rotation3d(0.0, findShooterAngle(robotPose).in(Radians), hubAngle.getRadians()));
   }
 
   /** Calculates the shooter angle based on the horizontal distance to the target. */
@@ -95,9 +108,9 @@ public class ShooterMath {
    * @param robotPose The current pose of the robot.
    * @return {@code ShootState} containing desired flywheel RPM and angle
    */
-  public static ShootState calculateShootState(Pose3d robotPose, Velocity3d robotVelocity) {
-    AngularVelocity desiredRPM = velocityToRPM(findShooterVelocity(robotPose));
-    Angle desiredAngle = findShooterAngle(robotPose);
+  private static ShootState calculateShootState(Velocity3d shootVelocity) {
+    AngularVelocity desiredRPM = velocityToRPM(MetersPerSecond.of(shootVelocity.norm()));
+    Angle desiredAngle = Radians.of(Math.asin(shootVelocity.getZ() / shootVelocity.norm()));
     return new ShootState(desiredRPM, desiredAngle);
   }
 
@@ -107,8 +120,10 @@ public class ShooterMath {
    *
    * @return {@code ShootState} containing desired flywheel RPM and angle
    */
-  public static ShootState calculateShootState() {
-    return calculateShootState(m_robotPose, m_robotVelocity);
+  public static void calculate() {
+    m_shootVelocity = findShooterVelocity3d(m_robotPose).minus(m_robotVelocity);
+    m_shootState = calculateShootState(m_shootVelocity);
+    m_robotRotation = new Rotation2d(m_shootVelocity.getX(), m_shootVelocity.getY());
   }
 
   /**
@@ -121,7 +136,17 @@ public class ShooterMath {
     m_robotVelocity = robotVelocity;
   }
 
-  public static boolean getAlliance() {
-    return !m_RedAlliance.getAsBoolean();
+  /** Returns the current desired shooter RPM. */
+  public static AngularVelocity getShooterRPM() {
+    return m_shootState.desiredRPM();
+  }
+
+  /** Returns the current desired shooter angle. */
+  public static Angle getShooterAngle() {
+    return m_shootState.desiredAngle();
+  }
+
+  public static Rotation2d getRobotRotation() {
+    return m_robotRotation;
   }
 }
