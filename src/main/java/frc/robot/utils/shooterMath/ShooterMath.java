@@ -1,5 +1,9 @@
 package frc.robot.utils.shooterMath;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Radians;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -10,11 +14,6 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
-
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Radians;
-
 import java.util.function.BooleanSupplier;
 
 /** Utility class for shooter-related mathematical calculations. */
@@ -65,7 +64,8 @@ public class ShooterMath {
         !m_RedAlliance.getAsBoolean()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
-    return MetersPerSecond.of(Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD);
+    return MetersPerSecond.of(
+        Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD);
   }
 
   /** Calculates the shooter angle based on the horizontal distance to the target. */
@@ -83,11 +83,11 @@ public class ShooterMath {
   /** Calculates the shooter velocity based on the robot's pose and alliance color. */
   public static Velocity3d findShooterVelocity3d(Pose3d robotPose) {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
-    Translation2d hubPosition = !m_RedAlliance.getAsBoolean()
-            ? kHUB_CENTER_BLUE
-            : kHUB_CENTER_RED;
+    Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
     Rotation2d hubAngle = robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
-    return new Velocity3d(findShooterVelocity(robotPose), new Rotation3d(0.0, findShooterAngle(robotPose).in(Radians), hubAngle.getRadians()));
+    return new Velocity3d(
+        findShooterVelocity(robotPose),
+        new Rotation3d(0.0, findShooterAngle(robotPose).in(Radians), hubAngle.getRadians()));
   }
 
   /**
@@ -98,8 +98,9 @@ public class ShooterMath {
    */
   public static AngularVelocity velocityToRPM(LinearVelocity vMetersPerSec) {
     double circumference = Math.PI * ShooterConstants.WHEEL_DIAMETER;
-    return RPM.of((vMetersPerSec.in(MetersPerSecond) / circumference)
-        * 60.0); // Convert meters per second to revolutions per minute
+    return RPM.of(
+        (vMetersPerSec.in(MetersPerSecond) / circumference)
+            * 60.0); // Convert meters per second to revolutions per minute
   }
 
   /**

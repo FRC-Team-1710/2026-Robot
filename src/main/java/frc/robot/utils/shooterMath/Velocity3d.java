@@ -89,11 +89,6 @@ public class Velocity3d {
     return Math.sqrt(this.v_x * this.v_x + this.v_y * this.v_y + this.v_z * this.v_z);
   }
 
-  /** Creates a Velocity3d from a Velocity2d by adding a zero Z component. */
-  public static Velocity3d from(Velocity2d velocity2d) {
-    return new Velocity3d(velocity2d.getX(), velocity2d.getY(), 0);
-  }
-
   public static Velocity3d from(ChassisSpeeds fieldSpeeds) {
     return new Velocity3d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond, 0);
   }
