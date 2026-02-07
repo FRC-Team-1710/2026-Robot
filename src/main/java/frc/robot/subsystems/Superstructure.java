@@ -175,6 +175,8 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
+    climber.setState(ClimberStates.UP);
 
     didIntake = false;
   }
@@ -186,6 +188,8 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
+    climber.setState(ClimberStates.UP);
 
     didIntake = false;
   }
