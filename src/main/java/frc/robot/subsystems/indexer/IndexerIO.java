@@ -8,7 +8,7 @@ import edu.wpi.first.epilogue.Logged;
 
 @Logged
 public interface IndexerIO {
-  public default void updateVisual() {}
+  public default void update() {}
 
   public default void setSpeed(double speed) {}
 }

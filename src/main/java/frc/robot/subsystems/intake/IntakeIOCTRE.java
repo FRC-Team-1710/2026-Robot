@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -19,6 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import frc.robot.constants.CanIdConstants;
+import frc.robot.utils.TalonFXUtil;
 
 @Logged
 @SuppressWarnings("unused")
@@ -31,6 +33,8 @@ public class IntakeIOCTRE implements IntakeIO {
   @NotLogged private final MotionMagicVoltage m_request;
 
   private Angle m_angleSetpoint;
+
+  private final BaseStatusSignal[] m_baseStatusSignals;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
@@ -67,6 +71,17 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.setPosition(0);
 
     m_deploymentMotor.getClosedLoopReference().getValue();
+
+    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor, m_deploymentMotor);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+
+    m_intakeMotor.optimizeBusUtilization();
+    m_deploymentMotor.optimizeBusUtilization();
+  }
+
+  public void update() {
+    BaseStatusSignal.refreshAll(m_baseStatusSignals);
   }
 
   public void setAngle(Angle angle) {
