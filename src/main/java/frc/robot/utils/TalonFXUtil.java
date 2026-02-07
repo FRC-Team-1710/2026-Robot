@@ -1,5 +1,6 @@
 package frc.robot.utils;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -44,5 +45,17 @@ public final class TalonFXUtil {
    */
   public static boolean applyConfigWithRetries(TalonFX motor, TalonFXConfiguration config) {
     return applyConfigWithRetries(motor, config, 5);
+  }
+
+  public static BaseStatusSignal[] getBasicStatusSignals(TalonFX... motors) {
+    BaseStatusSignal[] signals = new BaseStatusSignal[motors.length * 5];
+    for (int i = 0; i < motors.length; i++) {
+      signals[i] = motors[i].getVelocity();
+      signals[i + motors.length] = motors[i].getPosition();
+      signals[i + (2 * motors.length)] = motors[i].getStatorCurrent();
+      signals[i + (3 * motors.length)] = motors[i].getSupplyCurrent();
+      signals[i + (4 * motors.length)] = motors[i].getMotorVoltage();
+    }
+    return signals;
   }
 }
