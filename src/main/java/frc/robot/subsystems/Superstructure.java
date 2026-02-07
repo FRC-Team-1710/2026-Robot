@@ -168,8 +168,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    indexer.setState(IndexStates.Indexing);
+    feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
   }
@@ -180,8 +180,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    indexer.setState(IndexStates.Indexing);
+    feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
   }
@@ -202,8 +202,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    indexer.setState(IndexStates.Indexing);
+    feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
   }
@@ -214,8 +214,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    indexer.setState(IndexStates.Indexing);
+    feeder.setState(FEEDER_STATE.FEEDING);
 
     didIntake = false;
   }
