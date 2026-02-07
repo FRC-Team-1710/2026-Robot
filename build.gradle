@@ -138,9 +138,6 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
-// tasks.named('build') {
-//     dependsOn 'spotlessApply'
-// }
 
 if (!isCI) {
     tasks.named("build") {
