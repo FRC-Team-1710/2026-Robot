@@ -2,6 +2,7 @@ package frc.robot.utils.shooterMath;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
@@ -37,6 +38,10 @@ public class ShooterMath {
 
   /** Record representing the shoot state with velocity and angle. */
   public static record ShootState(double desiredRPM, double desiredAngle) {}
+
+  /* INTERPOLATING TREE MAPS */
+  private static InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
 
   /** Calculates the shooter velocity based on the horizontal distance to the target. */
   public static double findShooterVelocity(Pose3d robotPose) {
@@ -115,5 +120,54 @@ public class ShooterMath {
 
   public static boolean getAlliance() {
     return !m_RedAlliance.getAsBoolean();
+  }
+
+  /* INTERPOLATING METHODS AND MATH */
+  /** Adds a RPM value for the current robot pose distance. */
+  public static void addRPM(double rpm) {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    rpmMap.put(x_distance, rpm);
+  }
+
+  /** Adds an angle value for the current robot pose distance. */
+  public static void addAngle(double angle) {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    angleMap.put(x_distance, angle);
+  }
+
+  /** Gets the interpolated RPM based on the current robot pose distance. */
+  public static double getInterpolatedRPM() {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    return rpmMap.get(x_distance);
+  }
+
+  /** Gets the interpolated angle based on the current robot pose distance. */
+  public static double getInterpolatedAngle() {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    return angleMap.get(x_distance);
   }
 }
