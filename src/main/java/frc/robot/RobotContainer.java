@@ -10,15 +10,18 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
+import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.FeederIO;
@@ -37,12 +40,15 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import java.util.HashMap;
 
 @Logged
 public class RobotContainer {
   private final CommandXboxController driver = new CommandXboxController(0);
   private final CommandXboxController mech = new CommandXboxController(1);
+
+  public FuelSim fuelSim;
 
   private final AutosChooser autoChooser;
 
@@ -84,6 +90,35 @@ public class RobotContainer {
     }
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
+
+    // Fuel Simulation
+    if (Mode.currentMode == CurrentMode.SIMULATION) {
+      fuelSim = new FuelSim("FeulSim");
+      fuelSim.spawnStartingFuel();
+
+      double width = Units.inchesToMeters(39.875);
+      double length = Units.inchesToMeters(27.875);
+
+      fuelSim.registerRobot(
+          width,
+          length,
+          Units.inchesToMeters(6.75),
+          drivetrain::getPose,
+          drivetrain::getFieldSpeeds);
+
+      fuelSim.registerIntake(
+          -width / 2,
+          width / 2,
+          length / 2,
+          length / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
+          () -> superstructure.getCurrentState() == CurrentStates.Intake);
+
+      fuelSim.setSubticks(5);
+
+      fuelSim.start();
+
+      fuelSim.enableAirResistance();
+    }
 
     autoChooser = new AutosChooser(superstructure, drivetrain);
 
