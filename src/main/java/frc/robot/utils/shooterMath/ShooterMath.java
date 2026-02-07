@@ -68,16 +68,6 @@ public class ShooterMath {
     return MetersPerSecond.of(Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD);
   }
 
-  /** Calculates the shooter velocity based on the robot's pose and alliance color. */
-  public static Velocity3d findShooterVelocity3d(Pose3d robotPose) {
-    // Velocity3d that uses the distance and rotation to find the shooter velocity
-    Translation2d hubPosition = !m_RedAlliance.getAsBoolean()
-            ? kHUB_CENTER_BLUE
-            : kHUB_CENTER_RED;
-    Rotation2d hubAngle = robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
-    return new Velocity3d(findShooterVelocity(robotPose), new Rotation3d(0.0, findShooterAngle(robotPose).in(Radians), hubAngle.getRadians()));
-  }
-
   /** Calculates the shooter angle based on the horizontal distance to the target. */
   public static Angle findShooterAngle(Pose3d robotPose) {
     // Translation2d to find the x and y of the robot on the field
@@ -88,6 +78,16 @@ public class ShooterMath {
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
     return Radians.of(kE * Math.pow(kF, x_distance));
+  }
+
+  /** Calculates the shooter velocity based on the robot's pose and alliance color. */
+  public static Velocity3d findShooterVelocity3d(Pose3d robotPose) {
+    // Velocity3d that uses the distance and rotation to find the shooter velocity
+    Translation2d hubPosition = !m_RedAlliance.getAsBoolean()
+            ? kHUB_CENTER_BLUE
+            : kHUB_CENTER_RED;
+    Rotation2d hubAngle = robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
+    return new Velocity3d(findShooterVelocity(robotPose), new Rotation3d(0.0, findShooterAngle(robotPose).in(Radians), hubAngle.getRadians()));
   }
 
   /**
