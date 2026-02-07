@@ -156,7 +156,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     // return autoChooser.getAuto();
-    return AutosChooser.spinnn();
+    return autoChooser.getAuto();
   }
 
   public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {

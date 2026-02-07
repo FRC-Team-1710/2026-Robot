@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.Alliance;
-import frc.robot.constants.FieldConstants;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -51,8 +50,6 @@ public class AutosChooser {
     addPath(Auto.CUSTOM, Commands.none());
     // Put preset autos hare//
     addPath(Auto.TEST_PATH, Commands.none());
-
-    addPath(Auto.SPINNN, spinnn());
   }
 
   public void setCustom(Command command) {
@@ -71,21 +68,30 @@ public class AutosChooser {
         : autoCommands.get(autoChooser.getSelected());
   }
 
-  public Command myLastBraincell() {
-    return Commands.sequence(
-        pathBuilder.build(
-            new Path(new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REn, ")))),
-        pathBuilder.build(
-            new Path(new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump REx, ")))),
-        pathBuilder.build(
-            new Path(new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEx, ")))),
-        pathBuilder.build(
-            new Path(
-                new Path.TranslationTarget(FieldConstants.AutoConstants().get("Bump LEn, ")))));
-  }
+  public static HashMap<String, Command> autoPathing() {
+    HashMap<String, Command> listOfPaths = new HashMap<>();
+    FollowPath leftReturn = pathBuilder.build(new Path("leftReturn"));
+    FollowPath rightReturn = pathBuilder.build(new Path("rightReturn"));
+    listOfPaths.put(
+        "Zone 3",
+        Commands.sequence(
+            pathBuilder.build(new Path("zone3cycleright")),
+            rightReturn,
+            pathBuilder.build(new Path("zone3cyclestraight")),
+            rightReturn,
+            pathBuilder.build(new Path("zone3cycleleft")),
+            rightReturn));
+    listOfPaths.put(
+        "Zone 1",
+        Commands.sequence(
+            pathBuilder.build(new Path("zone1cycleright")),
+            leftReturn,
+            pathBuilder.build(new Path("zone1cyclestraight")),
+            leftReturn,
+            pathBuilder.build(new Path("zone1cycleleft")),
+            leftReturn));
 
-  public static Command spinnn() {
-    return Commands.sequence(pathBuilder.build(new Path("spinnn")));
+    return listOfPaths;
   }
 
   public enum Auto {
