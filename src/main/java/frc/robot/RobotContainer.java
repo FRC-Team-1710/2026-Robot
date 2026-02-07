@@ -175,6 +175,7 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
                 .ignoringDisable(true));
+    driver.a().onTrue(superstructure.setWantedStateCommand(WantedStates.Climb));
   }
 
   public Command getAutonomousCommand() {

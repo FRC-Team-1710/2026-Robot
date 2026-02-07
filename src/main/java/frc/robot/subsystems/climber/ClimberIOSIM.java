@@ -8,30 +8,32 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.MechanismUtil;
 import frc.robot.utils.MechanismUtil.ClimberVisualSim;
 
 @Logged
 public class ClimberIOSIM implements ClimberIO {
-  private final DCMotor climberMotor;
-  private final SingleJointedArmSim armPhysicsSim;
-  private final ClimberVisualSim climberVisualSim;
+  private final DCMotor m_climberMotor;
+  private final SingleJointedArmSim m_armPhysicsSim;
+  private final ClimberVisualSim m_climberVisualSim;
 
   /** Creates a new ClimberIOSIM. */
   public ClimberIOSIM() {
-    climberMotor = DCMotor.getKrakenX60(1);
-    armPhysicsSim =
-        new SingleJointedArmSim(climberMotor, 25, 0.004, 8, -45, 180, false, 45, new double[2]);
-    climberVisualSim = new MechanismUtil().new ClimberVisualSim("Climber", .25, .125);
+    m_climberMotor = DCMotor.getKrakenX60(1);
+    m_armPhysicsSim =
+        new SingleJointedArmSim(m_climberMotor, 25, 0.004, 8, -45, 180, false, 45, new double[2]);
+    m_climberVisualSim = new MechanismUtil().new ClimberVisualSim("Climber", .25);
   }
 
   @Override
   public void setSpeed(double speed) {
-    armPhysicsSim.setInput(speed);
-    climberVisualSim.updateArm(getDegrees(), speed == 0);
+    m_armPhysicsSim.setInput(speed);
+    m_climberVisualSim.updateArm(getDegrees(), speed == 0);
+    SmartDashboard.putData("ClimberVisuals", m_climberVisualSim.getMechanism());
   }
 
   public double getDegrees() {
-    return Units.radiansToDegrees(armPhysicsSim.getAngleRads());
+    return Units.radiansToDegrees(m_armPhysicsSim.getAngleRads());
   }
 }

@@ -555,7 +555,7 @@ public class MechanismUtil {
     private static final double CANVAS_HEIGHT = 400.0;
 
     /** X position of the mechanism root on the canvas */
-    private static final double ROOT_X = 200.4;
+    private static final double ROOT_X = 200;
 
     /** Y position of the mechanism root on the canvas */
     private static final double ROOT_Y = .2;
@@ -569,13 +569,7 @@ public class MechanismUtil {
     /** Color of arm when at target position */
     private static final Color8Bit AT_TARGET_COLOR = new Color8Bit(Color.kGreen);
 
-    /**
-     * Angle offset to convert from unit circle coordinates to mechanism ligament coordinates.
-     *
-     * <p>The arm ligament is attached to a pivot at 90° (on top of vertical tower), but encoder
-     * angles follow unit circle convention (0° = right, 90° = up). This offset converts between the
-     * two coordinate systems.
-     */
+    /*** Angle offset to convert from unit circle coordinates to mechanism ligament coordinates.*/
     private static final double ANGLE_OFFSET = 0;
 
     // ==================== Visualization Components ====================
@@ -593,7 +587,7 @@ public class MechanismUtil {
      * @param armVisualLength The length of the arm in pixels
      * @param rollerRadius The radius of the roller in pixels
      */
-    public ClimberVisualSim(String name, double armVisualLength, double rollerRadius) {
+    public ClimberVisualSim(String name, double armVisualLength) {
       // Root
       subsystem = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
       MechanismRoot2d root = subsystem.getRoot(name + "Root", ROOT_X, ROOT_Y);

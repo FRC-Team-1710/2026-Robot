@@ -309,7 +309,7 @@ public class DynamicTimedRobot extends IterativeRobotBase {
    * @param period How frequently to call periodic
    */
   public final void setSubsystem(Subsystems subsystem, Time period) {
-    if (currentPeriodicCallback.subsystem != subsystem) {
+    if (currentPeriodicCallback != null && currentPeriodicCallback.subsystem != subsystem) {
       for (Object obj : m_callbacks.toArray()) {
         Callback callback = (Callback) obj;
         // If the callback were looking for is found
