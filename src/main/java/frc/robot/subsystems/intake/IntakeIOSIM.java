@@ -34,6 +34,7 @@ public class IntakeIOSIM implements IntakeIO {
   private final ProfiledPIDController m_PID =
       new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
 
+  /** Creates a new IntakeIOSIM. */
   public IntakeIOSIM() {
     m_gearbox = DCMotor.getKrakenX60(1);
     m_armPhysicsSim =

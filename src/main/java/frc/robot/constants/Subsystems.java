@@ -9,6 +9,7 @@ public enum Subsystems {
   Feeder(),
   Shooter(),
   Indexer(),
+  Climber()
 }
 
 // Do not remove Robot or Epilogue!
