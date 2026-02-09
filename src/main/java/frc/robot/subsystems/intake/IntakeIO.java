@@ -4,10 +4,25 @@
 
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.units.measure.Angle;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+
+@Logged
 public interface IntakeIO {
   public default void setAngle(Angle angle) {}
 
   public default void setIntakeMotor(double speed) {}
+
+  public default Current getRollerCurrent() {
+    return Amps.of(0);
+  }
+
+  public default AngularVelocity getRollerVelocity() {
+    return RotationsPerSecond.of(0);
+  }
 }

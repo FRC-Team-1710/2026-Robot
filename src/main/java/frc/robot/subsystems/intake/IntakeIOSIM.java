@@ -4,14 +4,71 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
+import frc.robot.utils.MechanismUtil;
+import frc.robot.utils.MechanismUtil.IntakeVisualSim;
 
 @Logged
 public class IntakeIOSIM implements IntakeIO {
   /** Creates a new IntakeIOSIM. */
-  public IntakeIOSIM() {}
+  private final DCMotor gearbox;
 
-  public void periodic() {
-    // This method will be called once per scheduler run
+  private final SingleJointedArmSim armPhysicsSim;
+  private final IntakeVisualSim intakeVisualSim;
+  private Angle angleSetpoint;
+
+  private final ProfiledPIDController PID =
+      new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
+
+  public IntakeIOSIM() {
+    gearbox = DCMotor.getKrakenX60(1);
+    armPhysicsSim =
+        new SingleJointedArmSim(gearbox, 25, 0.004, 10, -45, 90, false, 45, new double[2]);
+
+    intakeVisualSim =
+        new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
+
+    SmartDashboard.putNumber("Intake/JamTest/Velocity", 0);
+    SmartDashboard.putNumber("Intake/JamTest/Current", 0);
+  }
+
+  public void setAngle(Angle angle) {
+    angleSetpoint = angle;
+    if (angleSetpoint == null) return;
+    armPhysicsSim.setInputVoltage(
+        PID.calculate(armPhysicsSim.getAngleRads(), angleSetpoint.in(Radians)));
+    armPhysicsSim.update(0.02);
+    intakeVisualSim.updateArm(
+        Units.radiansToDegrees(armPhysicsSim.getAngleRads()),
+        Math.abs(angleSetpoint.in(Radians) - armPhysicsSim.getAngleRads())
+            < Units.degreesToRadians(1)); // updates visuals
+    SmartDashboard.putData("ArmVisuals", intakeVisualSim.getMechanism());
+  }
+
+  public void setIntakeMotor(double speed) {
+    intakeVisualSim.updateRoller(speed * 20); // updates roller visuals
+    Robot.telemetry().log("RollerSpeed", speed);
+  }
+
+  public AngularVelocity getRollerVelocity() {
+    return RotationsPerSecond.of(SmartDashboard.getNumber("Intake/JamTest/Velocity", 0));
+  }
+
+  public Current getRollerCurrent() {
+    return Amps.of(SmartDashboard.getNumber("Intake/JamTest/Current", 0));
   }
 }

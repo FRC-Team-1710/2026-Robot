@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -15,6 +14,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -22,7 +22,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
@@ -38,6 +37,8 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
+import frc.robot.utils.SwerveTelemetry;
+import frc.robot.utils.shooterMath.ShooterMath;
 import java.util.function.Supplier;
 
 /**
@@ -50,10 +51,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
-  private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
-  private AngularVelocity MaxAngularRate = RotationsPerSecond.of(2);
+  private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
-  private final CustomFieldCentric fieldCentric = new CustomFieldCentric();
+  private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
+  private AngularVelocity MaxAngularRate = TunerConstants.kMaxAngularRate;
+
+  private final CustomFieldCentric fieldCentric;
 
   private DriveStates currentState = DriveStates.DRIVER_CONTROLLED;
 
@@ -159,6 +162,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -180,6 +184,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -212,6 +217,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
+    fieldCentric = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -249,9 +255,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withVelocityX(MaxSpeed.times(-scaledTranslationInputs.get(0, 0)))
               .withVelocityY(MaxSpeed.times(-scaledTranslationInputs.get(1, 0)))
               .withRotationalRate(
-                  MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
+                  MaxAngularRate.times(
+                      -rescaleRotation(
+                          inputController.getRightX()
+                              + (inputController.povLeft().getAsBoolean()
+                                  ? 1
+                                  : (inputController.povRight().getAsBoolean() ? -1 : 0)))))
               .withDriveState(currentState));
     }
+
+    swerveTelemetry.currentSpeeds = getRobotSpeeds();
+    swerveTelemetry.desiredSpeeds = getTargetFieldSpeeds();
+    swerveTelemetry.currentStates = getModuleStates();
+    swerveTelemetry.desiredStates = getModuleTargets();
+    swerveTelemetry.rotation = getRotation();
+
+    // TODO make a more reliable pose
+    ShooterMath.input(new Pose3d(getPose()));
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
@@ -261,7 +281,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public double rescaleRotation(double rotation) {
-    return Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation);
+    return MathUtil.clamp(Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation), -1, 1);
   }
 
   private void startSimThread() {
@@ -313,6 +333,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
         visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+  }
+
+  public boolean isGoingTowardsAllianceZone() {
+    return fieldCentric.isGoingToAllianceZone(getPose());
   }
 
   public Pose2d getPose() {
@@ -379,14 +403,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     this.inputController = controller;
   }
 
-  /**
-   * Set the {@link DriveStates#Y_ASSIST} target relative to the center of the field (not side
-   * relative)
-   */
-  public void setYTargetFromCenter(Distance target) {
-    fieldCentric.withYTargetFromCenter(target);
-  }
-
   /** Set the {@link DriveStates#ROTATION_LOCK} target */
   public void setRotationTarget(Rotation2d target) {
     fieldCentric.withTargetRotation(target);
@@ -398,7 +414,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public enum DriveStates {
     DRIVER_CONTROLLED,
-    Y_ASSIST,
     ROTATION_LOCK,
   }
 }
