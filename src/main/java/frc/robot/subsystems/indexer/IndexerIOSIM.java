@@ -14,7 +14,10 @@ import frc.robot.utils.MechanismUtil.IndexerVisualSim;
 public class IndexerIOSIM implements IndexerIO {
 
   private final IndexerVisualSim IndexerVisualSim;
+
+  @SuppressWarnings("unused")
   private final DCMotor gearbox;
+
   private double speed = 0.0;
 
   public IndexerIOSIM() {
