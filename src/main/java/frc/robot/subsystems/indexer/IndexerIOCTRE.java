@@ -14,25 +14,25 @@ import frc.robot.constants.CanIdConstants;
 @Logged
 /** Creates a new IndexIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
-  private final TalonFX IndexPrimary;
-  private final TalonFX IndexSecondary;
+  private final TalonFX IndexerAlpha;
+  private final TalonFX IndexerBeta;
 
   TalonFXConfiguration motorConfig;
 
   public IndexerIOCTRE() {
-    this.IndexPrimary = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_PRIMARY);
-    this.IndexSecondary = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_SECONDARY);
+    this.IndexerAlpha = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_ALPHA);
+    this.IndexerBeta = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_BETA);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    IndexPrimary.getConfigurator().apply(motorConfig);
-    IndexSecondary.getConfigurator().apply(motorConfig);
+    IndexerAlpha.getConfigurator().apply(motorConfig);
+    IndexerBeta.getConfigurator().apply(motorConfig);
   }
 
   public void setIndexMotor(double speed) {
-    IndexPrimary.set(speed);
-    IndexSecondary.set(speed);
+    IndexerAlpha.set(speed);
+    IndexerBeta.set(speed);
   }
 }
