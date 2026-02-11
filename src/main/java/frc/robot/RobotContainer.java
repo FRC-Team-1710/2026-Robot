@@ -27,13 +27,21 @@ import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederIO;
 import frc.robot.subsystems.feeder.FeederIOCTRE;
+import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
+import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
+import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
+import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
 import java.util.HashMap;
@@ -61,32 +69,28 @@ public class RobotContainer {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
 
-    intake = new Intake(new IntakeIOCTRE(), consumer);
-    shooter = new Shooter(new ShooterIOCTRE(), consumer);
-    feeder = new Feeder(new FeederIOCTRE(), consumer);
-    indexer = new Indexer(new IndexerIOCTRE(), consumer);
-    // switch (Mode.currentMode) {
-    //   case REAL:
-    //     intake = new Intake(new IntakeIOCTRE(), consumer);
-    //     shooter = new Shooter(new ShooterIOCTRE(), consumer);
-    //     feeder = new Feeder(new FeederIOCTRE(), consumer);
-    //     indexer = new Indexer(new IndexerIOCTRE(), consumer);
-    //     break;
+    switch (Mode.currentMode) {
+      case REAL:
+        intake = new Intake(new IntakeIOCTRE(), consumer);
+        shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        feeder = new Feeder(new FeederIOCTRE(), consumer);
+        indexer = new Indexer(new IndexerIOCTRE(), consumer);
+        break;
 
-    //   case SIMULATION:
-    //     intake = new Intake(new IntakeIOSIM(), consumer);
-    //     shooter = new Shooter(new ShooterIOSIM(), consumer);
-    //     feeder = new Feeder(new FeederIOSIM(), consumer);
-    //     indexer = new Indexer(new IndexerIOSIM(), consumer);
-    //     break;
+      case SIMULATION:
+        intake = new Intake(new IntakeIOSIM(), consumer);
+        shooter = new Shooter(new ShooterIOSIM(), consumer);
+        feeder = new Feeder(new FeederIOSIM(), consumer);
+        indexer = new Indexer(new IndexerIOSIM(), consumer);
+        break;
 
-    //   default:
-    //     intake = new Intake(new IntakeIO() {}, consumer);
-    //     shooter = new Shooter(new ShooterIO() {}, consumer);
-    //     feeder = new Feeder(new FeederIO() {}, consumer);
-    //     indexer = new Indexer(new IndexerIO() {}, consumer);
-    //     break;
-    // }
+      default:
+        intake = new Intake(new IntakeIO() {}, consumer);
+        shooter = new Shooter(new ShooterIO() {}, consumer);
+        feeder = new Feeder(new FeederIO() {}, consumer);
+        indexer = new Indexer(new IndexerIO() {}, consumer);
+        break;
+    }
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
 
