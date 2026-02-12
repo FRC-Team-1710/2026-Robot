@@ -77,10 +77,6 @@ public class CustomFieldCentric implements SwerveRequest {
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
           .withSteerRequestType(SteerRequestType.Position);
 
-  /* Logging vars */
-  private double lastLoopTime = 0;
-  private Pose2d robotEyes = Pose2d.kZero;
-
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
     // Enable PID wrap from -180 to 180 deg
@@ -102,17 +98,15 @@ public class CustomFieldCentric implements SwerveRequest {
                       Math.abs(yVelocity.in(MetersPerSecond)))
                   >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeed.in(MetersPerSecond)
               || currentDriveState == RequestStates.BUMP_ASSIST)) {
-        robotEyes =
-            new Translation2d()
-                // .rotateBy(
-                //     parameters
-                //         .currentPose
-                //         .getRotation()
-                //         .minus(
-                //             new Rotation2d(
-                //                 xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond)))
-                //         .plus(Rotation2d.kCCW_90deg))
-                // .plus(new Transform2d(0, -2.5, Rotation2d.kZero));
+        Robot.telemetry()
+            .log(
+                "CustomFieldCentric/RobotEyes",
+                new Pose2d(
+                        parameters.currentPose.getTranslation(),
+                        new Rotation2d(xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond))
+                            .plus(Rotation2d.kCCW_90deg))
+                    .plus(new Transform2d(0, -2.5, Rotation2d.kZero)),
+                Pose2d.struct);
         Robot.telemetry()
             .log(
                 "CustomFieldCentric/StillGoingOverBump",
