@@ -79,5 +79,9 @@
     }
   },
   "files.eol": "\n",
-  "java.format.onType.enabled": false
+  "java.format.onType.enabled": false,
+  "editor.tokenColorCustomizations": {
+    "comments": "",
+    "textMateRules": []
+  }
 }

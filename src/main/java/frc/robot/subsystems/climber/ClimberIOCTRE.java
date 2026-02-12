@@ -11,18 +11,18 @@ import frc.robot.constants.CanIdConstants;
 
 @Logged
 public class ClimberIOCTRE implements ClimberIO {
-  private TalonFX m_motor;
+  private TalonFX m_climberMotor;
 
   public ClimberIOCTRE() {
-    m_motor = new TalonFX(CanIdConstants.Climber.CLIMBER_MOTOR);
+    m_climberMotor = new TalonFX(CanIdConstants.Climber.CLIMBER_MOTOR);
   }
 
   @Override
   public void setSpeed(double speed) {
-    m_motor.set(speed);
+    m_climberMotor.set(speed);
   }
 
   public double getDegrees() {
-    return Units.rotationsToDegrees(m_motor.getRotorPosition().getValueAsDouble());
+    return Units.rotationsToDegrees(m_climberMotor.getRotorPosition().getValueAsDouble());
   }
 }

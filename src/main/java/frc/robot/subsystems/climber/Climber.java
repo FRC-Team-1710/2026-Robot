@@ -19,13 +19,13 @@ public class Climber {
   /** Creates a new Climber. */
   private ClimberIO m_io;
 
-  /*DEGREES*/
-  private double m_wiggle = 1;
+  /*DEGREES - How far away it can be from the target angle in degrees*/
+  private static final double m_wiggle = 1;
   private double speed = 0.5;
 
   private final TimesConsumer timesConsumer;
 
-  private ClimberStates m_currentState = ClimberStates.DOWN;
+  private ClimberStates m_currentState = ClimberStates.UNDEPLOYED;
 
   public Climber(ClimberIO io, TimesConsumer timesConsumer) {
     this.m_io = io;
@@ -54,9 +54,11 @@ public class Climber {
     m_currentState = state;
   }
 
+  // The time is the frequency at which the subsystem is updated in milliseconds
+  // Angle is the target angle in degrees
   public enum ClimberStates {
-    UP(Milliseconds.of(60), Degrees.of(0)),
-    DOWN(Milliseconds.of(20), Degrees.of(90));
+    UNDEPLOYED(Milliseconds.of(60), Degrees.of(0)),
+    DEPLOYED(Milliseconds.of(20), Degrees.of(90));
 
     private final Time subsystemPeriodicFrequency;
     private final Angle m_angle;

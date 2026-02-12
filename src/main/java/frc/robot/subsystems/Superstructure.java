@@ -165,7 +165,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.UP);
+    climber.setState(ClimberStates.UNDEPLOYED);
   }
 
   private void shoot() {
@@ -176,7 +176,7 @@ public class Superstructure {
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.UP);
+    climber.setState(ClimberStates.UNDEPLOYED);
 
     didIntake = false;
   }
@@ -189,7 +189,7 @@ public class Superstructure {
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.UP);
+    climber.setState(ClimberStates.UNDEPLOYED);
 
     didIntake = false;
   }
@@ -200,7 +200,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.UP);
+    climber.setState(ClimberStates.UNDEPLOYED);
 
     didIntake = true;
   }
@@ -213,7 +213,7 @@ public class Superstructure {
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.UP);
+    climber.setState(ClimberStates.UNDEPLOYED);
 
     didIntake = false;
   }
@@ -226,7 +226,7 @@ public class Superstructure {
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.UP);
+    climber.setState(ClimberStates.UNDEPLOYED);
 
     didIntake = false;
   }
@@ -237,7 +237,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
-    climber.setState(ClimberStates.DOWN);
+    climber.setState(ClimberStates.DEPLOYED);
   }
 
   private Rotation2d getRotationForScore() {

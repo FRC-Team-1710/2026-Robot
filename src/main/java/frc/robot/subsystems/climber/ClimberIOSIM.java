@@ -22,7 +22,7 @@ public class ClimberIOSIM implements ClimberIO {
   public ClimberIOSIM() {
     m_climberMotor = DCMotor.getKrakenX60(1);
     m_armPhysicsSim =
-        new SingleJointedArmSim(m_climberMotor, 25, 0.004, 8, -45, 180, false, 45, new double[2]);
+        new SingleJointedArmSim(m_climberMotor, 25, 0.004, 1, -180, 180, false, 0, new double[2]);
     m_climberVisualSim = new MechanismUtil().new ClimberVisualSim("Climber", .25);
   }
 
