@@ -52,6 +52,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
 
+  @SuppressWarnings("unused")
+  private double currentOdometryThreadFrequency = 0;
+
   private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
@@ -284,6 +287,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveTelemetry.currentStates = getModuleStates();
     swerveTelemetry.desiredStates = getModuleTargets();
     swerveTelemetry.rotation = getRotation();
+
+    currentOdometryThreadFrequency = getOdometryFrequency();
 
     ShooterMath.input(new Pose3d(getPose()), Velocity3d.from(getFieldSpeeds()));
     ShooterMath.calculate();
