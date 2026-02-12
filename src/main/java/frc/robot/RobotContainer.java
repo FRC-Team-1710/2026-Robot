@@ -40,7 +40,6 @@ import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
@@ -72,9 +71,11 @@ public class RobotContainer {
     switch (Mode.currentMode) {
       case REAL:
         intake = new Intake(new IntakeIOCTRE(), consumer);
-        shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        // shooter = new Shooter(new ShooterIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer = new Indexer(new IndexerIOCTRE(), consumer);
+
+        shooter = new Shooter(new ShooterIOSIM(), consumer);
         break;
 
       case SIMULATION:

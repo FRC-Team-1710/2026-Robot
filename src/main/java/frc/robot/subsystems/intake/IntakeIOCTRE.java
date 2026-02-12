@@ -44,7 +44,7 @@ public class IntakeIOCTRE implements IntakeIO {
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
     m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    m_motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     m_motorConfig.Feedback.SensorToMechanismRatio = 1 / 1; // Use the integrated sensor
 
     // set slot 0 gains
@@ -86,7 +86,8 @@ public class IntakeIOCTRE implements IntakeIO {
 
   public void setAngle(Angle angle) {
     m_angleSetpoint = angle;
-    m_deploymentMotor.setControl(m_request.withPosition(angle));
+    // m_deploymentMotor.setControl(m_request.withPosition(angle));
+    m_deploymentMotor.stopMotor();
   }
 
   public void setIntakeMotor(double speed) {

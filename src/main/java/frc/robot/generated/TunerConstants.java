@@ -142,45 +142,45 @@ public class TunerConstants {
   private static final int kFrontLeftDriveMotorId = CanIdConstants.Swerve.FRONT_LEFT_DRIVE;
   private static final int kFrontLeftSteerMotorId = CanIdConstants.Swerve.FRONT_LEFT_STEER;
   private static final int kFrontLeftEncoderId = CanIdConstants.Swerve.FRONT_LEFT_ENCODER;
-  private static final Angle kFrontLeftEncoderOffset = Degrees.of(-161.98);
+  private static final Angle kFrontLeftEncoderOffset = Degrees.of(-329.41 + 180);
   private static final boolean kFrontLeftSteerMotorInverted = false;
   private static final boolean kFrontLeftEncoderInverted = false;
 
-  private static final Distance kFrontLeftXPos = Inches.of(27.75).div(2);
-  private static final Distance kFrontLeftYPos = Inches.of(15.75).div(2);
+  private static final Distance kFrontLeftXPos = Inches.of(15.75).div(2);
+  private static final Distance kFrontLeftYPos = Inches.of(27.75).div(2);
 
   // Front Right
   private static final int kFrontRightDriveMotorId = CanIdConstants.Swerve.FRONT_RIGHT_DRIVE;
   private static final int kFrontRightSteerMotorId = CanIdConstants.Swerve.FRONT_RIGHT_STEER;
   private static final int kFrontRightEncoderId = CanIdConstants.Swerve.FRONT_RIGHT_ENCODER;
-  private static final Angle kFrontRightEncoderOffset = Degrees.of(239.94);
+  private static final Angle kFrontRightEncoderOffset = Degrees.of(287.31);
   private static final boolean kFrontRightSteerMotorInverted = false;
   private static final boolean kFrontRightEncoderInverted = false;
 
-  private static final Distance kFrontRightXPos = Inches.of(27.75).div(2);
-  private static final Distance kFrontRightYPos = Inches.of(-15.75).div(2);
+  private static final Distance kFrontRightXPos = Inches.of(15.75).div(2);
+  private static final Distance kFrontRightYPos = Inches.of(-27.75).div(2);
 
   // Back Left
   private static final int kBackLeftDriveMotorId = CanIdConstants.Swerve.BACK_LEFT_DRIVE;
   private static final int kBackLeftSteerMotorId = CanIdConstants.Swerve.BACK_LEFT_STEER;
   private static final int kBackLeftEncoderId = CanIdConstants.Swerve.BACK_LEFT_ENCODER;
-  private static final Angle kBackLeftEncoderOffset = Degrees.of(-57.74);
+  private static final Angle kBackLeftEncoderOffset = Degrees.of(263.41 - 180);
   private static final boolean kBackLeftSteerMotorInverted = false;
   private static final boolean kBackLeftEncoderInverted = false;
 
-  private static final Distance kBackLeftXPos = Inches.of(-27.75).div(2);
-  private static final Distance kBackLeftYPos = Inches.of(15.75).div(2);
+  private static final Distance kBackLeftXPos = Inches.of(-15.75).div(2);
+  private static final Distance kBackLeftYPos = Inches.of(27.75).div(2);
 
   // Back Right
   private static final int kBackRightDriveMotorId = CanIdConstants.Swerve.BACK_RIGHT_DRIVE;
   private static final int kBackRightSteerMotorId = CanIdConstants.Swerve.BACK_RIGHT_STEER;
   private static final int kBackRightEncoderId = CanIdConstants.Swerve.BACK_RIGHT_ENCODER;
-  private static final Angle kBackRightEncoderOffset = Degrees.of(-71.54);
+  private static final Angle kBackRightEncoderOffset = Degrees.of(146.43);
   private static final boolean kBackRightSteerMotorInverted = false;
   private static final boolean kBackRightEncoderInverted = false;
 
-  private static final Distance kBackRightXPos = Inches.of(-27.75).div(2);
-  private static final Distance kBackRightYPos = Inches.of(-15.75).div(2);
+  private static final Distance kBackRightXPos = Inches.of(-15.75).div(2);
+  private static final Distance kBackRightYPos = Inches.of(-27.75).div(2);
 
   public static final SwerveModuleConstants<
           TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
