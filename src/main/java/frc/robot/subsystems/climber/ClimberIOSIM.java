@@ -22,13 +22,14 @@ public class ClimberIOSIM implements ClimberIO {
   public ClimberIOSIM() {
     m_climberMotor = DCMotor.getKrakenX60(1);
     m_armPhysicsSim =
-        new SingleJointedArmSim(m_climberMotor, 25, 0.004, 1, -180, 180, false, 0, new double[2]);
+        new SingleJointedArmSim(m_climberMotor, 25, 0.004, .5, -180, 180, true, 0, new double[2]);
     m_climberVisualSim = new MechanismUtil().new ClimberVisualSim("Climber", .25);
   }
 
   @Override
   public void setSpeed(double speed) {
     m_armPhysicsSim.setInput(speed);
+    m_armPhysicsSim.update(0.02);
     m_climberVisualSim.updateArm(getDegrees(), speed == 0);
     SmartDashboard.putData("ClimberVisuals", m_climberVisualSim.getMechanism());
   }
