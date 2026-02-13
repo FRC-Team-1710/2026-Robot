@@ -1,7 +1,9 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
@@ -13,8 +15,8 @@ import frc.robot.utils.MechanismUtil.WheelMechanism;
 @Logged
 public class ShooterIOSIM implements ShooterIO {
 
-  private AngularVelocity m_velocity;
-  private Angle m_hoodAngle;
+  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
+  private Angle m_hoodAngle = Degrees.of(0);
 
   private final WheelMechanism m_flyWheelMechanism;
   private final WheelMechanism m_flyWheelFollowerMechanism;
@@ -28,9 +30,9 @@ public class ShooterIOSIM implements ShooterIO {
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
   }
 
-  public void update() {
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
+  public void update(double dtSeconds) {
+    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
+    this.m_flyWheelFollowerMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
 
     this.m_hoodMechanism.update(this.m_hoodAngle);
 

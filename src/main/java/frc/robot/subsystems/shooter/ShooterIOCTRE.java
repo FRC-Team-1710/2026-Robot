@@ -90,7 +90,7 @@ public class ShooterIOCTRE implements ShooterIO {
     m_hood.optimizeBusUtilization();
   }
 
-  public void update() {
+  public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_flyWheelSignals);
     BaseStatusSignal.refreshAll(m_flyWheelFollowerSignals);
     BaseStatusSignal.refreshAll(m_hoodSignals);

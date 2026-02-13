@@ -13,7 +13,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 @Logged
 public interface ShooterIO {
-  public default void update() {}
+  public default void update(double dtSeconds) {}
 
   public default void stop() {}
 
