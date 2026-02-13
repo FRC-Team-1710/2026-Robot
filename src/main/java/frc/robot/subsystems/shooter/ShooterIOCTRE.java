@@ -102,9 +102,10 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hood.setControl(
-        m_positionManager.withPosition(
-            Degrees.of(MathUtil.clamp(pAngle.magnitude(), kHoodMin, kHoodMax))));
+    this.m_hood.setPosition(
+        Degrees.of(
+            MathUtil.clamp(
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX)));
   }
 
   public Angle getHoodAngle() {

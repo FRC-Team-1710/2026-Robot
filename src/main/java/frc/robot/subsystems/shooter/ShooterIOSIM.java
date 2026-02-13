@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.MechanismUtil.HoodMechanism;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
 
@@ -59,7 +60,10 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hoodAngle = Degrees.of(MathUtil.clamp(pAngle.magnitude(), HOOD_MIN, HOOD_MAX));
+    this.m_hoodAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
   }
 
   public Angle getHoodAngle() {
