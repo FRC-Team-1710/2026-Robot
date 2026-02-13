@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
+import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
 import frc.robot.subsystems.indexer.Indexer;
@@ -191,8 +192,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
-    feeder.setState(FEEDER_STATE.FEEDING);
+    indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -203,8 +204,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
-    feeder.setState(FEEDER_STATE.FEEDING);
+    indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -225,8 +226,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
-    feeder.setState(FEEDER_STATE.FEEDING);
+    indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -237,8 +238,8 @@ public class Superstructure {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
-    indexer.setState(IndexStates.Indexing);
-    feeder.setState(FEEDER_STATE.FEEDING);
+    indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -264,6 +265,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -274,6 +276,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -283,6 +286,7 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = true;
   }
@@ -293,6 +297,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -303,6 +308,7 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -310,6 +316,7 @@ public class Superstructure {
   private void climbAuto() {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
   }
