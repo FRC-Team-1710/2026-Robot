@@ -4,10 +4,15 @@
 
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
@@ -16,6 +21,14 @@ public class Indexer {
   private final IndexerIO io;
   private final TimesConsumer timesConsumer;
   private IndexStates currentState = IndexStates.Idle;
+  private final Debouncer jamTime =
+      new Debouncer(JamDetectionConstants.Intake.jamMinimumTime.in(Seconds));
+  private final Debouncer minimumJamTime =
+      new Debouncer(JamDetectionConstants.Intake.jamDetectionDisabledTime.in(Seconds));
+  private final Debouncer jamUndoTime =
+      new Debouncer(JamDetectionConstants.Intake.jamUndoTime.in(Seconds));
+
+  private boolean wasJammed = false;
 
   /** Creates a new Index. */
   public Indexer(IndexerIO io, TimesConsumer consumer) {
@@ -27,6 +40,45 @@ public class Indexer {
     // This method will be called once per scheduler run
     io.setIndexMotor(currentState.speed);
     io.updateVisual();
+    switch (currentState) {
+      case Indexing:
+        // IMPORTANT, keep every if statement different!
+        if (minimumJamTime.calculate(true)) {
+          if (jamTime.calculate(isJammed()) || wasJammed) {
+            wasJammed = true;
+            if (jamUndoTime.calculate(true)) {
+              jamTime.calculate(false);
+              jamUndoTime.calculate(false);
+              wasJammed = false;
+              io.setIndexMotor(currentState.speed);
+            } else {
+              io.setIndexMotor(IndexStates.Jammed.speed);
+            }
+          } else {
+            jamUndoTime.calculate(false);
+            io.setIndexMotor(currentState.speed);
+          }
+        } else {
+          jamTime.calculate(false);
+          jamUndoTime.calculate(false);
+          wasJammed = false;
+          io.setIndexMotor(currentState.speed);
+        }
+        break;
+      default:
+        jamTime.calculate(false);
+        minimumJamTime.calculate(false);
+        jamUndoTime.calculate(false);
+        wasJammed = false;
+        io.setIndexMotor(currentState.speed);
+        break;
+    }
+  }
+
+  public boolean isJammed() {
+    return io.getIndexMotorCurrent().in(Amps) >= JamDetectionConstants.Intake.jamCurrent.in(Amps)
+        && io.getIndexMotorVelocity().in(RotationsPerSecond)
+            <= JamDetectionConstants.Intake.jamSpeedThreshold.in(RotationsPerSecond);
   }
 
   public void setState(IndexStates state) {
@@ -37,9 +89,12 @@ public class Indexer {
   }
 
   public enum IndexStates {
+    // TODO : Make Numbers acurate
     Indexing(Milliseconds.of(20), 2),
 
-    Idle(Milliseconds.of(60), 0);
+    Idle(Milliseconds.of(60), 0),
+
+    Jammed(Milliseconds.of(60), 0);
 
     private final Time subsystemPeriodicFrequency;
     private final double speed;
