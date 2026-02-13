@@ -34,7 +34,8 @@ public class IntakeIOCTRE implements IntakeIO {
 
   private Angle m_angleSetpoint;
 
-  private final BaseStatusSignal[] m_baseStatusSignals;
+  private final BaseStatusSignal[] m_intakeSignals;
+  private final BaseStatusSignal[] m_deploymentSignals;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
@@ -75,16 +76,19 @@ public class IntakeIOCTRE implements IntakeIO {
 
     m_deploymentMotor.getClosedLoopReference().getValue();
 
-    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor, m_deploymentMotor);
+    m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
+    m_deploymentSignals = TalonFXUtil.getBasicStatusSignals(m_deploymentMotor);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSignals);
 
     m_intakeMotor.optimizeBusUtilization();
     m_deploymentMotor.optimizeBusUtilization();
   }
 
   public void update() {
-    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+    BaseStatusSignal.refreshAll(m_intakeSignals);
+    BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
 
   public void setAngle(Angle angle) {

@@ -36,7 +36,7 @@ public class Shooter {
 
   public void periodic() {
 
-    m_io.setVoltage(m_state.shotVoltage);
+    // m_io.setVoltage(m_state.shotVoltage);
 
     // switch (this.m_state) {
     //   case SHOOT:
@@ -53,7 +53,7 @@ public class Shooter {
     // this.m_io.setTargetVelocity(this.m_velocity);
     // this.m_io.setHoodAngle(this.m_hoodAngle);
 
-    // this.m_io.update();
+    this.m_io.update();
   }
 
   public AngularVelocity getVelocity() {
@@ -92,7 +92,7 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0), Volts.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(250), Degrees.of(0), Volts.of(5)),
+    IDLE(Milliseconds.of(20), RotationsPerSecond.of(250), Degrees.of(0), Volts.of(5)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0), Volts.of(10)),
     PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(750), Degrees.of(0), Volts.of(10));
 

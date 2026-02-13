@@ -18,7 +18,7 @@ public interface ShooterIO {
 
   public default void stop() {}
 
-    public default void setVoltage(Voltage voltage) {}
+  public default void setVoltage(Voltage voltage) {}
 
   public default void setTargetVelocity(AngularVelocity pVelocity) {}
 

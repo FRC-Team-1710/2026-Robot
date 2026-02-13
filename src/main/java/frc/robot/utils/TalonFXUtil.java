@@ -48,13 +48,14 @@ public final class TalonFXUtil {
   }
 
   public static BaseStatusSignal[] getBasicStatusSignals(TalonFX... motors) {
-    BaseStatusSignal[] signals = new BaseStatusSignal[motors.length * 5];
+    BaseStatusSignal[] signals = new BaseStatusSignal[motors.length * 6];
     for (int i = 0; i < motors.length; i++) {
       signals[i] = motors[i].getVelocity();
       signals[i + motors.length] = motors[i].getPosition();
       signals[i + (2 * motors.length)] = motors[i].getStatorCurrent();
       signals[i + (3 * motors.length)] = motors[i].getSupplyCurrent();
       signals[i + (4 * motors.length)] = motors[i].getMotorVoltage();
+      signals[i + (5 * motors.length)] = motors[i].getClosedLoopReference();
     }
     return signals;
   }

@@ -20,7 +20,7 @@ public class IndexerIOCTRE implements IndexerIO {
 
   TalonFXConfiguration motorConfig;
 
-  private final BaseStatusSignal[] m_baseStatusSignals;
+  private final BaseStatusSignal[] m_indexerSignals;
 
   public IndexerIOCTRE() {
     this.IndexMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
@@ -34,15 +34,15 @@ public class IndexerIOCTRE implements IndexerIO {
 
     IndexMotor.getConfigurator().apply(motorConfig);
 
-    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(IndexMotor);
+    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(IndexMotor);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_indexerSignals);
 
     IndexMotor.optimizeBusUtilization();
   }
 
   public void update() {
-    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+    BaseStatusSignal.refreshAll(m_indexerSignals);
   }
 
   public void setSpeed(double speed) {
