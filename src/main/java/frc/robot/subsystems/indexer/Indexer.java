@@ -10,6 +10,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import java.util.function.BooleanSupplier;
 
 @Logged
 public class Indexer {
@@ -17,15 +18,22 @@ public class Indexer {
   private final TimesConsumer timesConsumer;
   private IndexStates currentState = IndexStates.Idle;
 
+  private final BooleanSupplier bumpSupplier;
+
   /** Creates a new Index. */
-  public Indexer(IndexerIO io, TimesConsumer consumer) {
+  public Indexer(IndexerIO io, TimesConsumer consumer, BooleanSupplier bumpSupplier) {
     this.io = io;
     this.timesConsumer = consumer;
+    this.bumpSupplier = bumpSupplier;
   }
 
   public void periodic() {
     // This method will be called once per scheduler run
-    io.setSpeed(currentState.speed);
+    if (bumpSupplier.getAsBoolean()) {
+      io.setSpeed(-0.5);
+    } else {
+      io.setSpeed(currentState.speed);
+    }
     io.update();
   }
 

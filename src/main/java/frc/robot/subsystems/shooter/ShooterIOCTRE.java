@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
-import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -13,7 +12,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.TalonFXUtil;
@@ -48,6 +46,9 @@ public class ShooterIOCTRE implements ShooterIO {
     flywheelConfig.Slot0.kV = ShooterConstants.kV; // Velocity feedforward
     flywheelConfig.Slot0.kP = ShooterConstants.kP; // Proportional gain
 
+    flywheelConfig.MotorOutput.PeakForwardDutyCycle = 1;
+    flywheelConfig.MotorOutput.PeakReverseDutyCycle = 0;
+
     flywheelConfig.MotionMagic.MotionMagicCruiseVelocity =
         ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
     flywheelConfig.MotionMagic.MotionMagicAcceleration = ShooterConstants.MOTION_MAGIC_ACCELERATION;
@@ -73,7 +74,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
     TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 2);
 
-    this.m_velocityManager = new MotionMagicVelocityVoltage(0);
+    this.m_velocityManager = new MotionMagicVelocityVoltage(0).withSlot(0);
     this.m_positionManager = new PositionVoltage(0);
 
     m_flyWheelSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheel);
@@ -119,9 +120,5 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
-  }
-
-  public void setVoltage(Voltage voltage) {
-    m_flyWheel.setVoltage(voltage.in(Volts));
   }
 }
