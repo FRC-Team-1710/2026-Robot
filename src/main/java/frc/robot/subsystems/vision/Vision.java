@@ -37,12 +37,7 @@ public class Vision extends SubsystemBase {
 
     camera = new PhotonCamera(cameraName);
 
-    poseEstimator =
-        new PhotonPoseEstimator(
-            FieldConstants.kAprilTags,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            camera,
-            robotToCamera);
+    poseEstimator = new PhotonPoseEstimator(FieldConstants.kAprilTags, robotToCamera);
 
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
