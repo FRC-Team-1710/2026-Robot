@@ -21,6 +21,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Alliance;
@@ -29,6 +30,7 @@ import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
+import frc.robot.utils.LogEverything;
 import java.util.HashMap;
 
 @Logged
@@ -86,6 +88,8 @@ public class Robot extends DynamicTimedRobot {
         epilogueConfig.loggingPeriodOffset);
 
     addAllSubsystems(m_robotContainer.getAllSubsystems());
+
+    SmartDashboard.putBoolean("Reset Fuel Sim", false);
   }
 
   @Override
@@ -95,6 +99,8 @@ public class Robot extends DynamicTimedRobot {
     hootAutoReplay.update();
 
     MatchState.updateAutonomousWinner();
+
+    LogEverything.logEverythingPossible();
   }
 
   @Override
@@ -136,7 +142,17 @@ public class Robot extends DynamicTimedRobot {
   public void teleopPeriodic() {}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    // Reset Fuel
+    if (SmartDashboard.getBoolean("Reset Fuel Sim", false)) {
+      SmartDashboard.putBoolean("Reset Fuel Sim", false);
+
+      m_robotContainer.fuelSim.clearFuel();
+      m_robotContainer.fuelSim.spawnStartingFuel();
+    }
+
+    m_robotContainer.fuelSim.updateSim();
+  }
 
   @Override
   public void teleopExit() {}
@@ -164,6 +180,6 @@ public class Robot extends DynamicTimedRobot {
   }
 
   public static EpilogueBackend telemetry() {
-    return Epilogue.getConfig().backend;
+    return Epilogue.getConfig().backend.getNested("Outputs");
   }
 }

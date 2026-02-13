@@ -4,12 +4,14 @@
 
 package frc.robot.subsystems.indexer;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import frc.robot.constants.CanIdConstants;
+import frc.robot.utils.TalonFXUtil;
 
 @Logged
 /** Creates a new IndexIOCTRE. */
@@ -18,6 +20,8 @@ public class IndexerIOCTRE implements IndexerIO {
   private final TalonFX IndexerBeta;
 
   TalonFXConfiguration motorConfig;
+
+  private final BaseStatusSignal[] m_baseStatusSignals;
 
   public IndexerIOCTRE() {
     this.IndexerAlpha = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_ALPHA);
@@ -29,6 +33,16 @@ public class IndexerIOCTRE implements IndexerIO {
 
     IndexerAlpha.getConfigurator().apply(motorConfig);
     IndexerBeta.getConfigurator().apply(motorConfig);
+
+    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(IndexMotor);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+
+    IndexMotor.optimizeBusUtilization();
+  }
+
+  public void update() {
+    BaseStatusSignal.refreshAll(m_baseStatusSignals);
   }
 
   public void setIndexMotor(double speed) {

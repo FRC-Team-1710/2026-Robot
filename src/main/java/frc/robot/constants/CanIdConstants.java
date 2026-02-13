@@ -46,4 +46,10 @@ public class CanIdConstants {
   public static class Climber {
     public static final int CLIMBER_MOTOR = 50;
   }
+
+  /** Constants for feeder */
+  public static class Feeder {
+    public static final int FEEDER_MOTOR = 60;
+    public static final int FEEDER_FOLLOWER_MOTOR = 61;
+  }
 }

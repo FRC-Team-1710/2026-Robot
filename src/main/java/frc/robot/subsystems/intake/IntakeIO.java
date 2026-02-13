@@ -18,6 +18,8 @@ public interface IntakeIO {
 
   public default void setIntakeMotor(double speed) {}
 
+  public default void update() {}
+
   public default Current getRollerCurrent() {
     return Amps.of(0);
   }

@@ -14,6 +14,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -37,6 +38,8 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.SwerveTelemetry;
+import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.Velocity3d;
 import java.util.function.Supplier;
 
 /**
@@ -67,6 +70,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+  /* Override default swerve request for a higher priority one (used in auto) */
+  private boolean autonomousRequestOverride = false;
 
   // SysId routines
 
@@ -225,7 +230,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @return Command to run
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-    return Commands.run(() -> this.setControl(requestSupplier.get()));
+    return Commands.run(() -> this.applyRequest(requestSupplier.get()));
+  }
+
+  public void applyRequest(SwerveRequest request) {
+    if (!DriverStation.isAutonomous() || !autonomousRequestOverride) {
+      this.setControl(request);
+    }
+  }
+
+  public void applyPriorityRequestAuto(SwerveRequest request) {
+    if (DriverStation.isAutonomous() && autonomousRequestOverride) {
+      this.setControl(request);
+    }
   }
 
   public void periodic() {
@@ -267,6 +284,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveTelemetry.currentStates = getModuleStates();
     swerveTelemetry.desiredStates = getModuleTargets();
     swerveTelemetry.rotation = getRotation();
+
+    ShooterMath.input(new Pose3d(getPose()), Velocity3d.from(getFieldSpeeds()));
+    ShooterMath.calculate();
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
@@ -277,6 +297,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public double rescaleRotation(double rotation) {
     return MathUtil.clamp(Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation), -1, 1);
+  }
+
+  public void setAutonomousRequestOverride(boolean override) {
+    this.autonomousRequestOverride = override;
   }
 
   private void startSimThread() {

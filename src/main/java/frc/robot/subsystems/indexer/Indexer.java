@@ -78,7 +78,7 @@ public class Indexer {
   public boolean isJammed() {
     return io.getIndexMotorCurrent().in(Amps) >= JamDetectionConstants.Intake.jamCurrent.in(Amps)
         && io.getIndexMotorVelocity().in(RotationsPerSecond)
-            <= JamDetectionConstants.Intake.jamSpeedThreshold.in(RotationsPerSecond);
+            <= JamDetectionConstants.Intake.JamSpeedThreshold.in(RotationsPerSecond);
   }
 
   public void setState(IndexStates state) {
@@ -89,10 +89,9 @@ public class Indexer {
   }
 
   public enum IndexStates {
-    // TODO : Make Numbers acurate
-    Indexing(Milliseconds.of(20), 2),
+    Indexing(Milliseconds.of(20), 0.5),
 
-    Idle(Milliseconds.of(60), 0),
+    Idle(Milliseconds.of(20), 0.5),
 
     Jammed(Milliseconds.of(60), 0);
 

@@ -4,9 +4,12 @@ name: CI
 # events but only for the main branch.
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/** ]
   pull_request:
     branches: [ main ]
+
+env:
+  isCI: 'True'
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
@@ -32,5 +35,120 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Run spotlessCheck
+        run: bash ./gradlew spotlessCheck
+
       - name: Compile and run tests on robot code
         run: bash ./gradlew build
+
+      - name: Notify Teams + ntfy (parallel)
+        if: always()
+        shell: bash
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          NTFY_URL: ${{ secrets.NTFY_URL }}
+          STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          SHORT_SHA="$(echo "$SHA" | cut -c1-7)"
+
+          notify_ntfy() {
+            if [ "$STATUS" = "success" ]; then
+              ICON="✅"; PRIORITY="3"; TAGS="white_check_mark,robot"
+            elif [ "$STATUS" = "cancelled" ]; then
+              ICON="⚠️"; PRIORITY="3"; TAGS="warning,robot"
+            else
+              ICON="❌"; PRIORITY="5"; TAGS="x,robot"
+            fi
+
+            printf "Repo: %s\nBranch: %s\nActor: %s\nCommit: %s\n" \
+              "$REPO" "$BRANCH" "$ACTOR" "$SHORT_SHA" \
+            | curl -sS \
+                -H "Title: ${ICON} ${WORKFLOW} (${STATUS})" \
+                -H "Priority: ${PRIORITY}" \
+                -H "Tags: ${TAGS}" \
+                -H "Click: ${RUN_URL}" \
+                --data-binary @- \
+                "$NTFY_URL"
+          }
+
+          notify_teams() {
+            if [ "$STATUS" = "success" ]; then
+              ICON="✅"; TITLE="CI Succeeded"
+            elif [ "$STATUS" = "cancelled" ]; then
+              ICON="⚠️"; TITLE="CI Cancelled"
+            else
+              ICON="❌"; TITLE="CI Failed"
+            fi
+
+            payload=$(cat <<JSON
+            {
+              "type": "message",
+              "attachments": [
+                {
+                  "contentType": "application/vnd.microsoft.card.adaptive",
+                  "content": {
+                    "type": "AdaptiveCard",
+                    "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "version": "1.4",
+                    "body": [
+                      { "type": "TextBlock", "text": "${ICON} ${TITLE}", "weight": "Bolder", "size": "Medium", "wrap": true },
+                      {
+                        "type": "FactSet",
+                        "facts": [
+                          { "title": "Workflow", "value": "${WORKFLOW}" },
+                          { "title": "Repository", "value": "${REPO}" },
+                          { "title": "Branch", "value": "${BRANCH}" },
+                          { "title": "Actor", "value": "${ACTOR}" },
+                          { "title": "Commit", "value": "${SHORT_SHA}" }
+                        ]
+                      }
+                    ],
+                    "actions": [
+                      { "type": "Action.OpenUrl", "title": "View Run", "url": "${RUN_URL}" },
+                      { "type": "Action.OpenUrl", "title": "View Commit", "url": "${COMMIT_URL}" }
+                    ]
+                  }
+                }
+              ]
+            }
+          JSON
+            )
+
+            http_code=$(
+              curl -sS -o response.txt -w "%{http_code}" \
+                -H "Content-Type: application/json" \
+                -d "$payload" \
+                "$TEAMS_WEBHOOK_URL"
+            )
+
+            echo "Teams webhook HTTP status: $http_code"
+            cat response.txt || true
+
+            if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+              echo "❌ Teams webhook rejected the Adaptive Card"
+              return 1
+            fi
+          }
+
+          # Run both in parallel
+          notify_ntfy & pid_ntfy=$!
+          notify_teams & pid_teams=$!
+
+          # Wait and propagate failures
+          wait $pid_ntfy
+          rc_ntfy=$?
+          wait $pid_teams
+          rc_teams=$?
+
+          if [ $rc_ntfy -ne 0 ] || [ $rc_teams -ne 0 ]; then
+            exit 1
+          fi

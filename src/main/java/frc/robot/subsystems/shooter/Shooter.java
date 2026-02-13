@@ -11,6 +11,7 @@ import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
 public class Shooter {
@@ -33,23 +34,23 @@ public class Shooter {
   }
 
   public void periodic() {
+
     switch (this.m_state) {
       case SHOOT:
-        this.m_io.setTargetVelocity(this.getTargetVelocity());
-        this.m_io.setHoodAngle(this.getTargetHoodAngle());
+        this.m_velocity = ShooterMath.getShooterRPM();
+        this.m_hoodAngle = ShooterMath.getShooterAngle();
         break;
 
       default:
-        this.m_io.setTargetVelocity(this.m_state.m_velocity);
-        this.m_io.setHoodAngle(this.m_state.m_hoodAngle);
+        this.m_velocity = this.m_state.m_velocity;
+        this.m_hoodAngle = this.m_state.m_hoodAngle;
         break;
     }
 
-    this.m_io.update();
-  }
+    this.m_io.setTargetVelocity(this.m_velocity);
+    this.m_io.setHoodAngle(this.m_hoodAngle);
 
-  public void setVelocity(AngularVelocity pVelocity) {
-    this.m_velocity = pVelocity;
+    this.m_io.update();
   }
 
   public AngularVelocity getVelocity() {
@@ -68,10 +69,6 @@ public class Shooter {
   public boolean isHoodAtTargetAngle() {
     return this.getHoodAngle()
         .isNear(getTargetHoodAngle(), ShooterConstants.HOOD_TARGET_ERROR_RANGE);
-  }
-
-  public void setTargetHoodAngle(Angle pAngle) {
-    this.m_hoodAngle = pAngle;
   }
 
   public Angle getTargetHoodAngle() {

@@ -16,13 +16,11 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -51,14 +49,21 @@ public class CustomFieldCentric implements SwerveRequest {
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 2 : 0.0);
-  private final ProfiledPIDController rotationLockPID =
-      new ProfiledPIDController(
-          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 0.0,
+
+  // private final ProfiledPIDController rotationLockPID =
+  //     new ProfiledPIDController(
+  //         Mode.currentMode == CurrentMode.SIMULATION ? 50 : 0.0,
+  //         0.0,
+  //         Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
+  //         new Constraints(
+  //             Mode.currentMode == CurrentMode.SIMULATION ? 3 : 0.0,
+  //             Mode.currentMode == CurrentMode.SIMULATION ? 4 : 0.0));
+
+  private final PIDController rotationLockPID =
+      new PIDController(
+          Mode.currentMode == CurrentMode.SIMULATION ? 75 : 0.0,
           0.0,
-          Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
-          new Constraints(
-              Mode.currentMode == CurrentMode.SIMULATION ? 3 : 0.0,
-              Mode.currentMode == CurrentMode.SIMULATION ? 4 : 0.0));
+          Mode.currentMode == CurrentMode.SIMULATION ? 18 : 0.0);
 
   @NotLogged private boolean shouldResetYAssistPID = true;
   @NotLogged private boolean shouldResetRotationPID = true;
@@ -74,7 +79,7 @@ public class CustomFieldCentric implements SwerveRequest {
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
-    // Enable PID wrap from -180 to 180
+    // Enable PID wrap from -180 to 180 deg
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
@@ -137,7 +142,8 @@ public class CustomFieldCentric implements SwerveRequest {
     }
 
     if (shouldResetRotationPID) {
-      rotationLockPID.reset(parameters.currentPose.getRotation().getRadians(), 0);
+      // rotationLockPID.reset(parameters.currentPose.getRotation().getRadians(), 0);
+      rotationLockPID.reset();
       shouldResetRotationPID = false;
     }
 
@@ -156,7 +162,8 @@ public class CustomFieldCentric implements SwerveRequest {
           targetSnapRadians = Math.PI;
         }
 
-        rotationLockPID.setGoal(targetSnapRadians);
+        // rotationLockPID.setGoal(targetSnapRadians);
+        rotationLockPID.setSetpoint(targetSnapRadians);
 
         maxBumpSpeed = getMaxSpeedForBump(parameters.currentPose).in(MetersPerSecond);
 
@@ -183,7 +190,8 @@ public class CustomFieldCentric implements SwerveRequest {
                                     RadiansPerSecond)))));
         break;
       case ROTATION_LOCK:
-        rotationLockPID.setGoal(rotationTarget.getRadians());
+        // rotationLockPID.setGoal(rotationTarget.getRadians());
+        rotationLockPID.setSetpoint(rotationTarget.getRadians());
 
         wantedSpeeds =
             new ChassisSpeeds(
@@ -193,12 +201,8 @@ public class CustomFieldCentric implements SwerveRequest {
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
-                            MathUtil.clamp(
-                                rotationLockPID.calculate(
-                                    parameters.currentPose.getRotation().getRadians()),
-                                -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
-                                DrivetrainAutomationConstants.kRotationPIDMax.in(
-                                    RadiansPerSecond)))));
+                            rotationLockPID.calculate(
+                                parameters.currentPose.getRotation().getRadians()))));
         break;
       default:
         wantedSpeeds = new ChassisSpeeds(xVelocity, yVelocity, angularVelocity);
