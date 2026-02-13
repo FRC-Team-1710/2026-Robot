@@ -555,7 +555,7 @@ public class MechanismUtil {
     private static final double CANVAS_HEIGHT = 400.0;
 
     /** X position of the mechanism root on the canvas */
-    private static final double ROOT_X = 200;
+    private static final double ROOT_X = 199.8;
 
     /** Y position of the mechanism root on the canvas */
     private static final double ROOT_Y = .2;
