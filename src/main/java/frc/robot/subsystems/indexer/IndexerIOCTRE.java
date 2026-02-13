@@ -29,6 +29,9 @@ public class IndexerIOCTRE implements IndexerIO {
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
+    motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
+    motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
+
     IndexMotor.getConfigurator().apply(motorConfig);
 
     m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(IndexMotor);

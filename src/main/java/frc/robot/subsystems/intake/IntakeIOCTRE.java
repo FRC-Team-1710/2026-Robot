@@ -43,9 +43,12 @@ public class IntakeIOCTRE implements IntakeIO {
     m_request = new MotionMagicVoltage(0).withSlot(0).withEnableFOC(true);
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
-    m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     m_motorConfig.Feedback.SensorToMechanismRatio = 1 / 1; // Use the integrated sensor
+
+    m_motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
+    m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
     // set slot 0 gains
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
