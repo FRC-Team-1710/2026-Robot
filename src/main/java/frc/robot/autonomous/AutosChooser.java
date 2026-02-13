@@ -52,10 +52,10 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("ZONE1"));
-    addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("ZONE3"));
-    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("RIGHTINSIDE"));
-    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("LEFTINSIDE"));
+    addPath(Auto.ZONE1, autoPathing(climb, depot).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(climb, depot).get("ZONE3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot).get("RIGHTINSIDE"));
+    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot).get("LEFTINSIDE"));
 
     SmartDashboard.putBoolean("Auto/Climb?", climb);
     SmartDashboard.putBoolean("Auto/Depot?", depot);
@@ -113,11 +113,10 @@ public class AutosChooser {
     String currentAuto = autoChooser.getSelected().toString();
     SmartDashboard.putString("Auto/Selected", currentAuto);
 
-    return autoPathing(climbValue, depotValue, drivetrain).get(currentAuto);
+    return autoPathing(climbValue, depotValue).get(currentAuto);
   }
 
-  public static HashMap<String, Command> autoPathing(
-      Boolean climbPath, Boolean depotPath, CommandSwerveDrivetrain drivetrain) {
+  public static HashMap<String, Command> autoPathing(Boolean climbPath, Boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     listOfPaths.put(
         "ZONE3",
