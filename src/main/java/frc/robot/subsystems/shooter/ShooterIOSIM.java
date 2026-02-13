@@ -28,9 +28,9 @@ public class ShooterIOSIM implements ShooterIO {
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
   }
 
-  public void update() {
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
+  public void update(double dtSeconds) {
+    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
+    this.m_flyWheelFollowerMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
 
     this.m_hoodMechanism.update(this.m_hoodAngle);
 

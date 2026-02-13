@@ -41,7 +41,7 @@ public class FeederIOCTRE implements FeederIO {
     m_feederRight.optimizeBusUtilization();
   }
 
-  public void update() {
+  public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_baseStatusSignals);
   }
 
