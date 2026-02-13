@@ -142,7 +142,7 @@ public class TunerConstants {
   private static final int kFrontLeftDriveMotorId = CanIdConstants.Swerve.FRONT_LEFT_DRIVE;
   private static final int kFrontLeftSteerMotorId = CanIdConstants.Swerve.FRONT_LEFT_STEER;
   private static final int kFrontLeftEncoderId = CanIdConstants.Swerve.FRONT_LEFT_ENCODER;
-  private static final Angle kFrontLeftEncoderOffset = Degrees.of(-329.41 + 180);
+  private static final Angle kFrontLeftEncoderOffset = Degrees.of(-149.41);
   private static final boolean kFrontLeftSteerMotorInverted = false;
   private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -164,7 +164,7 @@ public class TunerConstants {
   private static final int kBackLeftDriveMotorId = CanIdConstants.Swerve.BACK_LEFT_DRIVE;
   private static final int kBackLeftSteerMotorId = CanIdConstants.Swerve.BACK_LEFT_STEER;
   private static final int kBackLeftEncoderId = CanIdConstants.Swerve.BACK_LEFT_ENCODER;
-  private static final Angle kBackLeftEncoderOffset = Degrees.of(263.41 - 180);
+  private static final Angle kBackLeftEncoderOffset = Degrees.of(83.41);
   private static final boolean kBackLeftSteerMotorInverted = false;
   private static final boolean kBackLeftEncoderInverted = false;
 
