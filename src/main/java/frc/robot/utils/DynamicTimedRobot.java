@@ -100,8 +100,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
   private final HashMap<Subsystems, Long> previousSubsystemTimes = new HashMap<>();
 
-  private final ArrayList<Subsystems> runImmediately = new ArrayList<>();
-
   private ArrayList<String> subsystemsRunThisLoop = new ArrayList<>();
 
   /** Constructor for DynamicTimedRobot. */
@@ -175,28 +173,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
         // Expiration time auto updated in runPeriodic()
         m_callbacks.add(callback);
-      }
-
-      for (Object objectSubsystemToRun : runImmediately.toArray()) {
-        Subsystems subsystemToRun = (Subsystems) objectSubsystemToRun;
-        var immediateCallback = subsystemToCallback.get(subsystemToRun);
-
-        immediateCallback.expirationTime
-
-        // Expiration time auto updated in runPeriodic()
-        runPeriodic(callback);
-
-        // for (Object obj : m_callbacks.toArray()) {
-        //   Callback tempCallback = (Callback) obj;
-        //   // If the callback were looking for is found
-        //   if (tempCallback.subsystem == subsystemToRun) {
-        //     m_callbacks.remove(tempCallback);
-        //     runPeriodic(tempCallback);
-        //     m_callbacks.add(tempCallback);
-        //     break;
-        //   }
-        // }
-        runImmediately.remove(subsystemToRun);
       }
     }
   }
@@ -305,16 +281,10 @@ public class DynamicTimedRobot extends IterativeRobotBase {
    */
   public final void setSubsystem(Subsystems subsystem, Time period) {
     if (currentPeriodicCallback.subsystem != subsystem) {
-      for (Object obj : m_callbacks.toArray()) {
-        Callback callback = (Callback) obj;
-        // If the callback were looking for is found
-        if (callback.subsystem == subsystem) {
-          callback.expirationTime -= callback.period;
-          callback.period = (long) (period.in(Seconds) * 1e6);
-          callback.expirationTime += callback.period;
-          break;
-        }
-      }
+      var callback = subsystemToCallback.get(subsystem);
+      callback.expirationTime -= callback.period;
+      callback.period = (long) (period.in(Seconds) * 1e6);
+      callback.expirationTime += callback.period;
     } else {
       currentPeriodicCallback.period = (long) (period.in(Seconds) * 1e6);
     }
@@ -328,7 +298,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
    */
   public void setSubsystemConsumer(Subsystems subsystem, Time period) {
     setSubsystem(subsystem, period);
-    runImmediately.add(subsystem);
   }
 
   @FunctionalInterface
