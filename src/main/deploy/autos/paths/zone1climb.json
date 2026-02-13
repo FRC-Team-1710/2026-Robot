@@ -7,6 +7,11 @@
       "intermediate_handoff_radius_meters": 0.2
     },
     {
+      "type": "event_trigger",
+      "t_ratio": 0.0,
+      "lib_key": "ClimbAuto"
+    },
+    {
       "type": "waypoint",
       "translation_target": {
         "x_meters": 1.4512928938743785,

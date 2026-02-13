@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
@@ -22,10 +23,19 @@ import java.util.HashMap;
 
 /** Add your docs here. */
 public class AutosChooser {
-  private final HashMap<Auto, Command> autoCommands;
-  private final SendableChooser<Auto> autoChooser;
+  private static HashMap<Auto, Command> autoCommands;
+  private static SendableChooser<Auto> autoChooser;
 
-  private static FollowPath.Builder pathBuilder;
+  // private static Trigger actionsTrigger;
+  // private static SendableChooser<Runnable> actions;
+
+  public static FollowPath.Builder pathBuilder;
+
+  private boolean climb = false;
+  private boolean depot = false;
+
+  final Trigger Climb = new Trigger(() -> SmartDashboard.getBoolean("Auto/Climb?", climb));
+  final Trigger Depot = new Trigger(() -> SmartDashboard.getBoolean("Auto/Depot?", depot));
 
   public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     pathBuilder =
@@ -48,11 +58,31 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
+    addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("Zone 1"));
+    // addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("Zone 3"));
+    // addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("rightinside"));
+    // addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("leftinside"));
+
+    SmartDashboard.putBoolean("Auto/Climb?", climb);
+    SmartDashboard.putBoolean("Auto/Depot?", depot);
+
+    // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
+    Climb.onTrue(Commands.runOnce(() -> climb = !climb));
+    Depot.onChange(Commands.runOnce(() -> addPaths(drivetrain, depot)));
+
+    // actions.setDefaultOption("neither", this::neither);
+    // actions.addOption("Climb", climb = true);
+    // actions.addOption("Depot", depot = true);
+    // actions.addOption("both", both = true);
+    // actions.addOption("neither", both = false);
+
+    // actions.onChange(runnable -> updateActions(runnable));
+
     SmartDashboard.putData(autoChooser);
     // Put preset autos hare//
-    addPath(Auto.TEST_PATH, Commands.none());
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
+    // SmartDashboard.putData("Auto/Actions", actions);
 
     for (WantedStates state : WantedStates.values()) {
       if (state.name().contains("Auto")) {
@@ -77,9 +107,21 @@ public class AutosChooser {
     autoCommands.put(Auto.CUSTOM, command);
   }
 
-  public void addPath(Auto auto, Command command) {
+  public static void addPath(Auto auto, Command command) {
     autoCommands.put(auto, command);
     autoChooser.addOption(auto.name(), auto);
+  }
+
+  public void addPaths(CommandSwerveDrivetrain drivetrain, Boolean action) {
+    if (action == climb) {
+      climb = !climb;
+    } else if (action == depot) {
+      depot = !depot;
+    }
+    addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("Zone 1"));
+    addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("Zone 3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("rightinside"));
+    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("leftinside"));
   }
 
   public Command getAuto() {
@@ -89,36 +131,56 @@ public class AutosChooser {
         : autoCommands.get(autoChooser.getSelected());
   }
 
-  public static HashMap<String, Command> autoPathing() {
+  public Command selectAuto() {
+    return autoCommands.get(autoChooser.getSelected());
+  }
+
+  public static HashMap<String, Command> autoPathing(
+      Boolean climbPath, Boolean depotPath, CommandSwerveDrivetrain drivetrain) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
-    FollowPath leftReturn = pathBuilder.build(new Path("leftReturn"));
-    FollowPath rightReturn = pathBuilder.build(new Path("rightReturn"));
     listOfPaths.put(
         "Zone 3",
         Commands.sequence(
+            pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
             pathBuilder.build(new Path("zone3cycleright")),
-            rightReturn,
-            pathBuilder.build(new Path("zone3cyclestraight")),
-            rightReturn,
+            pathBuilder.build(new Path("zone1cyclestraight")),
             pathBuilder.build(new Path("zone3cycleleft")),
-            rightReturn));
+            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
         "Zone 1",
         Commands.sequence(
-            pathBuilder.build(new Path("zone1cycleright")),
-            leftReturn,
-            pathBuilder.build(new Path("zone1cyclestraight")),
-            leftReturn,
             pathBuilder.build(new Path("zone1cycleleft")),
-            leftReturn));
+            pathBuilder.build(new Path("zone1cyclestraight")),
+            pathBuilder.build(new Path("zone1cycleright")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
+    listOfPaths.put(
+        "rightinside",
+        Commands.sequence(
+            pathBuilder.build(new Path("rightinside")),
+            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
+    listOfPaths.put(
+        "leftinside",
+        Commands.sequence(
+            pathBuilder.build(new Path("leftinside")),
+            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
 
     return listOfPaths;
   }
 
+  // private void updateActions(Runnable runnable) {
+  //   runnable.run();
+  // }
+
+  // private void neither() {
+  //   // do stuff
+  // }
+
   public enum Auto {
     NONE(),
     CUSTOM(),
-    TEST_PATH(),
-    SPINNN()
+    ZONE1(),
+    ZONE3(),
+    RIGHTINSIDE(),
+    LEFTINSIDE(),
   }
 }
