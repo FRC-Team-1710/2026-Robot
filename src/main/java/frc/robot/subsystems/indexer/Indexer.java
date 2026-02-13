@@ -30,6 +30,7 @@ public class Indexer {
   public void periodic() {
     // This method will be called once per scheduler run
     if (bumpSupplier.getAsBoolean()) {
+      // This is NOT a magic number, it makes it go backwards to hopefully unjam the Fuel
       io.setSpeed(-0.5);
     } else {
       io.setSpeed(currentState.speed);
