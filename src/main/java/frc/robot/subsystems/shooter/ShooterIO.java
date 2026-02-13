@@ -10,12 +10,15 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 
 @Logged
 public interface ShooterIO {
   public default void update() {}
 
   public default void stop() {}
+
+    public default void setVoltage(Voltage voltage) {}
 
   public default void setTargetVelocity(AngularVelocity pVelocity) {}
 

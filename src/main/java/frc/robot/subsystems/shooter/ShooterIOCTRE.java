@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -12,6 +13,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.TalonFXUtil;
@@ -55,6 +57,8 @@ public class ShooterIOCTRE implements ShooterIO {
     flywheelConfig.CurrentLimits.StatorCurrentLimit =
         ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
     flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
+    flywheelConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.5;
 
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, flywheelConfig, 2);
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheelFollower, flywheelConfig, 2);
@@ -107,5 +111,9 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
+  }
+
+  public void setVoltage(Voltage voltage) {
+    m_flyWheel.setVoltage(voltage.in(Volts));
   }
 }
