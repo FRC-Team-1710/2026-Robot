@@ -59,16 +59,17 @@ public class AutosChooser {
     autoChooser.setDefaultOption("None", Auto.NONE);
 
     addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("Zone 1"));
-    // addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("Zone 3"));
-    // addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("rightinside"));
-    // addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("leftinside"));
+    addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("Zone 3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("rightinside"));
+    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("leftinside"));
 
     SmartDashboard.putBoolean("Auto/Climb?", climb);
     SmartDashboard.putBoolean("Auto/Depot?", depot);
 
     // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
-    Climb.onTrue(Commands.runOnce(() -> climb = !climb));
-    Depot.onChange(Commands.runOnce(() -> addPaths(drivetrain, depot)));
+
+    // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
+    // Depot.onChange(Commands.runOnce(() -> addPaths(drivetrain, depot)));
 
     // actions.setDefaultOption("neither", this::neither);
     // actions.addOption("Climb", climb = true);
@@ -125,30 +126,41 @@ public class AutosChooser {
   }
 
   public Command getAuto() {
+
     return autoChooser.getSelected() == Auto.CUSTOM
         ? pathBuilder.build(
             CustomAutoUnpacker.unpack(SmartDashboard.getString("Auto/CustomInput", "")))
         : autoCommands.get(autoChooser.getSelected());
   }
 
-  public Command selectAuto() {
-    return autoCommands.get(autoChooser.getSelected());
+  public Command selectAuto(CommandSwerveDrivetrain drivetrain) {
+
+    // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
+    // Depot.onChange(Commands.runOnce(() -> addPaths(drivetrain, depot)));
+
+    boolean climbValue = SmartDashboard.getBoolean("Auto/Climb?", climb);
+    boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", depot);
+
+    String currentAuto = autoChooser.getSelected().toString();
+    SmartDashboard.putString("Auto/Selected", currentAuto);
+
+    return autoPathing(climbValue, depotValue, drivetrain).get(currentAuto);
   }
 
   public static HashMap<String, Command> autoPathing(
       Boolean climbPath, Boolean depotPath, CommandSwerveDrivetrain drivetrain) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     listOfPaths.put(
-        "Zone 3",
+        "ZONE3",
         Commands.sequence(
-            pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
             pathBuilder.build(new Path("zone3cycleright")),
             pathBuilder.build(new Path("zone1cyclestraight")),
             pathBuilder.build(new Path("zone3cycleleft")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
-        "Zone 1",
+        "ZONE1",
         Commands.sequence(
+            pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
             pathBuilder.build(new Path("zone1cycleleft")),
             pathBuilder.build(new Path("zone1cyclestraight")),
             pathBuilder.build(new Path("zone1cycleright")),
