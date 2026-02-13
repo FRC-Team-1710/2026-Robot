@@ -193,7 +193,7 @@ public class DynamicTimedRobot extends IterativeRobotBase {
       Robot.telemetry().log("Periodics/SubsystemsRunThisLoop/Size", subsystemsRunThisLoop.size());
       Robot.telemetry()
           .log("Periodics/SubsystemsRunThisLoop/Values", subsystemsRunThisLoop.toString());
-      subsystemsRunThisLoop = new ArrayList<>();
+      subsystemsRunThisLoop.clear();
     }
 
     var tempTime = RobotController.getFPGATime();
