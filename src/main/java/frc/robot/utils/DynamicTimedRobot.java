@@ -96,7 +96,7 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
   private final PriorityQueue<Callback> m_callbacks = new PriorityQueue<>();
 
-  private final HashMap<Subsystems, Runnable> subsystemToRunnable = new HashMap<>();
+  private final HashMap<Subsystems, Callback> subsystemToCallback = new HashMap<>();
 
   private final HashMap<Subsystems, Long> previousSubsystemTimes = new HashMap<>();
 
@@ -149,6 +149,8 @@ public class DynamicTimedRobot extends IterativeRobotBase {
       // there's always at least one (the constructor adds one). It's reenqueued
       // at the end of the loop.
 
+      m_loopStartTimeUs = RobotController.getFPGATime();
+
       var callback = m_callbacks.poll();
 
       NotifierJNI.updateNotifierAlarm(m_notifier, callback.expirationTime);
@@ -160,23 +162,8 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
       runPeriodic(callback);
 
+      // Expiration time auto updated in runPeriodic()
       m_callbacks.add(callback);
-
-      for (Object objectSubsystemToRun : runImmediately.toArray()) {
-        Subsystems subsystemToRun = (Subsystems) objectSubsystemToRun;
-        for (Object obj : m_callbacks.toArray()) {
-          Callback tempCallback = (Callback) obj;
-          // If the callback were looking for is found
-          if (tempCallback.subsystem == subsystemToRun) {
-            m_callbacks.remove(tempCallback);
-            runPeriodic(tempCallback);
-            m_callbacks.add(tempCallback);
-            System.out.println(subsystemToRun);
-            break;
-          }
-        }
-        runImmediately.remove(subsystemToRun);
-      }
 
       // Process all other callbacks that are ready to run
       while (m_callbacks.peek().expirationTime <= currentTime) {
@@ -186,23 +173,30 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
         runPeriodic(callback);
 
+        // Expiration time auto updated in runPeriodic()
         m_callbacks.add(callback);
+      }
 
-        for (Object objectSubsystemToRun : runImmediately.toArray()) {
-          Subsystems subsystemToRun = (Subsystems) objectSubsystemToRun;
-          for (Object obj : m_callbacks.toArray()) {
-            Callback tempCallback = (Callback) obj;
-            // If the callback were looking for is found
-            if (tempCallback.subsystem == subsystemToRun) {
-              m_callbacks.remove(tempCallback);
-              runPeriodic(tempCallback);
-              m_callbacks.add(tempCallback);
-              System.out.println(subsystemToRun);
-              break;
-            }
-          }
-          runImmediately.remove(subsystemToRun);
-        }
+      for (Object objectSubsystemToRun : runImmediately.toArray()) {
+        Subsystems subsystemToRun = (Subsystems) objectSubsystemToRun;
+        var immediateCallback = subsystemToCallback.get(subsystemToRun);
+
+        immediateCallback.expirationTime
+
+        // Expiration time auto updated in runPeriodic()
+        runPeriodic(callback);
+
+        // for (Object obj : m_callbacks.toArray()) {
+        //   Callback tempCallback = (Callback) obj;
+        //   // If the callback were looking for is found
+        //   if (tempCallback.subsystem == subsystemToRun) {
+        //     m_callbacks.remove(tempCallback);
+        //     runPeriodic(tempCallback);
+        //     m_callbacks.add(tempCallback);
+        //     break;
+        //   }
+        // }
+        runImmediately.remove(subsystemToRun);
       }
     }
   }
@@ -237,11 +231,11 @@ public class DynamicTimedRobot extends IterativeRobotBase {
             "Periodics/" + callback.subsystem.toString() + "/Periodic",
             RobotController.getFPGATime() - tempTime);
 
-    subsystemsRunThisLoop.add(callback.subsystem.toString());
-
     callback.expirationTime +=
         callback.period
             + (currentTime - callback.expirationTime) / callback.period * callback.period;
+
+    subsystemsRunThisLoop.add(callback.subsystem.toString());
   }
 
   /** Ends the main loop in startCompetition(). */
@@ -294,8 +288,9 @@ public class DynamicTimedRobot extends IterativeRobotBase {
    */
   public final void addSubsystem(
       Subsystems subsystem, Runnable periodic, Time period, Time offset) {
-    subsystemToRunnable.put(subsystem, periodic);
-    m_callbacks.add(getCallback(subsystem, periodic, period, offset));
+    var callback = getCallback(subsystem, periodic, period, offset);
+    subsystemToCallback.put(subsystem, callback);
+    m_callbacks.add(callback);
     previousSubsystemTimes.put(subsystem, RobotController.getFPGATime());
   }
 
@@ -314,7 +309,9 @@ public class DynamicTimedRobot extends IterativeRobotBase {
         Callback callback = (Callback) obj;
         // If the callback were looking for is found
         if (callback.subsystem == subsystem) {
+          callback.expirationTime -= callback.period;
           callback.period = (long) (period.in(Seconds) * 1e6);
+          callback.expirationTime += callback.period;
           break;
         }
       }
