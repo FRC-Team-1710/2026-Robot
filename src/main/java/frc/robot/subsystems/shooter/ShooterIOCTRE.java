@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -20,6 +21,7 @@ import frc.robot.utils.TalonFXUtil;
 public class ShooterIOCTRE implements ShooterIO {
 
   private final MotionMagicVelocityVoltage m_velocityManager;
+  private final PositionVoltage m_positionManager;
 
   private final TalonFX m_flyWheel;
   private final TalonFX m_flyWheelFollower;
@@ -65,6 +67,7 @@ public class ShooterIOCTRE implements ShooterIO {
     TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
+    this.m_positionManager = new PositionVoltage(0);
   }
 
   public void update() {}
@@ -88,10 +91,11 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hood.setPosition(
+    Angle ClampedAngle =
         Degrees.of(
             MathUtil.clamp(
-                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX)));
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
+    this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
   public Angle getHoodAngle() {
