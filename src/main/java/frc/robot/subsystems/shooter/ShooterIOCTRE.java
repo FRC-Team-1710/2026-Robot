@@ -2,8 +2,10 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,10 +20,13 @@ import frc.robot.utils.TalonFXUtil;
 public class ShooterIOCTRE implements ShooterIO {
 
   private final MotionMagicVelocityVoltage m_velocityManager;
+  private final PositionVoltage m_positionManager;
 
   private final TalonFX m_flyWheel;
   private final TalonFX m_flyWheelFollower;
   private final TalonFX m_hood;
+
+  private final BaseStatusSignal[] m_baseStatusSignals;
 
   public ShooterIOCTRE() {
     this.m_flyWheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_MOTOR);
@@ -63,9 +68,20 @@ public class ShooterIOCTRE implements ShooterIO {
     TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0);
+    this.m_positionManager = new PositionVoltage(0);
+
+    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheel, m_flyWheelFollower, m_hood);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+
+    m_flyWheel.optimizeBusUtilization();
+    m_flyWheelFollower.optimizeBusUtilization();
+    m_hood.optimizeBusUtilization();
   }
 
-  public void update() {}
+  public void update(double dtSeconds) {
+    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+  }
 
   public void stop() {
     this.m_flyWheel.stopMotor();
@@ -86,7 +102,7 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hood.setPosition(pAngle);
+    this.m_hood.setControl(m_positionManager.withPosition(pAngle));
   }
 
   public Angle getHoodAngle() {

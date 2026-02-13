@@ -26,7 +26,7 @@ public class Indexer {
   public void periodic() {
     // This method will be called once per scheduler run
     io.setSpeed(currentState.speed);
-    io.updateVisual();
+    io.update();
   }
 
   public void setState(IndexStates state) {
