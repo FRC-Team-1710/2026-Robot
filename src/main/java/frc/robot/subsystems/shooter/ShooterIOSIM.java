@@ -59,7 +59,7 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hoodAngle = Degrees.of(MathUtil.clamp(pAngle.magnitude(), kHoodMin, kHoodMax));
+    this.m_hoodAngle = Degrees.of(MathUtil.clamp(pAngle.magnitude(), HOOD_MIN, HOOD_MAX));
   }
 
   public Angle getHoodAngle() {

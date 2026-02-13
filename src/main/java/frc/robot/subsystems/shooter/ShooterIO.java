@@ -13,9 +13,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 @Logged
 public interface ShooterIO {
-  static double kHoodMax = 10;
-  static double kHoodMin = 0;
-
   public default void update() {}
 
   public default void stop() {}
