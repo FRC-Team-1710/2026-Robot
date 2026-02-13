@@ -21,6 +21,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
   private final MotionMagicVelocityVoltage m_velocityManager;
   private final PositionVoltage m_positionManager;
+  private final PositionVoltage m_positionManager;
 
   private final TalonFX m_flyWheel;
   private final TalonFX m_flyWheelFollower;
@@ -102,10 +103,11 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hood.setPosition(
+    Angle ClampedAngle =
         Degrees.of(
             MathUtil.clamp(
-                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX)));
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
+    this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
   public Angle getHoodAngle() {
