@@ -69,7 +69,7 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.getClosedLoopReference().getValue();
   }
 
-  public void setAngle(Angle angle) {
+  public void setAngle(Angle angle, double dtSeconds) {
     m_angleSetpoint = angle;
     m_deploymentMotor.setControl(m_request.withPosition(angle));
   }

@@ -43,7 +43,7 @@ public class Intake {
 
   public void periodic() {
     // This method will be called once per scheduler run
-    m_io.setAngle(m_currentState.setpoint);
+    m_io.setAngle(m_currentState.setpoint, m_currentState.subsystemPeriodicFrequency.in(Seconds));
     switch (m_currentState) {
       case Intaking:
         // IMPORTANT, keep every if statement different!

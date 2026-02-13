@@ -6,6 +6,7 @@ package frc.robot.subsystems.climber;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Second;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
@@ -37,11 +38,11 @@ public class Climber {
     double wantedAngle = m_currentState.m_angle.in(Degrees);
 
     if (wantedAngle - m_wiggle < m_currentPosition && m_currentPosition < wantedAngle + m_wiggle) {
-      m_io.setSpeed(0);
+      m_io.setSpeed(0, m_currentState.subsystemPeriodicFrequency.in(Second));
     } else if (m_currentPosition < wantedAngle) {
-      m_io.setSpeed(speed);
+      m_io.setSpeed(speed, m_currentState.subsystemPeriodicFrequency.in(Second));
     } else if (m_currentPosition > wantedAngle) {
-      m_io.setSpeed(-speed);
+      m_io.setSpeed(-speed, m_currentState.subsystemPeriodicFrequency.in(Second));
     } else {
       DriverStation.reportError("Climber is not in a valid state", false);
     }

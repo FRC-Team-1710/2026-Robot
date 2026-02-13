@@ -8,7 +8,7 @@ import edu.wpi.first.epilogue.Logged;
 
 @Logged
 public interface ClimberIO {
-  public default void setSpeed(double speed) {}
+  public default void setSpeed(double speed, double dtSeconds) {}
 
   public default double getDegrees() {
     return 0;

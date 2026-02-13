@@ -27,9 +27,9 @@ public class ClimberIOSIM implements ClimberIO {
   }
 
   @Override
-  public void setSpeed(double speed) {
+  public void setSpeed(double speed, double dtSeconds) {
     m_armPhysicsSim.setInput(speed);
-    m_armPhysicsSim.update(0.02);
+    m_armPhysicsSim.update(dtSeconds);
     m_climberVisualSim.updateArm(getDegrees(), speed == 0);
     SmartDashboard.putData("ClimberVisuals", m_climberVisualSim.getMechanism());
   }

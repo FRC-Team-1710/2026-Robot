@@ -18,7 +18,7 @@ public class ClimberIOCTRE implements ClimberIO {
   }
 
   @Override
-  public void setSpeed(double speed) {
+  public void setSpeed(double speed, double dtSeconds) {
     m_climberMotor.set(speed);
   }
 

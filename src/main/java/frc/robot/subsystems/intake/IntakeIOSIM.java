@@ -47,12 +47,12 @@ public class IntakeIOSIM implements IntakeIO {
     SmartDashboard.putNumber("Intake/JamTest/Current", 0);
   }
 
-  public void setAngle(Angle angle) {
+  public void setAngle(Angle angle, double dtSeconds) {
     m_angleSetpoint = angle;
     if (m_angleSetpoint == null) return;
     m_armPhysicsSim.setInputVoltage(
         m_PID.calculate(m_armPhysicsSim.getAngleRads(), m_angleSetpoint.in(Radians)));
-    m_armPhysicsSim.update(0.02);
+    m_armPhysicsSim.update(dtSeconds);
     m_intakeVisualSim.updateArm(
         Units.radiansToDegrees(m_armPhysicsSim.getAngleRads()),
         Math.abs(m_angleSetpoint.in(Radians) - m_armPhysicsSim.getAngleRads())
