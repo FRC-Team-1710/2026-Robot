@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
@@ -26,16 +25,10 @@ public class AutosChooser {
   private static HashMap<Auto, Command> autoCommands;
   private static SendableChooser<Auto> autoChooser;
 
-  // private static Trigger actionsTrigger;
-  // private static SendableChooser<Runnable> actions;
-
   public static FollowPath.Builder pathBuilder;
 
   private boolean climb = false;
   private boolean depot = false;
-
-  final Trigger Climb = new Trigger(() -> SmartDashboard.getBoolean("Auto/Climb?", climb));
-  final Trigger Depot = new Trigger(() -> SmartDashboard.getBoolean("Auto/Depot?", depot));
 
   public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     pathBuilder =
@@ -58,28 +51,13 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("Zone 1"));
-    addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("Zone 3"));
-    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("rightinside"));
-    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("leftinside"));
+    addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("ZONE3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("RIGHTINSIDE"));
+    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("LEFTINSIDE"));
 
     SmartDashboard.putBoolean("Auto/Climb?", climb);
     SmartDashboard.putBoolean("Auto/Depot?", depot);
-
-    // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
-
-    // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
-    // Depot.onChange(Commands.runOnce(() -> addPaths(drivetrain, depot)));
-
-    // actions.setDefaultOption("neither", this::neither);
-    // actions.addOption("Climb", climb = true);
-    // actions.addOption("Depot", depot = true);
-    // actions.addOption("both", both = true);
-    // actions.addOption("neither", both = false);
-
-    // actions.onChange(runnable -> updateActions(runnable));
-
-    SmartDashboard.putData(autoChooser);
     // Put preset autos hare//
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
@@ -113,30 +91,7 @@ public class AutosChooser {
     autoChooser.addOption(auto.name(), auto);
   }
 
-  public void addPaths(CommandSwerveDrivetrain drivetrain, Boolean action) {
-    if (action == climb) {
-      climb = !climb;
-    } else if (action == depot) {
-      depot = !depot;
-    }
-    addPath(Auto.ZONE1, autoPathing(climb, depot, drivetrain).get("Zone 1"));
-    addPath(Auto.ZONE3, autoPathing(climb, depot, drivetrain).get("Zone 3"));
-    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot, drivetrain).get("rightinside"));
-    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot, drivetrain).get("leftinside"));
-  }
-
-  public Command getAuto() {
-
-    return autoChooser.getSelected() == Auto.CUSTOM
-        ? pathBuilder.build(
-            CustomAutoUnpacker.unpack(SmartDashboard.getString("Auto/CustomInput", "")))
-        : autoCommands.get(autoChooser.getSelected());
-  }
-
   public Command selectAuto(CommandSwerveDrivetrain drivetrain) {
-
-    // Climb.onChange(Commands.runOnce(() -> addPaths(drivetrain, climb)));
-    // Depot.onChange(Commands.runOnce(() -> addPaths(drivetrain, depot)));
 
     boolean climbValue = SmartDashboard.getBoolean("Auto/Climb?", climb);
     boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", depot);
@@ -166,26 +121,18 @@ public class AutosChooser {
             pathBuilder.build(new Path("zone1cycleright")),
             pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
-        "rightinside",
+        "RIGHTINSIDE",
         Commands.sequence(
             pathBuilder.build(new Path("rightinside")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
-        "leftinside",
+        "LEFTINSIDE",
         Commands.sequence(
             pathBuilder.build(new Path("leftinside")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
 
     return listOfPaths;
   }
-
-  // private void updateActions(Runnable runnable) {
-  //   runnable.run();
-  // }
-
-  // private void neither() {
-  //   // do stuff
-  // }
 
   public enum Auto {
     NONE(),
