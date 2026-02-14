@@ -40,20 +40,28 @@ public class VisionConstants {
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
 
-  public static record CameraConfig(String name, Transform3d robotToCamera) {}
+  public static record PoseCameraConfig(String name, Transform3d robotToCamera) {}
 
   /**
-   * Defines a single vision camera configuration.
+   * Defines a single vision pose camera configuration.
    *
    * @param name The exact PhotonVision camera name (must match NetworkTables name)
    * @param robotToCamera Transform from robot center to camera lens in meters and radians.
    *     Translation3d: +X forward, +Y left, +Z up. Rotation3d: roll (X), pitch (Y), yaw (Z) in
    *     radians.
    */
-  public static final CameraConfig[] kCameraConfigs = {
-    // new CameraConfig("FrontLeft", new Transform3d(new Translation3d(), new Rotation3d())),
-    // new CameraConfig("FrontRight", new Transform3d(new Translation3d(), new Rotation3d())),
-    new CameraConfig(
+  public static final PoseCameraConfig[] kPoseCameraConfigs = {
+    new PoseCameraConfig(
+        "FrontLeft",
+        new Transform3d(
+            new Translation3d(7.769, -13.341, 7.995),
+            new Rotation3d(0.0, Math.toRadians(45.0), Math.toRadians(5.0)))),
+    new PoseCameraConfig(
+        "FrontRight",
+        new Transform3d(
+            new Translation3d(7.769, 13.341, 7.995),
+            new Rotation3d(0.0, Math.toRadians(-45.0), Math.toRadians(-5.0)))),
+    new PoseCameraConfig(
         "BackLeft",
         new Transform3d(
             new Translation3d(9.61367, -16.48053, 28.975),
@@ -61,7 +69,7 @@ public class VisionConstants {
                 0.0,
                 Math.toRadians(0.0),
                 Math.toRadians(-90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
-    new CameraConfig(
+    new PoseCameraConfig(
         "BackRight",
         new Transform3d(
             new Translation3d(9.61367, 16.48053, 28.975),
@@ -69,7 +77,19 @@ public class VisionConstants {
                 0.0,
                 Math.toRadians(0.0),
                 Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
-    // new CameraConfig("FuelCam", new Transform3d(new Translation3d(), new Rotation3d())),
+  };
+
+  public static record FuelCameraConfig(String name, Transform3d robotToCamera) {}
+
+  public static final FuelCameraConfig[] kFuelCameraConfigs = {
+    new FuelCameraConfig(
+        "FuelCam",
+        new Transform3d(
+            new Translation3d(15.247, 0.0, 21.381),
+            new Rotation3d(
+                0.0,
+                Math.toRadians(0.0),
+                Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2  };
   };
 
   private VisionConstants() {

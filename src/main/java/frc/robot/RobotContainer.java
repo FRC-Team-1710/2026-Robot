@@ -82,7 +82,7 @@ public class RobotContainer {
 
         cameras =
             // Create a stream of Vision objects from the camera configs
-            Arrays.stream(VisionConstants.kCameraConfigs)
+            Arrays.stream(VisionConstants.kPoseCameraConfigs)
                 // For each config, create a new Vision subsystem with the appropriate arguments
                 .map(
                     config ->
