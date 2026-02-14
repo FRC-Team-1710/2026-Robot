@@ -59,11 +59,17 @@ public class ShooterMath {
   private static Rotation2d m_robotRotation;
 
   /* INTERPOLATING TREE MAPS */
-  private static InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap rpsMap = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
 
-  static {
+  static { // Week 5 Saturday Testing
     // Adding values to the Interpolatable maps
+    addInterpolatableValues(2.08, 52.5, 0.0874 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(2.49, 55, 0.101 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3.03, 58, 0.112 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3.46, 61, 0.137 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3.99, 63, 0.145 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(4.50, 66, 0.15 * 360); // METERS, RPS, DEGREES
   }
 
   public static double calculateDistance() {
@@ -185,7 +191,7 @@ public class ShooterMath {
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
 
-    rpmMap.put(x_distance, rpm);
+    rpsMap.put(x_distance, rpm);
   }
 
   /** Adds an angle value for the current robot pose distance. */
@@ -209,7 +215,7 @@ public class ShooterMath {
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
 
-    return rpmMap.get(x_distance);
+    return rpsMap.get(x_distance);
   }
 
   /** Gets the interpolated angle based on the current robot pose distance. */
@@ -222,5 +228,10 @@ public class ShooterMath {
             : robotTranslation.getDistance(kHUB_CENTER_RED);
 
     return angleMap.get(x_distance);
+  }
+
+  public static void addInterpolatableValues(double distance, double rps, double angle) {
+    rpsMap.put(distance, rps);
+    angleMap.put(distance, angle);
   }
 }
