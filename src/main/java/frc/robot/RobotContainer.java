@@ -18,6 +18,7 @@ import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
+import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
@@ -39,8 +40,10 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
+import java.util.Arrays;
 import java.util.HashMap;
 
 @Logged
@@ -60,6 +63,9 @@ public class RobotContainer {
   private final Indexer indexer;
   private final Feeder feeder;
 
+  @SuppressWarnings("unused")
+  private Vision[] cameras;
+
   private final Superstructure superstructure;
 
   public RobotContainer(TimesConsumer consumer) {
@@ -72,6 +78,21 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer = new Indexer(new IndexerIOCTRE(), consumer);
+
+        cameras =
+            // Create a stream of Vision objects from the camera configs
+            Arrays.stream(VisionConstants.kCameraConfigs)
+                // For each config, create a new Vision subsystem with the appropriate arguments
+                .map(
+                    config ->
+                        new Vision(
+                            drivetrain::addVisionData,
+                            config.name(),
+                            config.robotToCamera(),
+                            drivetrain)) // TODO: Fix this stuff :p
+                // Collect the stream back into an array of Vision subsystems
+                .toArray(Vision[]::new);
+
         break;
 
       case SIMULATION:

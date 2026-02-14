@@ -40,20 +40,20 @@ public class VisionConstants {
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
 
-  public static record VisionConfig(String name, Transform3d robotToCamera) {}
+  public static record CameraConfig(String name, Transform3d robotToCamera) {}
 
   /**
    * Defines a single vision camera configuration.
    *
    * @param name The exact PhotonVision camera name (must match NetworkTables name)
    * @param robotToCamera Transform from robot center to camera lens in meters and radians.
-   *     Translation3d: +X forward, +Y left, +Z up (WPILib coordinate system). Rotation3d: roll (X),
-   *     pitch (Y), yaw (Z) in radians.
+   *     Translation3d: +X forward, +Y left, +Z up. Rotation3d: roll (X), pitch (Y), yaw (Z) in
+   *     radians.
    */
-  public static final VisionConfig[] kVisionConfigs = {
-    // new VisionConfig("FrontLeft", new Transform3d(new Translation3d(), new Rotation3d())),
-    // new VisionConfig("FrontRight", new Transform3d(new Translation3d(), new Rotation3d())),
-    new VisionConfig(
+  public static final CameraConfig[] kCameraConfigs = {
+    // new CameraConfig("FrontLeft", new Transform3d(new Translation3d(), new Rotation3d())),
+    // new CameraConfig("FrontRight", new Transform3d(new Translation3d(), new Rotation3d())),
+    new CameraConfig(
         "BackLeft",
         new Transform3d(
             new Translation3d(9.61367, -16.48053, 28.975),
@@ -61,7 +61,7 @@ public class VisionConstants {
                 0.0,
                 Math.toRadians(0.0),
                 Math.toRadians(-90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
-    new VisionConfig(
+    new CameraConfig(
         "BackRight",
         new Transform3d(
             new Translation3d(9.61367, 16.48053, 28.975),
@@ -69,7 +69,7 @@ public class VisionConstants {
                 0.0,
                 Math.toRadians(0.0),
                 Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
-    // new VisionConfig("FuelCam", new Transform3d(new Translation3d(), new Rotation3d())),
+    // new CameraConfig("FuelCam", new Transform3d(new Translation3d(), new Rotation3d())),
   };
 
   private VisionConstants() {
