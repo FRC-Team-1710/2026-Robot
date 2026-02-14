@@ -47,7 +47,7 @@ public class ShooterMath {
 
   // ===================== Class Variables =====================
   /* Input variables */
-  public static Pose3d m_robotPose = new Pose3d();
+  private static Pose3d m_robotPose = new Pose3d();
   private static Velocity3d m_robotVelocity = new Velocity3d();
 
   /* Intermediate Variables */
