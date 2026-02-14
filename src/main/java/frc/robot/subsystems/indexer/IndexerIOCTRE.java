@@ -23,7 +23,7 @@ public class IndexerIOCTRE implements IndexerIO {
   private final BaseStatusSignal[] m_indexerSignals;
 
   public IndexerIOCTRE() {
-    this.m_IndexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_ALPHA);
+    this.m_IndexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
