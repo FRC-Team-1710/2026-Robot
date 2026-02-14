@@ -28,8 +28,6 @@ public class Shooter {
   private boolean m_isGoingTowardsAllianceZone = false;
   private boolean m_didIntake = false;
 
-  private FuelSim fuelSim;
-
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
