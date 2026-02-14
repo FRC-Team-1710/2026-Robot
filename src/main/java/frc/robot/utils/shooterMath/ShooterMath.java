@@ -156,6 +156,12 @@ public class ShooterMath {
     return m_shootState.desiredAngle();
   }
 
+  /** Returns the current pose of the robot. */
+  public static Pose3d getRobotPose() {
+    return m_robotPose;
+  }
+
+  /** Returns the current rotation of the robot. */
   public static Rotation2d getRobotRotation() {
     return m_robotRotation;
   }

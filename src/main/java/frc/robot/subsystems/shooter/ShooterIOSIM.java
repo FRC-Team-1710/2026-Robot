@@ -54,11 +54,13 @@ public class ShooterIOSIM implements ShooterIO {
       double mult = 1 / (Math.pow(ShooterMath.calculateDistance(), 0.15));
       if (leftShooter) {
         fuelSim.spawnFuel(
-            ShooterMath.m_robotPose.plus(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation(),
+            ShooterMath.getRobotPose().plus(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation(),
             ShooterMath.findShooterVelocity3d().times(mult).inverse().toTranslation3d());
       } else {
         fuelSim.spawnFuel(
-            ShooterMath.m_robotPose.plus(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation(),
+            ShooterMath.getRobotPose()
+                .plus(ShooterConstants.kRIGHT_SHOOTER_OFFSET)
+                .getTranslation(),
             ShooterMath.findShooterVelocity3d().times(mult).inverse().toTranslation3d());
       }
       fuelSim.removeFuelFromStorage(1);
