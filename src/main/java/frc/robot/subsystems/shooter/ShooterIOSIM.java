@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -16,8 +17,8 @@ import frc.robot.utils.MechanismUtil.WheelMechanism;
 @Logged
 public class ShooterIOSIM implements ShooterIO {
 
-  private AngularVelocity m_velocity;
-  private Angle m_hoodAngle;
+  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
+  private Angle m_hoodAngle = Degrees.of(0);
 
   private final WheelMechanism m_flyWheelMechanism;
   private final WheelMechanism m_flyWheelFollowerMechanism;

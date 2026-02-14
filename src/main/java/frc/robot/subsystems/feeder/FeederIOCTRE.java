@@ -17,7 +17,8 @@ public class FeederIOCTRE implements FeederIO {
   private final TalonFX m_feederLeft;
   private final TalonFX m_feederRight;
 
-  private final BaseStatusSignal[] m_baseStatusSignals;
+  private final BaseStatusSignal[] m_feederSignals;
+  private final BaseStatusSignal[] m_feederFollowerSignals;
 
   public FeederIOCTRE() {
     this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
@@ -33,16 +34,19 @@ public class FeederIOCTRE implements FeederIO {
     this.m_feederRight.setControl(
         new Follower(CanIdConstants.Feeder.FEEDER_MOTOR, MotorAlignmentValue.Opposed));
 
-    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft, m_feederRight);
+    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft);
+    m_feederFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_feederRight);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederFollowerSignals);
 
     m_feederLeft.optimizeBusUtilization();
     m_feederRight.optimizeBusUtilization();
   }
 
   public void update(double dtSeconds) {
-    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+    BaseStatusSignal.refreshAll(m_feederSignals);
+    BaseStatusSignal.refreshAll(m_feederFollowerSignals);
   }
 
   public void setFeeder(double percent) {

@@ -105,9 +105,9 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(250), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(750), Degrees.of(0));
+    IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(60), Degrees.of(0)),
+    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(60), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -125,11 +125,11 @@ public class Shooter {
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
-    if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
-      this.m_currentState = SHOOTER_STATE.PRESET_SCORE;
-    } else {
-      this.m_currentState = pState;
-    }
+    // if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
+    //   this.m_state = SHOOTER_STATE.PRESET_SCORE;
+    // } else {
+    this.m_currentState = pState;
+    // }
   }
 
   public SHOOTER_STATE getState() {

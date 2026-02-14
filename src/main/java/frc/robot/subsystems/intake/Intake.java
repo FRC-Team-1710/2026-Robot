@@ -96,7 +96,7 @@ public class Intake {
     Up(Milliseconds.of(60), Degrees.of(90), 0),
     Down(Milliseconds.of(60), Degrees.of(-14.5), 0),
     Jammed(Milliseconds.of(20), Degrees.of(-14.5), -0.3),
-    Intaking(Milliseconds.of(20), Degrees.of(0), .3);
+    Intaking(Milliseconds.of(20), Degrees.of(0), 1);
 
     private final Time subsystemPeriodicFrequency;
     private final Angle setpoint;

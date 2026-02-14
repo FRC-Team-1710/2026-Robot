@@ -14,13 +14,13 @@ public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
   /** Static friction compensation */
-  public static final double kS = 0.0;
+  public static final double kS = 0.006;
 
   /** Velocity feedforward (predicts voltage needed for a speed) */
-  public static final double kV = 0.125;
+  public static final double kV = 0.12;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kP = 0.0;
+  public static final double kP = 0.1;
 
   // ==================== Current Limits ====================
   public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
@@ -29,8 +29,8 @@ public final class ShooterConstants {
   public static final int HOOD_SUPPLY_CURRENT_LIMIT = 20;
 
   // ==================== Motion Magic (Speed Limits) ====================
-  public static final double MOTION_MAGIC_CRUISE_VELOCITY = 100.0;
-  public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
+  public static final double MOTION_MAGIC_CRUISE_VELOCITY = 300.0;
+  public static final double MOTION_MAGIC_ACCELERATION = 150.0;
 
   // ======================== Shooter Physical Constants ===========================
   public static final double HOOD_MAX = 10;
