@@ -28,10 +28,12 @@ public class ShooterIOCTRE implements ShooterIO {
   private final TalonFX m_flyWheel;
   private final TalonFX m_flyWheelFollower;
   private final TalonFX m_hood;
+  private final TalonFX m_hoodFollower;
 
   private final BaseStatusSignal[] m_flyWheelSignals;
   private final BaseStatusSignal[] m_flyWheelFollowerSignals;
   private final BaseStatusSignal[] m_hoodSignals;
+  private final BaseStatusSignal[] m_hoodFollowerSignals;
 
   private final DigitalInput m_breamBreaker;
   private final DigitalInput m_breamBreakerFollower;
@@ -41,6 +43,7 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheelFollower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
 
     this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
+    this.m_hoodFollower = new TalonFX(CanIdConstants.Shooter.HOOD_FOLLOWER_MOTOR);
 
     this.m_breamBreaker = new DigitalInput(0);
     this.m_breamBreakerFollower = new DigitalInput(1);
@@ -82,6 +85,7 @@ public class ShooterIOCTRE implements ShooterIO {
     hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 2);
+    TalonFXUtil.applyConfigWithRetries(this.m_hoodFollower, hoodConfig, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0).withSlot(0);
     this.m_positionManager = new PositionVoltage(0);
@@ -89,20 +93,24 @@ public class ShooterIOCTRE implements ShooterIO {
     m_flyWheelSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheel);
     m_flyWheelFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheelFollower);
     m_hoodSignals = TalonFXUtil.getBasicStatusSignals(m_hood);
+    m_hoodFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_hoodFollower);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_flyWheelSignals);
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_flyWheelFollowerSignals);
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_hoodSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_hoodFollowerSignals);
 
     m_flyWheel.optimizeBusUtilization();
     m_flyWheelFollower.optimizeBusUtilization();
     m_hood.optimizeBusUtilization();
+    m_hoodFollower.optimizeBusUtilization();
   }
 
   public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_flyWheelSignals);
     BaseStatusSignal.refreshAll(m_flyWheelFollowerSignals);
     BaseStatusSignal.refreshAll(m_hoodSignals);
+    BaseStatusSignal.refreshAll(m_hoodFollowerSignals);
   }
 
   public void stop() {
@@ -129,6 +137,7 @@ public class ShooterIOCTRE implements ShooterIO {
             MathUtil.clamp(
                 pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
     this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
+    this.m_hoodFollower.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
   public Angle getHoodAngle() {
