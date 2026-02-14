@@ -1,5 +1,6 @@
 package frc.robot.subsystems.feeder;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -16,6 +17,8 @@ public class FeederIOCTRE implements FeederIO {
   private final TalonFX m_feederLeft;
   private final TalonFX m_feederRight;
 
+  private final BaseStatusSignal[] m_baseStatusSignals;
+
   public FeederIOCTRE() {
     this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
     this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_FOLLOWER_MOTOR);
@@ -29,9 +32,18 @@ public class FeederIOCTRE implements FeederIO {
 
     this.m_feederRight.setControl(
         new Follower(CanIdConstants.Feeder.FEEDER_MOTOR, MotorAlignmentValue.Opposed));
+
+    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft, m_feederRight);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+
+    m_feederLeft.optimizeBusUtilization();
+    m_feederRight.optimizeBusUtilization();
   }
 
-  public void update() {}
+  public void update(double dtSeconds) {
+    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+  }
 
   public void setFeeder(double percent) {
     this.m_feederLeft.set(percent);

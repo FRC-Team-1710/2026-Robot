@@ -1,9 +1,9 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
@@ -12,12 +12,12 @@ import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 public class Shooter {
-  private SHOOTER_STATE m_state;
+  private SHOOTER_STATE m_currentState;
 
   private final ShooterIO m_io;
 
@@ -32,29 +32,27 @@ public class Shooter {
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
-    this.m_state = SHOOTER_STATE.STOP;
+    this.m_currentState = SHOOTER_STATE.STOP;
   }
 
   public void periodic() {
 
-    switch (this.m_state) {
+    switch (this.m_currentState) {
       case SHOOT:
-        ShootState math = ShooterMath.calculateShootState();
-
-        this.m_velocity = DegreesPerSecond.of(math.desiredAngle());
-        this.m_hoodAngle = Degrees.of(math.desiredRPM());
+        this.m_velocity = ShooterMath.getShooterRPM();
+        this.m_hoodAngle = ShooterMath.getShooterAngle();
         break;
 
       default:
-        this.m_velocity = this.m_state.m_velocity;
-        this.m_hoodAngle = this.m_state.m_hoodAngle;
+        this.m_velocity = this.m_currentState.m_velocity;
+        this.m_hoodAngle = this.m_currentState.m_hoodAngle;
         break;
     }
 
     this.m_io.setTargetVelocity(this.m_velocity);
     this.m_io.setHoodAngle(this.m_hoodAngle);
 
-    this.m_io.update();
+    this.m_io.update(m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
   public AngularVelocity getVelocity() {
@@ -93,7 +91,7 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(250), Degrees.of(0)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(5), Degrees.of(0)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
     PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(750), Degrees.of(0));
 
@@ -109,18 +107,22 @@ public class Shooter {
   }
 
   public void setState(SHOOTER_STATE pState) {
-    if (!this.m_state.m_subsystemPeriodicFrequency.isEquivalent(
+    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
     if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
-      this.m_state = SHOOTER_STATE.PRESET_SCORE;
+      this.m_currentState = SHOOTER_STATE.PRESET_SCORE;
     } else {
-      this.m_state = pState;
+      this.m_currentState = pState;
     }
   }
 
   public SHOOTER_STATE getState() {
-    return this.m_state;
+    return this.m_currentState;
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.m_io.setFuelSim(fuelSim);
   }
 }

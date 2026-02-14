@@ -1,6 +1,12 @@
 package frc.robot.utils.shooterMath;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 public class Velocity3d {
   private double v_x;
@@ -22,15 +28,15 @@ public class Velocity3d {
   }
 
   /** Create a Velocity3d from a velocity magnitude and a Rotation3d direction */
-  public Velocity3d(double velocity, Rotation3d rotation) {
+  public Velocity3d(LinearVelocity velocity, Rotation3d rotation) {
     var mat = rotation.toMatrix(); // 3x3 matrix
     double dirX = mat.get(0, 0); // first column = x-axis direction in world frame
     double dirY = mat.get(1, 0);
     double dirZ = mat.get(2, 0);
 
-    this.v_x = velocity * dirX;
-    this.v_y = velocity * dirY;
-    this.v_z = velocity * dirZ;
+    this.v_x = velocity.in(MetersPerSecond) * dirX;
+    this.v_y = velocity.in(MetersPerSecond) * dirY;
+    this.v_z = velocity.in(MetersPerSecond) * dirZ;
   }
 
   /** Returns the X component of the velocity. */
@@ -75,6 +81,10 @@ public class Velocity3d {
         this.v_x - second_vector.v_x, this.v_y - second_vector.v_y, this.v_z - second_vector.v_z);
   }
 
+  public Velocity3d times(double scalar) {
+    return new Velocity3d(this.v_x * scalar, this.v_y * scalar, this.v_z * scalar);
+  }
+
   /** Returns the inverse of this Velocity3d. */
   public Velocity3d inverse() {
     return new Velocity3d(-this.v_x, -this.v_y, -this.v_z);
@@ -85,8 +95,15 @@ public class Velocity3d {
     return Math.sqrt(this.v_x * this.v_x + this.v_y * this.v_y + this.v_z * this.v_z);
   }
 
-  /** Creates a Velocity3d from a Velocity2d by adding a zero Z component. */
-  public static Velocity3d from(Velocity2d velocity2d) {
-    return new Velocity3d(velocity2d.getX(), velocity2d.getY(), 0);
+  public static Velocity3d from(ChassisSpeeds fieldSpeeds) {
+    return new Velocity3d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond, 0);
+  }
+
+  public Translation3d toTranslation3d() {
+    return new Translation3d(v_x, v_y, v_z);
+  }
+
+  public Transform3d toTransform3d() {
+    return new Transform3d(v_x, v_y, v_z, Rotation3d.kZero);
   }
 }

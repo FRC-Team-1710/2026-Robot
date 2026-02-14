@@ -15,9 +15,7 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -31,7 +29,6 @@ import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
 import frc.robot.utils.LogEverything;
-import java.util.HashMap;
 
 @Logged
 @SuppressWarnings("unused")
@@ -78,14 +75,15 @@ public class Robot extends DynamicTimedRobot {
 
     // Epilogue dislikes the custom DynamicTimedRobot class so we manually update it
     addSubsystem(
-        Subsystems.Epilogue,
-        () ->
-            Epilogue.robotLogger.tryUpdate(
-                epilogueConfig.backend.getNested(epilogueConfig.root),
-                this,
-                epilogueConfig.errorHandler),
-        epilogueConfig.loggingPeriod,
-        epilogueConfig.loggingPeriodOffset);
+        new SubsystemInfo(
+            Subsystems.Epilogue,
+            () ->
+                Epilogue.robotLogger.tryUpdate(
+                    epilogueConfig.backend.getNested(epilogueConfig.root),
+                    this,
+                    epilogueConfig.errorHandler),
+            epilogueConfig.loggingPeriod,
+            epilogueConfig.loggingPeriodOffset));
 
     addAllSubsystems(m_robotContainer.getAllSubsystems());
 
@@ -168,18 +166,7 @@ public class Robot extends DynamicTimedRobot {
   @Override
   public void testExit() {}
 
-  /** A map of all subsystems with their period */
-  public void addAllSubsystems(HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> subsystems) {
-    for (Subsystems key : subsystems.keySet()) {
-      addSubsystem(
-          key,
-          subsystems.get(key).getFirst(),
-          subsystems.get(key).getSecond().getFirst(),
-          subsystems.get(key).getSecond().getSecond());
-    }
-  }
-
   public static EpilogueBackend telemetry() {
-    return Epilogue.getConfig().backend;
+    return Epilogue.getConfig().backend.getNested("Outputs");
   }
 }
