@@ -26,9 +26,6 @@ public class Shooter {
   private AngularVelocity m_velocity;
   private Angle m_hoodAngle;
 
-  private boolean m_isGoingTowardsAllianceZone;
-  private boolean m_didIntake;
-
   private int m_ballcount;
 
   private Debouncer m_jamDetect;
@@ -40,9 +37,6 @@ public class Shooter {
 
     this.m_velocity = RotationsPerSecond.of(0);
     this.m_hoodAngle = Degrees.of(0);
-
-    this.m_isGoingTowardsAllianceZone = false;
-    this.m_didIntake = false;
 
     this.m_ballcount = 0;
 
@@ -96,15 +90,7 @@ public class Shooter {
   public Angle getHoodAngle() {
     return this.m_io.getHoodAngle();
   }
-
-  public void setGoingTowardsAllianceZone(boolean isGoingTowardsAllianceZone) {
-    this.m_isGoingTowardsAllianceZone = isGoingTowardsAllianceZone;
-  }
-
-  public void setDidIntake(boolean didIntake) {
-    this.m_didIntake = didIntake;
-  }
-
+  
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
