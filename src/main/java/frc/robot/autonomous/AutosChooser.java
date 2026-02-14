@@ -83,6 +83,36 @@ public class AutosChooser {
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
         });
 
+    FollowPath.registerEventTrigger(
+        "Shoot",
+        () -> {
+          drivetrain.setAutonomousRequestOverride(true);
+          drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
+          superstructure.setWantedStateCommand(WantedStates.ShootAuto);
+          // .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0); TODO: replace with
+          // shooter beam break logic
+        });
+
+    FollowPath.registerEventTrigger(
+        "Intake",
+        () -> {
+          drivetrain.setAutonomousRequestOverride(false);
+          superstructure
+              .setWantedStateCommand(WantedStates.IntakeAuto)
+              .until(() -> drivetrain.getRobotSpeeds().vxMetersPerSecond < 0);
+          superstructure.setWantedStateCommand(WantedStates.DefaultAuto);
+        });
+
+    FollowPath.registerEventTrigger(
+        "IntakeDepot",
+        () -> {
+          drivetrain.setAutonomousRequestOverride(false);
+          superstructure
+              .setWantedStateCommand(WantedStates.IntakeAuto)
+              .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0);
+          superstructure.setWantedStateCommand(WantedStates.DefaultAuto);
+        });
+
     FollowPath.setPoseLoggingConsumer(
         (data) ->
             Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond(), Pose2d.struct));
