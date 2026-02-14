@@ -7,6 +7,8 @@ package frc.robot.constants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
@@ -39,6 +41,11 @@ public final class ShooterConstants {
   public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);
 
   public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
+
+  public static final Transform3d kLEFT_SHOOTER_OFFSET =
+      new Transform3d(0.3, 0.1, 0.3, Rotation3d.kZero);
+  public static final Transform3d kRIGHT_SHOOTER_OFFSET =
+      new Transform3d(0.3, -0.1, 0.3, Rotation3d.kZero);
 
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
