@@ -19,6 +19,11 @@
       }
     },
     {
+      "type": "event_trigger",
+      "t_ratio": 0.004274973183430075,
+      "lib_key": "IntakeDepot"
+    },
+    {
       "type": "waypoint",
       "translation_target": {
         "x_meters": 0.29209585702680874,

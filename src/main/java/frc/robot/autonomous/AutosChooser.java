@@ -92,7 +92,15 @@ public class AutosChooser {
           drivetrain.setAutonomousRequestOverride(true);
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
           superstructure.setWantedStateCommand(WantedStates.ShootAuto);
-          // .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0); TODO: replace with
+          // .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0); // TODO: replace with
+          // shooter beam break logic
+        });
+
+    FollowPath.registerEventTrigger(
+        "ShootWhileMoving",
+        () -> {
+          superstructure.setWantedStateCommand(WantedStates.ShootAuto);
+          // .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0); // TODO: replace with
           // shooter beam break logic
         });
 
