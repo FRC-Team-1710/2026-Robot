@@ -243,7 +243,7 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   }
 
   /**
-   * Adds a subsystem to the que of runnables
+   * Adds a subsystem to the queue of runnables
    *
    * @param subsystemInfo needed info about each subsystem
    */
@@ -260,7 +260,7 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   }
 
   /**
-   * Adds a subsystem to the que of runnables
+   * Adds a subsystem to the queue of runnables
    *
    * @param subsystemInfo needed info about each subsystem
    */
