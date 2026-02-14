@@ -73,21 +73,24 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOCTRE(), consumer);
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer = new Indexer(new IndexerIOCTRE(), consumer);
+        indexer =
+            new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
         break;
 
       case SIMULATION:
         intake = new Intake(new IntakeIOSIM(), consumer);
         shooter = new Shooter(new ShooterIOSIM(), consumer);
         feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer = new Indexer(new IndexerIOSIM(), consumer);
+        indexer =
+            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
         break;
 
       default:
         intake = new Intake(new IntakeIO() {}, consumer);
         shooter = new Shooter(new ShooterIO() {}, consumer);
         feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer = new Indexer(new IndexerIO() {}, consumer);
+        indexer =
+            new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
         break;
     }
 

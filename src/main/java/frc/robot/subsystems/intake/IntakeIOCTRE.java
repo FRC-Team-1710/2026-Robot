@@ -34,7 +34,8 @@ public class IntakeIOCTRE implements IntakeIO {
 
   private Angle m_angleSetpoint;
 
-  private final BaseStatusSignal[] m_baseStatusSignals;
+  private final BaseStatusSignal[] m_intakeSignals;
+  private final BaseStatusSignal[] m_deploymentSignals;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
@@ -43,9 +44,12 @@ public class IntakeIOCTRE implements IntakeIO {
     m_request = new MotionMagicVoltage(0).withSlot(0).withEnableFOC(true);
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
-    m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    m_motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     m_motorConfig.Feedback.SensorToMechanismRatio = 1 / 1; // Use the integrated sensor
+
+    m_motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
+    m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
     // set slot 0 gains
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
@@ -72,21 +76,25 @@ public class IntakeIOCTRE implements IntakeIO {
 
     m_deploymentMotor.getClosedLoopReference().getValue();
 
-    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor, m_deploymentMotor);
+    m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
+    m_deploymentSignals = TalonFXUtil.getBasicStatusSignals(m_deploymentMotor);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSignals);
 
     m_intakeMotor.optimizeBusUtilization();
     m_deploymentMotor.optimizeBusUtilization();
   }
 
   public void update() {
-    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+    BaseStatusSignal.refreshAll(m_intakeSignals);
+    BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
 
   public void setAngle(Angle angle) {
     m_angleSetpoint = angle;
-    m_deploymentMotor.setControl(m_request.withPosition(angle));
+    // m_deploymentMotor.setControl(m_request.withPosition(angle));
+    m_deploymentMotor.stopMotor();
   }
 
   public void setIntakeMotor(double speed) {

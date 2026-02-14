@@ -14,6 +14,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.FuelSim;
@@ -29,7 +30,12 @@ public class ShooterIOCTRE implements ShooterIO {
   private final TalonFX m_flyWheelFollower;
   private final TalonFX m_hood;
 
-  private final BaseStatusSignal[] m_baseStatusSignals;
+  private final BaseStatusSignal[] m_flyWheelSignals;
+  private final BaseStatusSignal[] m_flyWheelFollowerSignals;
+  private final BaseStatusSignal[] m_hoodSignals;
+
+  private final DigitalInput m_breamBreaker;
+  private final DigitalInput m_breamBreakerFollower;
 
   public ShooterIOCTRE() {
     this.m_flyWheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_MOTOR);
@@ -37,15 +43,21 @@ public class ShooterIOCTRE implements ShooterIO {
 
     this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
 
+    this.m_breamBreaker = new DigitalInput(0);
+    this.m_breamBreakerFollower = new DigitalInput(1);
+
     // Flywheel settings
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
 
     flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    flywheelConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    flywheelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     flywheelConfig.Slot0.kS = ShooterConstants.kS; // Static friction
     flywheelConfig.Slot0.kV = ShooterConstants.kV; // Velocity feedforward
     flywheelConfig.Slot0.kP = ShooterConstants.kP; // Proportional gain
+
+    flywheelConfig.MotorOutput.PeakForwardDutyCycle = 1;
+    flywheelConfig.MotorOutput.PeakReverseDutyCycle = 0;
 
     flywheelConfig.MotionMagic.MotionMagicCruiseVelocity =
         ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
@@ -59,6 +71,8 @@ public class ShooterIOCTRE implements ShooterIO {
         ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
     flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
+    flywheelConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0;
+
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, flywheelConfig, 2);
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheelFollower, flywheelConfig, 2);
 
@@ -70,12 +84,16 @@ public class ShooterIOCTRE implements ShooterIO {
 
     TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 2);
 
-    this.m_velocityManager = new MotionMagicVelocityVoltage(0);
+    this.m_velocityManager = new MotionMagicVelocityVoltage(0).withSlot(0);
     this.m_positionManager = new PositionVoltage(0);
 
-    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheel, m_flyWheelFollower, m_hood);
+    m_flyWheelSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheel);
+    m_flyWheelFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheelFollower);
+    m_hoodSignals = TalonFXUtil.getBasicStatusSignals(m_hood);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_baseStatusSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_flyWheelSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_flyWheelFollowerSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_hoodSignals);
 
     m_flyWheel.optimizeBusUtilization();
     m_flyWheelFollower.optimizeBusUtilization();
@@ -83,7 +101,9 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void update(double dtSeconds) {
-    BaseStatusSignal.refreshAll(m_baseStatusSignals);
+    BaseStatusSignal.refreshAll(m_flyWheelSignals);
+    BaseStatusSignal.refreshAll(m_flyWheelFollowerSignals);
+    BaseStatusSignal.refreshAll(m_hoodSignals);
   }
 
   public void stop() {
@@ -118,5 +138,13 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public void setFuelSim(FuelSim fuelSim) {
     // CTRE implementation does not use FuelSim
+  }
+  
+  public boolean hasBreakerBroke() {
+    return this.m_breamBreaker.get();
+  }
+
+  public boolean hasBreakerFollowerBroke() {
+    return this.m_breamBreakerFollower.get();
   }
 }

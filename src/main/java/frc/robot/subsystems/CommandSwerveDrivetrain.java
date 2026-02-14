@@ -301,7 +301,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public double rescaleRotation(double rotation) {
-    return MathUtil.clamp(Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation), -1, 1);
+    return Math.copySign(MathUtil.applyDeadband(Math.abs(rotation), 0.075), rotation);
   }
 
   public void setAutonomousRequestOverride(boolean override) {

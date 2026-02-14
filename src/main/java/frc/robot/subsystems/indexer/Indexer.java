@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import java.util.function.BooleanSupplier;
 
 @Logged
 public class Indexer {
@@ -30,48 +31,56 @@ public class Indexer {
 
   private boolean wasJammed = false;
 
+  private final BooleanSupplier bumpSupplier;
+
   /** Creates a new Index. */
-  public Indexer(IndexerIO io, TimesConsumer consumer) {
+  public Indexer(IndexerIO io, TimesConsumer consumer, BooleanSupplier bumpSupplier) {
     this.io = io;
     this.timesConsumer = consumer;
+    this.bumpSupplier = bumpSupplier;
   }
 
   public void periodic() {
     // This method will be called once per scheduler run
+    io.update();
     io.setIndexMotor(currentState.speed);
-    io.updateVisual();
-    switch (currentState) {
-      case Indexing:
-        // IMPORTANT, keep every if statement different!
-        if (minimumJamTime.calculate(true)) {
-          if (m_jamTime.calculate(isJammed()) || wasJammed) {
-            wasJammed = true;
-            if (m_jamUndoTime.calculate(true)) {
-              m_jamTime.calculate(false);
-              m_jamUndoTime.calculate(false);
-              wasJammed = false;
-              io.setIndexMotor(currentState.speed);
+    if (bumpSupplier.getAsBoolean()) {
+      // This is NOT a magic number, it makes it go backwards to hopefully unjam the Fuel
+      io.setIndexMotor(-0.5);
+    } else {
+      switch (currentState) {
+        case Indexing:
+          // IMPORTANT, keep every if statement different!
+          if (minimumJamTime.calculate(true)) {
+            if (m_jamTime.calculate(isJammed()) || wasJammed) {
+              wasJammed = true;
+              if (m_jamUndoTime.calculate(true)) {
+                m_jamTime.calculate(false);
+                m_jamUndoTime.calculate(false);
+                wasJammed = false;
+                io.setIndexMotor(currentState.speed);
+              } else {
+                io.setIndexMotor(IndexStates.Jammed.speed);
+              }
             } else {
-              io.setIndexMotor(IndexStates.Jammed.speed);
+              m_jamUndoTime.calculate(false);
+              io.setIndexMotor(currentState.speed);
             }
           } else {
+            m_jamTime.calculate(false);
             m_jamUndoTime.calculate(false);
+            wasJammed = false;
             io.setIndexMotor(currentState.speed);
           }
-        } else {
+          break;
+        default:
           m_jamTime.calculate(false);
+          minimumJamTime.calculate(false);
           m_jamUndoTime.calculate(false);
           wasJammed = false;
           io.setIndexMotor(currentState.speed);
-        }
-        break;
-      default:
-        m_jamTime.calculate(false);
-        minimumJamTime.calculate(false);
-        m_jamUndoTime.calculate(false);
-        wasJammed = false;
-        io.setIndexMotor(currentState.speed);
-        break;
+          break;
+      }
     }
   }
 

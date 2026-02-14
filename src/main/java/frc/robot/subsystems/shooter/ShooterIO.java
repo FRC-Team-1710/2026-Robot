@@ -35,4 +35,12 @@ public interface ShooterIO {
   }
 
   public default void setFuelSim(FuelSim fuelSim) {}
+
+  public default boolean hasBreakerBroke() {
+    return false;
+  }
+
+  public default boolean hasBreakerFollowerBroke() {
+    return false;
+  }
 }
