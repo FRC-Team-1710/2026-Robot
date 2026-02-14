@@ -21,12 +21,12 @@ public class Indexer {
   private final IndexerIO io;
   private final TimesConsumer timesConsumer;
   private IndexStates currentState = IndexStates.Idle;
-  private final Debouncer jamTime =
-      new Debouncer(JamDetectionConstants.Intake.jamMinimumTime.in(Seconds));
+  private final Debouncer m_jamTime =
+      new Debouncer(JamDetectionConstants.Indexer.kJamMinimumTime.in(Seconds));
   private final Debouncer minimumJamTime =
-      new Debouncer(JamDetectionConstants.Intake.jamDetectionDisabledTime.in(Seconds));
-  private final Debouncer jamUndoTime =
-      new Debouncer(JamDetectionConstants.Intake.jamUndoTime.in(Seconds));
+      new Debouncer(JamDetectionConstants.Indexer.kJamDetectionDisabledTime.in(Seconds));
+  private final Debouncer m_jamUndoTime =
+      new Debouncer(JamDetectionConstants.Indexer.kJamUndoTime.in(Seconds));
 
   private boolean wasJammed = false;
 
@@ -44,31 +44,31 @@ public class Indexer {
       case Indexing:
         // IMPORTANT, keep every if statement different!
         if (minimumJamTime.calculate(true)) {
-          if (jamTime.calculate(isJammed()) || wasJammed) {
+          if (m_jamTime.calculate(isJammed()) || wasJammed) {
             wasJammed = true;
-            if (jamUndoTime.calculate(true)) {
-              jamTime.calculate(false);
-              jamUndoTime.calculate(false);
+            if (m_jamUndoTime.calculate(true)) {
+              m_jamTime.calculate(false);
+              m_jamUndoTime.calculate(false);
               wasJammed = false;
               io.setIndexMotor(currentState.speed);
             } else {
               io.setIndexMotor(IndexStates.Jammed.speed);
             }
           } else {
-            jamUndoTime.calculate(false);
+            m_jamUndoTime.calculate(false);
             io.setIndexMotor(currentState.speed);
           }
         } else {
-          jamTime.calculate(false);
-          jamUndoTime.calculate(false);
+          m_jamTime.calculate(false);
+          m_jamUndoTime.calculate(false);
           wasJammed = false;
           io.setIndexMotor(currentState.speed);
         }
         break;
       default:
-        jamTime.calculate(false);
+        m_jamTime.calculate(false);
         minimumJamTime.calculate(false);
-        jamUndoTime.calculate(false);
+        m_jamUndoTime.calculate(false);
         wasJammed = false;
         io.setIndexMotor(currentState.speed);
         break;
@@ -76,9 +76,9 @@ public class Indexer {
   }
 
   public boolean isJammed() {
-    return io.getIndexMotorCurrent().in(Amps) >= JamDetectionConstants.Intake.jamCurrent.in(Amps)
+    return io.getIndexMotorCurrent().in(Amps) >= JamDetectionConstants.Indexer.kJamCurrent.in(Amps)
         && io.getIndexMotorVelocity().in(RotationsPerSecond)
-            <= JamDetectionConstants.Intake.JamSpeedThreshold.in(RotationsPerSecond);
+            <= JamDetectionConstants.Indexer.kJamSpeedThreshold.in(RotationsPerSecond);
   }
 
   public void setState(IndexStates state) {
