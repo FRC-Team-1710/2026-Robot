@@ -46,7 +46,7 @@ public class Shooter {
 
     this.m_ballcount = 0;
 
-    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETCH_TIME);
+    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
   }
 
   public void periodic() {
@@ -62,6 +62,8 @@ public class Shooter {
         this.m_hoodAngle = this.m_currentState.m_hoodAngle;
         break;
     }
+
+    if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) this.m_ballcount++;
 
     this.m_io.setTargetVelocity(this.m_velocity);
     this.m_io.setHoodAngle(this.m_hoodAngle);
