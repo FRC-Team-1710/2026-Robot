@@ -21,6 +21,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
@@ -374,5 +375,9 @@ public class Superstructure {
 
   public CurrentStates getCurrentState() {
     return currentState;
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    shooter.setFuelSim(fuelSim);
   }
 }
