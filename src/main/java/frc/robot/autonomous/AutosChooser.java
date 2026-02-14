@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
+import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
@@ -22,10 +23,13 @@ import java.util.HashMap;
 
 /** Add your docs here. */
 public class AutosChooser {
-  private final HashMap<Auto, Command> autoCommands;
-  private final SendableChooser<Auto> autoChooser;
+  private static HashMap<Auto, Command> autoCommands;
+  private static SendableChooser<Auto> autoChooser;
 
-  private final FollowPath.Builder pathBuilder;
+  public static FollowPath.Builder pathBuilder;
+
+  private boolean m_climb;
+  private boolean m_depot;
 
   public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     pathBuilder =
@@ -42,18 +46,26 @@ public class AutosChooser {
                 )
             .withShouldFlip(() -> Alliance.redAlliance);
 
+    m_climb = false;
+    m_depot = false;
+
     autoCommands = new HashMap<>();
     autoCommands.put(Auto.NONE, Commands.none());
 
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    // Add preset autos hare//
-    addPath(Auto.CUSTOM, Commands.none());
-    addPath(Auto.TEST_PATH, Commands.none());
+    addPath(Auto.ZONE1, autoPathing(m_climb, m_depot).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(m_climb, m_depot).get("ZONE3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot).get("RIGHTINSIDE"));
+    addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot).get("LEFTINSIDE"));
 
+    SmartDashboard.putBoolean("Auto/Climb?", m_climb);
+    SmartDashboard.putBoolean("Auto/Depot?", m_depot);
+    // Put preset autos hare//
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
+    // SmartDashboard.putData("Auto/Actions", actions);
 
     for (WantedStates state : WantedStates.values()) {
       if (state.name().contains("Auto")) {
@@ -91,21 +103,59 @@ public class AutosChooser {
     autoCommands.put(Auto.CUSTOM, command);
   }
 
-  public void addPath(Auto auto, Command command) {
+  public static void addPath(Auto auto, Command command) {
     autoCommands.put(auto, command);
     autoChooser.addOption(auto.name(), auto);
   }
 
-  public Command getAuto() {
-    return autoChooser.getSelected() == Auto.CUSTOM
-        ? pathBuilder.build(
-            CustomAutoUnpacker.unpack(SmartDashboard.getString("Auto/CustomInput", "")))
-        : autoCommands.get(autoChooser.getSelected());
+  public Command selectAuto(CommandSwerveDrivetrain drivetrain) {
+
+    boolean m_climbValue = SmartDashboard.getBoolean("Auto/Climb?", m_climb);
+    boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", m_depot);
+
+    String currentAuto = autoChooser.getSelected().toString();
+    SmartDashboard.putString("Auto/Selected", currentAuto);
+
+    return autoPathing(m_climbValue, depotValue).get(currentAuto);
+  }
+
+  public static HashMap<String, Command> autoPathing(Boolean climbPath, Boolean depotPath) {
+    HashMap<String, Command> listOfPaths = new HashMap<>();
+    listOfPaths.put(
+        "ZONE3",
+        Commands.sequence(
+            pathBuilder.build(new Path("zone3cycleright")),
+            pathBuilder.build(new Path("zone1cyclestraight")),
+            pathBuilder.build(new Path("zone3cycleleft")),
+            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
+    listOfPaths.put(
+        "ZONE1",
+        Commands.sequence(
+            pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
+            pathBuilder.build(new Path("zone1cycleleft")),
+            pathBuilder.build(new Path("zone1cyclestraight")),
+            pathBuilder.build(new Path("zone1cycleright")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
+    listOfPaths.put(
+        "RIGHTINSIDE",
+        Commands.sequence(
+            pathBuilder.build(new Path("rightinside")),
+            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
+    listOfPaths.put(
+        "LEFTINSIDE",
+        Commands.sequence(
+            pathBuilder.build(new Path("leftinside")),
+            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
+
+    return listOfPaths;
   }
 
   public enum Auto {
     NONE(),
     CUSTOM(),
-    TEST_PATH()
+    ZONE1(),
+    ZONE3(),
+    RIGHTINSIDE(),
+    LEFTINSIDE(),
   }
 }

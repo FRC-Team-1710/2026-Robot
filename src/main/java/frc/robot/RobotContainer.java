@@ -170,7 +170,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getAuto();
+    return autoChooser.selectAuto(drivetrain);
   }
 
   public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {
