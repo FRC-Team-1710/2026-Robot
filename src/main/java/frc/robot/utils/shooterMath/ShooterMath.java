@@ -182,8 +182,8 @@ public class ShooterMath {
   }
 
   /* INTERPOLATING METHODS AND MATH */
-  /** Adds a RPM value for the current robot pose distance. */
-  public static void addRPM(double rpm) {
+  /** Adds a RPS value for the current robot pose distance. */
+  public static void addRPS(double rps) {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
 
     double x_distance =
@@ -191,7 +191,7 @@ public class ShooterMath {
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
 
-    rpsMap.put(x_distance, rpm);
+    rpsMap.put(x_distance, rps);
   }
 
   /** Adds an angle value for the current robot pose distance. */
@@ -206,8 +206,8 @@ public class ShooterMath {
     angleMap.put(x_distance, angle);
   }
 
-  /** Gets the interpolated RPM based on the current robot pose distance. */
-  public static double getInterpolatedRPM() {
+  /** Gets the interpolated RPS based on the current robot pose distance. */
+  public static double getInterpolatedRPS() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
 
     double x_distance =

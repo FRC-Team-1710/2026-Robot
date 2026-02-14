@@ -39,8 +39,8 @@ public class Shooter {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_velocity = ShooterMath.getShooterRPM();
-        this.m_hoodAngle = ShooterMath.getShooterAngle();
+        this.m_velocity = RotationsPerSecond.of(ShooterMath.getInterpolatedRPS());
+        this.m_hoodAngle = Degrees.of(ShooterMath.getInterpolatedAngle());
         break;
 
       default:
