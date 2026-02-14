@@ -13,6 +13,7 @@ import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
@@ -107,9 +108,9 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(60), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(60), Degrees.of(0));
+    PRESET_SCORE(Milliseconds.of(20), RotationsPerSecond.of(85), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -136,6 +137,10 @@ public class Shooter {
 
   public SHOOTER_STATE getState() {
     return this.m_currentState;
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.m_io.setFuelSim(fuelSim);
   }
 
   public int getBallCount() {

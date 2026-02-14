@@ -81,6 +81,10 @@ public class Velocity3d {
         this.v_x - second_vector.v_x, this.v_y - second_vector.v_y, this.v_z - second_vector.v_z);
   }
 
+  public Velocity3d times(double scalar) {
+    return new Velocity3d(this.v_x * scalar, this.v_y * scalar, this.v_z * scalar);
+  }
+
   /** Returns the inverse of this Velocity3d. */
   public Velocity3d inverse() {
     return new Velocity3d(-this.v_x, -this.v_y, -this.v_z);

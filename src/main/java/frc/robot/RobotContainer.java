@@ -148,6 +148,8 @@ public class RobotContainer {
 
     autoChooser = new AutosChooser(superstructure, drivetrain);
 
+    superstructure.setFuelSim(fuelSim);
+
     configureBindings();
   }
 

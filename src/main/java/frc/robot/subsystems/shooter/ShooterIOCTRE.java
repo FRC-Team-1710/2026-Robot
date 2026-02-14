@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
@@ -135,6 +136,10 @@ public class ShooterIOCTRE implements ShooterIO {
     return this.m_hood.getPosition().getValue();
   }
 
+  public void setFuelSim(FuelSim fuelSim) {
+    // CTRE implementation does not use FuelSim
+  }
+  
   public boolean hasBreakerBroke() {
     return this.m_breamBreaker.get();
   }
