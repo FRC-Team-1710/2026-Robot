@@ -28,8 +28,8 @@ public class AutosChooser {
 
   public static FollowPath.Builder pathBuilder;
 
-  private boolean climb = false;
-  private boolean depot = false;
+  private boolean m_climb;
+  private boolean m_depot;
 
   public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     pathBuilder =
@@ -46,19 +46,22 @@ public class AutosChooser {
                 )
             .withShouldFlip(() -> Alliance.redAlliance);
 
+    m_climb = false;
+    m_depot = false;
+
     autoCommands = new HashMap<>();
     autoCommands.put(Auto.NONE, Commands.none());
 
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(climb, depot).get("ZONE1"));
-    addPath(Auto.ZONE3, autoPathing(climb, depot).get("ZONE3"));
-    addPath(Auto.RIGHTINSIDE, autoPathing(climb, depot).get("RIGHTINSIDE"));
-    addPath(Auto.LEFTINSIDE, autoPathing(climb, depot).get("LEFTINSIDE"));
+    addPath(Auto.ZONE1, autoPathing(m_climb, m_depot).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(m_climb, m_depot).get("ZONE3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot).get("RIGHTINSIDE"));
+    addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot).get("LEFTINSIDE"));
 
-    SmartDashboard.putBoolean("Auto/Climb?", climb);
-    SmartDashboard.putBoolean("Auto/Depot?", depot);
+    SmartDashboard.putBoolean("Auto/Climb?", m_climb);
+    SmartDashboard.putBoolean("Auto/Depot?", m_depot);
     // Put preset autos hare//
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
@@ -137,13 +140,13 @@ public class AutosChooser {
 
   public Command selectAuto(CommandSwerveDrivetrain drivetrain) {
 
-    boolean climbValue = SmartDashboard.getBoolean("Auto/Climb?", climb);
-    boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", depot);
+    boolean m_climbValue = SmartDashboard.getBoolean("Auto/Climb?", m_climb);
+    boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", m_depot);
 
     String currentAuto = autoChooser.getSelected().toString();
     SmartDashboard.putString("Auto/Selected", currentAuto);
 
-    return autoPathing(climbValue, depotValue).get(currentAuto);
+    return autoPathing(m_climbValue, depotValue).get(currentAuto);
   }
 
   public static HashMap<String, Command> autoPathing(Boolean climbPath, Boolean depotPath) {
