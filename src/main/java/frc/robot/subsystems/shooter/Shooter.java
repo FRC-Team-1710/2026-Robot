@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -22,16 +23,30 @@ public class Shooter {
 
   private final TimesConsumer m_timesConsumer;
 
-  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
-  private Angle m_hoodAngle = Degrees.of(0);
+  private AngularVelocity m_velocity;
+  private Angle m_hoodAngle;
 
-  private boolean m_isGoingTowardsAllianceZone = false;
-  private boolean m_didIntake = false;
+  private boolean m_isGoingTowardsAllianceZone;
+  private boolean m_didIntake;
+
+  private int m_ballcount;
+
+  private Debouncer m_jamDetect;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
     this.m_currentState = SHOOTER_STATE.STOP;
+
+    this.m_velocity = RotationsPerSecond.of(0);
+    this.m_hoodAngle = Degrees.of(0);
+
+    this.m_isGoingTowardsAllianceZone = false;
+    this.m_didIntake = false;
+
+    this.m_ballcount = 0;
+
+    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETCH_TIME);
   }
 
   public void periodic() {
@@ -119,5 +134,18 @@ public class Shooter {
 
   public SHOOTER_STATE getState() {
     return this.m_currentState;
+  }
+
+  public int getBallCount() {
+    return this.m_ballcount;
+  }
+
+  public void resetBallCount() {
+    this.m_ballcount = 0;
+  }
+
+  public boolean isJammed() {
+    return this.m_jamDetect.calculate(
+        !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
   }
 }

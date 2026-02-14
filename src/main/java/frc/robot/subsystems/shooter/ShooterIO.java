@@ -32,4 +32,12 @@ public interface ShooterIO {
   public default Angle getHoodAngle() {
     return Degrees.of(0);
   }
+
+  public default boolean hasBreakerBroke() {
+    return false;
+  }
+
+  public default boolean hasBreakerFollowerBroke() {
+    return false;
+  }
 }

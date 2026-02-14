@@ -14,6 +14,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.TalonFXUtil;
@@ -31,12 +32,18 @@ public class ShooterIOCTRE implements ShooterIO {
   private final BaseStatusSignal[] m_flyWheelSignals;
   private final BaseStatusSignal[] m_flyWheelFollowerSignals;
   private final BaseStatusSignal[] m_hoodSignals;
+  
+  private final DigitalInput m_breamBreaker;
+  private final DigitalInput m_breamBreakerFollower;
 
   public ShooterIOCTRE() {
     this.m_flyWheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_MOTOR);
     this.m_flyWheelFollower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
 
     this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
+
+    this.m_breamBreaker = new DigitalInput(0);
+    this.m_breamBreakerFollower = new DigitalInput(1);
 
     // Flywheel settings
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
@@ -126,5 +133,13 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
+  }
+
+  public boolean hasBreakerBroke() {
+    return this.m_breamBreaker.get();
+  }
+
+  public boolean hasBreakerFollowerBroke() {
+    return this.m_breamBreakerFollower.get();
   }
 }
