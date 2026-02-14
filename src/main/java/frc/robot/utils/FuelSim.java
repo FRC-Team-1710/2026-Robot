@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.constants.FuelSimConstants;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -101,6 +102,9 @@ public class FuelSim {
     new Translation3d(
         FIELD_LENGTH - 4.61 + TRENCH_BAR_WIDTH / 2, FIELD_WIDTH, TRENCH_HEIGHT + TRENCH_BAR_HEIGHT),
   };
+
+  protected static int m_currentFuelStorage = 8;
+  protected static int fuelCapacity = FuelSimConstants.kFUEL_CAPACITY;
 
   protected static class Fuel {
     protected Translation3d pos;
@@ -363,6 +367,16 @@ public class FuelSim {
     fuels.clear();
   }
 
+  /** Gets the current amount of fuel in the robot's storage */
+  public int getCurrentFuelStorage() {
+    return m_currentFuelStorage;
+  }
+
+  /** Removes a specified amount of fuel from the robot's storage */
+  public void removeFuelFromStorage(int amount) {
+    m_currentFuelStorage = Math.max(0, m_currentFuelStorage - amount);
+  }
+
   /** Spawns fuel in the neutral zone and depots */
   public void spawnStartingFuel() {
     // Center fuel
@@ -599,8 +613,9 @@ public class FuelSim {
     Pose2d robot = robotPoseSupplier.get();
     for (SimIntake intake : intakes) {
       for (int i = 0; i < fuels.size(); i++) {
-        if (intake.shouldIntake(fuels.get(i), robot)) {
+        if (intake.shouldIntake(fuels.get(i), robot) && m_currentFuelStorage < fuelCapacity) {
           fuels.remove(i);
+          m_currentFuelStorage++;
           i--;
         }
       }
