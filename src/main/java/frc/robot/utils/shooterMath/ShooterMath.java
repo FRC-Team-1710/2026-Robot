@@ -58,16 +58,20 @@ public class ShooterMath {
   private static ShootState m_shootState;
   private static Rotation2d m_robotRotation;
 
+  /* INTERPOLATING TREE MAPS */
+  private static InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
+
+  static {
+    // Adding values to the Interpolatable maps
+  }
+
   public static double calculateDistance() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
     return !m_RedAlliance.getAsBoolean()
         ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
         : robotTranslation.getDistance(kHUB_CENTER_RED);
   }
-
-  /* INTERPOLATING TREE MAPS */
-  private static InterpolatingDoubleTreeMap rpmMap = new InterpolatingDoubleTreeMap();
-  private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
 
   /** Calculates the shooter velocity based on the horizontal distance to the target. */
   public static LinearVelocity findShooterVelocity() {
