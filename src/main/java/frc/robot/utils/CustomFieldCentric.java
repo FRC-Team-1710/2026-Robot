@@ -78,10 +78,10 @@ public class CustomFieldCentric implements SwerveRequest {
   private boolean towardsBump = false;
 
   @SuppressWarnings("unused")
-  private double lastLoopTime = 0;
+  private double m_lastLoopTime = 0;
 
   @SuppressWarnings("unused")
-  private Pose2d robotEyes = Pose2d.kZero;
+  private Pose2d m_poseLookingForBump = Pose2d.kZero;
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
@@ -105,7 +105,7 @@ public class CustomFieldCentric implements SwerveRequest {
                       Math.abs(yVelocity.in(MetersPerSecond)))
                   >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeed.in(MetersPerSecond)
               || currentDriveState == RequestStates.BUMP_ASSIST)) {
-        robotEyes =
+        m_poseLookingForBump =
             new Pose2d(
                     parameters.currentPose.getTranslation(),
                     new Rotation2d(xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond))
@@ -202,7 +202,7 @@ public class CustomFieldCentric implements SwerveRequest {
         break;
     }
 
-    lastLoopTime = RobotController.getFPGATime() - loopStartTime;
+    m_lastLoopTime = RobotController.getFPGATime() - loopStartTime;
 
     return driveRequest.withSpeeds(wantedSpeeds).apply(parameters, modulesToApply);
   }
