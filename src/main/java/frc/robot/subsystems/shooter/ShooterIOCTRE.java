@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -10,8 +11,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.TalonFXUtil;
@@ -26,6 +29,9 @@ public class ShooterIOCTRE implements ShooterIO {
   private final TalonFX m_flyWheelFollower;
   private final TalonFX m_hood;
 
+  private final DigitalInput m_breamBreaker;
+  private final DigitalInput m_breamBreakerFollower;
+
   private final BaseStatusSignal[] m_baseStatusSignals;
 
   public ShooterIOCTRE() {
@@ -33,6 +39,9 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheelFollower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
 
     this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
+
+    this.m_breamBreaker = new DigitalInput(0);
+    this.m_breamBreakerFollower = new DigitalInput(1);
 
     // Flywheel settings
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
@@ -102,10 +111,22 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hood.setControl(m_positionManager.withPosition(pAngle));
+    Angle ClampedAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
+    this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
+  }
+
+  public boolean hasBreakerBroke() {
+    return this.m_breamBreaker.get();
+  }
+
+  public boolean hasBreakerFollowerBroke() {
+    return this.m_breamBreakerFollower.get();
   }
 }

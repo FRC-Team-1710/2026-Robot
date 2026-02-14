@@ -33,12 +33,17 @@ public final class ShooterConstants {
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
   // ======================== Shooter Physical Constants ===========================
+  public static final double HOOD_MAX = 10;
+  public static final double HOOD_MIN = 0;
+
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
 
   /** Range of error for the "isAtTargetVelocity" function */
   public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);
 
   public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
+
+  public static final double JAM_DETCH_TIME = 1.0;
 
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
