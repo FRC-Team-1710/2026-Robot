@@ -38,8 +38,7 @@ public class Shooter {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_velocity = RotationsPerSecond.of(60);
-        // this.m_velocity = ShooterMath.getShooterRPM();
+        this.m_velocity = ShooterMath.getShooterRPM();
         this.m_hoodAngle = ShooterMath.getShooterAngle();
         break;
 
@@ -50,7 +49,7 @@ public class Shooter {
     }
 
     this.m_io.setTargetVelocity(this.m_velocity);
-    // this.m_io.setHoodAngle(this.m_hoodAngle);
+    this.m_io.setHoodAngle(this.m_hoodAngle);
 
     this.m_io.update(m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }

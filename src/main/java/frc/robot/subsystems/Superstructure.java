@@ -315,8 +315,8 @@ public class Superstructure {
 
   private void climbAuto() {
     intake.setState(IntakeStates.Up);
+    feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
   }
