@@ -6,10 +6,10 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -31,11 +31,7 @@ public class Shooter {
 
   private int m_ballcount;
 
-  private Timer m_ballTimer;
-  private Timer m_ballFollowerTimer;
-
-  private double m_ballsPerSec;
-  private double m_followerBallsPerSec;
+  private Debouncer m_jamDetect;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -50,11 +46,8 @@ public class Shooter {
 
     this.m_ballcount = 0;
 
-    this.m_ballTimer = new Timer();
-    this.m_ballFollowerTimer = new Timer();
-
-    this.m_ballsPerSec = 0.0;
-    this.m_followerBallsPerSec = 0.0;
+    // TODO : move to constance
+    this.m_jamDetect = new Debouncer(1);
   }
 
   public void periodic() {
@@ -69,24 +62,6 @@ public class Shooter {
         this.m_velocity = this.m_currentState.m_velocity;
         this.m_hoodAngle = this.m_currentState.m_hoodAngle;
         break;
-    }
-
-    if (this.m_ballTimer.get() >= 1) {
-      this.m_ballsPerSec = 0;
-    }
-
-    if (this.m_io.hasBreakerBroke()) {
-      this.m_ballsPerSec = 1.0 / this.m_ballTimer.get();
-      this.m_ballTimer.reset();
-    }
-
-    if (this.m_ballFollowerTimer.get() >= 1) {
-      this.m_followerBallsPerSec = 0;
-    }
-
-    if (this.m_io.hasBreakerFollowerBroke()) {
-      this.m_followerBallsPerSec = 1.0 / this.m_ballFollowerTimer.get();
-      this.m_ballFollowerTimer.reset();
     }
 
     this.m_io.setTargetVelocity(this.m_velocity);
@@ -170,13 +145,8 @@ public class Shooter {
     this.m_ballcount = 0;
   }
 
-  public double getBallsPerSecond() {
-    if (this.m_ballsPerSec == 0) {
-      return this.m_followerBallsPerSec;
-    } else if (this.m_followerBallsPerSec == 0) {
-      return this.m_ballsPerSec;
-    } else {
-      return (this.m_ballsPerSec + this.m_followerBallsPerSec) / 2;
-    }
+  public boolean isJammed() {
+    return this.m_jamDetect.calculate(
+        !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
   }
 }
