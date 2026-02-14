@@ -34,8 +34,8 @@ public class FeederIOCTRE implements FeederIO {
     this.m_feederRight.setControl(
         new Follower(CanIdConstants.Feeder.FEEDER_MOTOR, MotorAlignmentValue.Opposed));
 
-    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederRight);
-    m_feederFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft);
+    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft);
+    m_feederFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_feederRight);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederSignals);
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederFollowerSignals);
