@@ -1,10 +1,12 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -36,9 +38,9 @@ public class ShooterIOSIM implements ShooterIO {
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
   }
 
-  public void update() {
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
-    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), 0.02, false);
+  public void update(double dtSeconds) {
+    this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
+    this.m_flyWheelFollowerMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
 
     this.m_hoodMechanism.update(this.m_hoodAngle);
 
@@ -86,7 +88,10 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hoodAngle = pAngle;
+    this.m_hoodAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
   }
 
   public Angle getHoodAngle() {

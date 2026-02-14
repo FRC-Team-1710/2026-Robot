@@ -1,6 +1,7 @@
 package frc.robot.subsystems.feeder;
 
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Time;
@@ -9,7 +10,7 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Feeder {
-  private FEEDER_STATE m_state;
+  private FEEDER_STATE m_currentState;
   private final FeederIO m_io;
 
   private final TimesConsumer m_timesConsumer;
@@ -17,13 +18,13 @@ public class Feeder {
   public Feeder(FeederIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
-    this.m_state = FEEDER_STATE.STOP;
+    this.m_currentState = FEEDER_STATE.STOP;
   }
 
   public void periodic() {
-    this.m_io.setFeeder(this.m_state.m_velocity);
+    this.m_io.setFeeder(this.m_currentState.m_velocity);
 
-    this.m_io.update();
+    this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
   }
 
   public enum FEEDER_STATE {
@@ -49,15 +50,15 @@ public class Feeder {
   }
 
   public void setState(FEEDER_STATE state) {
-    if (!this.m_state
+    if (!this.m_currentState
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
-    this.m_state = state;
+    this.m_currentState = state;
   }
 
   public FEEDER_STATE getState() {
-    return this.m_state;
+    return this.m_currentState;
   }
 }

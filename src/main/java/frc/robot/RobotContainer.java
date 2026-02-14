@@ -7,11 +7,9 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -42,9 +40,10 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
+import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 @Logged
 public class RobotContainer {
@@ -172,51 +171,47 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getAuto();
+    return autoChooser.selectAuto(drivetrain);
   }
 
-  public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {
-    HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> map = new HashMap<>();
-    map.put(
-        Subsystems.Superstructure,
-        new Pair<Runnable, Pair<Time, Time>>(
+  public SubsystemInfo[] getAllSubsystems() {
+    ArrayList<SubsystemInfo> map = new ArrayList<>();
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Superstructure,
             superstructure::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 1))));
-    map.put(
-        Subsystems.Intake,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 1)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Intake,
             intake::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0))));
-    map.put(
-        Subsystems.Shooter,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Shooter,
             shooter::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0))));
-    map.put(
-        Subsystems.Indexer,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Indexer,
             indexer::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
-    map.put(
-        Subsystems.Feeder,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Feeder,
             feeder::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0))));
-    map.put(
-        Subsystems.Drive,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Drive,
             drivetrain::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 5))));
-    return map;
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
+    return map.toArray(new SubsystemInfo[0]);
   }
 }

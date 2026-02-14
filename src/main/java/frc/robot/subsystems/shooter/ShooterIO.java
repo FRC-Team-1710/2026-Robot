@@ -14,7 +14,7 @@ import frc.robot.utils.FuelSim;
 
 @Logged
 public interface ShooterIO {
-  public default void update() {}
+  public default void update(double dtSeconds) {}
 
   public default void stop() {}
 

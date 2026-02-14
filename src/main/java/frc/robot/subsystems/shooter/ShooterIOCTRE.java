@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -10,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.CanIdConstants;
@@ -80,7 +82,7 @@ public class ShooterIOCTRE implements ShooterIO {
     m_hood.optimizeBusUtilization();
   }
 
-  public void update() {
+  public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_baseStatusSignals);
   }
 
@@ -103,7 +105,11 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setHoodAngle(Angle pAngle) {
-    this.m_hood.setControl(m_positionManager.withPosition(pAngle));
+    Angle ClampedAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
+    this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
   public Angle getHoodAngle() {

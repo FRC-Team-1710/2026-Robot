@@ -35,6 +35,9 @@ public final class ShooterConstants {
   public static final double MOTION_MAGIC_ACCELERATION = 1000.0;
 
   // ======================== Shooter Physical Constants ===========================
+  public static final double HOOD_MAX = 10;
+  public static final double HOOD_MIN = 0;
+
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
 
   /** Range of error for the "isAtTargetVelocity" function */
