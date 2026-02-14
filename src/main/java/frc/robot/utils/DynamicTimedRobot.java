@@ -245,10 +245,7 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   /**
    * Adds a subsystem to the que of runnables
    *
-   * @param subsystem Subsystem to add (enum in constants)
-   * @param periodic Subsystem periodic function as a Runnable
-   * @param period How frequently to call periodic
-   * @param offset Offset relative to main loop
+   * @param subsystemInfo needed info about each subsystem
    */
   public final void addSubsystem(SubsystemInfo subsystemInfo) {
     var callback =
@@ -260,6 +257,17 @@ public class DynamicTimedRobot extends IterativeRobotBase {
     m_subsystemToCallback.put(subsystemInfo.subsystem, callback);
     m_callbacks.add(callback);
     m_previousSubsystemTimes.put(subsystemInfo.subsystem, RobotController.getFPGATime());
+  }
+
+  /**
+   * Adds a subsystem to the que of runnables
+   *
+   * @param subsystemInfo needed info about each subsystem
+   */
+  public void addAllSubsystems(SubsystemInfo[] subsystemsInfo) {
+    for (SubsystemInfo subsystemInfo : subsystemsInfo) {
+      addSubsystem(subsystemInfo);
+    }
   }
 
   /**

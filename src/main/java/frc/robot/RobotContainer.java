@@ -172,7 +172,7 @@ public class RobotContainer {
     return autoChooser.getAuto();
   }
 
-  public ArrayList<SubsystemInfo> getAllSubsystems() {
+  public SubsystemInfo[] getAllSubsystems() {
     ArrayList<SubsystemInfo> map = new ArrayList<>();
     map.add(
         new SubsystemInfo(
@@ -210,6 +210,6 @@ public class RobotContainer {
             drivetrain::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
-    return map;
+    return (SubsystemInfo[]) map.toArray();
   }
 }

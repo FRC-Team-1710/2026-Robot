@@ -29,7 +29,6 @@ import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
 import frc.robot.utils.LogEverything;
-import java.util.ArrayList;
 
 @Logged
 @SuppressWarnings("unused")
@@ -166,13 +165,6 @@ public class Robot extends DynamicTimedRobot {
 
   @Override
   public void testExit() {}
-
-  /** A map of all subsystems with their period */
-  public void addAllSubsystems(ArrayList<SubsystemInfo> subsystemsInfo) {
-    for (Object subsystemInfo : subsystemsInfo.toArray()) {
-      addSubsystem((SubsystemInfo) subsystemInfo);
-    }
-  }
 
   public static EpilogueBackend telemetry() {
     return Epilogue.getConfig().backend.getNested("Outputs");
