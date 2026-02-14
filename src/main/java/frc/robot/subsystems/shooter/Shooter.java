@@ -22,16 +22,26 @@ public class Shooter {
 
   private final TimesConsumer m_timesConsumer;
 
-  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
-  private Angle m_hoodAngle = Degrees.of(0);
+  private AngularVelocity m_velocity;
+  private Angle m_hoodAngle;
 
-  private boolean m_isGoingTowardsAllianceZone = false;
-  private boolean m_didIntake = false;
+  private boolean m_isGoingTowardsAllianceZone;
+  private boolean m_didIntake;
+
+  private int m_ballcount;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
     this.m_currentState = SHOOTER_STATE.STOP;
+
+    this.m_velocity = RotationsPerSecond.of(0);
+    this.m_hoodAngle = Degrees.of(0);
+
+    this.m_isGoingTowardsAllianceZone = false;
+    this.m_didIntake = false;
+
+    this.m_ballcount = 0;
   }
 
   public void periodic() {
@@ -119,5 +129,13 @@ public class Shooter {
 
   public SHOOTER_STATE getState() {
     return this.m_currentState;
+  }
+
+  public int getBallCount() {
+    return this.m_ballcount;
+  }
+
+  public void resetBallCount() {
+    this.m_ballcount = 0;
   }
 }
