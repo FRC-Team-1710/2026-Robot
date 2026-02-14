@@ -63,6 +63,7 @@ public class RobotContainer {
   private final Indexer indexer;
   private final Feeder feeder;
 
+  // It is used :( (not rly but shhhhh)
   @SuppressWarnings("unused")
   private Vision[] cameras;
 
@@ -86,7 +87,6 @@ public class RobotContainer {
                 .map(
                     config ->
                         new Vision(
-                            drivetrain::addVisionData,
                             config.name(),
                             config.robotToCamera(),
                             drivetrain)) // TODO: Fix this stuff :p
