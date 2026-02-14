@@ -210,6 +210,6 @@ public class RobotContainer {
             drivetrain::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
-    return (SubsystemInfo[]) map.toArray();
+    return map.toArray(new SubsystemInfo[0]);
   }
 }
