@@ -103,8 +103,8 @@ public class FuelSim {
         FIELD_LENGTH - 4.61 + TRENCH_BAR_WIDTH / 2, FIELD_WIDTH, TRENCH_HEIGHT + TRENCH_BAR_HEIGHT),
   };
 
-  protected static int m_currentFuelStorage = 8;
-  protected static int fuelCapacity = FuelSimConstants.kFUEL_CAPACITY;
+  protected int m_currentFuelStorage = 8;
+  protected final int fuelCapacity = FuelSimConstants.kFUEL_CAPACITY;
 
   protected static class Fuel {
     protected Translation3d pos;
