@@ -44,10 +44,9 @@ public class Indexer {
     // This method will be called once per scheduler run
     io.update();
     io.setIndexMotor(currentState.speed);
-    io.updateVisual();
     if (bumpSupplier.getAsBoolean()) {
       // This is NOT a magic number, it makes it go backwards to hopefully unjam the Fuel
-      io.setSpeed(-0.5);
+      io.setIndexMotor(-0.5);
     } else {
       switch (currentState) {
         case Indexing:

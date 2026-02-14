@@ -34,11 +34,10 @@ public class IndexerIOCTRE implements IndexerIO {
     motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
     motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
-    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_IndexerAlpha);
     m_IndexerAlpha.getConfigurator().apply(motorConfig);
     m_IndexerBeta.getConfigurator().apply(motorConfig);
 
-    m_baseStatusSignals = TalonFXUtil.getBasicStatusSignals(m_IndexerAlpha, m_IndexerBeta);
+    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_IndexerAlpha, m_IndexerBeta);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_indexerSignals);
 
