@@ -4,11 +4,15 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.constants.ShooterConstants;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.MechanismUtil.HoodMechanism;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
+import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
 public class ShooterIOSIM implements ShooterIO {
@@ -20,6 +24,10 @@ public class ShooterIOSIM implements ShooterIO {
   private final WheelMechanism m_flyWheelFollowerMechanism;
 
   private final HoodMechanism m_hoodMechanism;
+
+  private FuelSim fuelSim;
+  private final Debouncer m_shooterDebouncer = new Debouncer(1 / 12.0); // 12 fuel/sec
+  private boolean leftShooter = false;
 
   public ShooterIOSIM() {
     this.m_flyWheelMechanism = new WheelMechanism("Flywheel 1", 0.1, -0.25, 0.5);
@@ -38,6 +46,30 @@ public class ShooterIOSIM implements ShooterIO {
     SmartDashboard.putData("Flywheel 2", this.m_flyWheelFollowerMechanism.getMechanism());
 
     SmartDashboard.putData("Hood", this.m_hoodMechanism.getMechanism());
+
+    SmartDashboard.putBoolean("ShooterSim Fuel Sim", fuelSim != null);
+    if (fuelSim == null) return;
+
+    SmartDashboard.putNumber("Fuel Storage", fuelSim.getCurrentFuelStorage());
+
+    if (m_shooterDebouncer.calculate(fuelSim.getCurrentFuelStorage() > 0)
+        && getVelocity().isNear(ShooterMath.getShooterRPM(), 0.1)) {
+      double mult = 1 / (Math.pow(ShooterMath.calculateDistance(), 0.15));
+      if (leftShooter) {
+        fuelSim.spawnFuel(
+            ShooterMath.m_robotPose.plus(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation(),
+            ShooterMath.findShooterVelocity3d().times(mult).inverse().toTranslation3d());
+      } else {
+        fuelSim.spawnFuel(
+            ShooterMath.m_robotPose.plus(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation(),
+            ShooterMath.findShooterVelocity3d().times(mult).inverse().toTranslation3d());
+      }
+      SmartDashboard.putNumber("Distance", ShooterMath.calculateDistance());
+      SmartDashboard.putNumber("Multiplier", mult);
+      fuelSim.removeFuelFromStorage(1);
+      leftShooter = !leftShooter;
+      m_shooterDebouncer.calculate(false);
+    }
   }
 
   public void stop() {
@@ -62,5 +94,9 @@ public class ShooterIOSIM implements ShooterIO {
 
   public Angle getHoodAngle() {
     return this.m_hoodAngle;
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.fuelSim = fuelSim;
   }
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
@@ -107,5 +108,9 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    // CTRE implementation does not use FuelSim
   }
 }
