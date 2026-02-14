@@ -63,6 +63,8 @@ public class Shooter {
         break;
     }
 
+    if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) this.m_ballcount++;
+
     this.m_io.setTargetVelocity(this.m_velocity);
     this.m_io.setHoodAngle(this.m_hoodAngle);
 
