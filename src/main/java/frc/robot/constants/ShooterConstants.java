@@ -33,8 +33,8 @@ public final class ShooterConstants {
   public static final double MOTION_MAGIC_ACCELERATION = 150.0;
 
   // ======================== Shooter Physical Constants ===========================
-  public static final double HOOD_MAX = 10;
-  public static final double HOOD_MIN = 0;
+  public static final double HOOD_MAX = 56.16; // 42.5;
+  public static final double HOOD_MIN = 31.5;
 
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
 

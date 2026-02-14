@@ -5,7 +5,7 @@ import com.ctre.phoenix6.Utils;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -24,7 +24,7 @@ import org.photonvision.targeting.*;
  * <p>One instance of this class represents a single physical camera.
  */
 @Logged
-public class Vision extends SubsystemBase {
+public class Vision {
 
   private final PhotonCamera camera;
   private final PhotonPoseEstimator poseEstimator;
@@ -50,7 +50,9 @@ public class Vision extends SubsystemBase {
 
     camera = new PhotonCamera(cameraName);
 
-    poseEstimator = new PhotonPoseEstimator(FieldConstants.kAprilTags, robotToCamera);
+    poseEstimator =
+        new PhotonPoseEstimator(
+            FieldConstants.kAprilTags, PoseStrategy.LOWEST_AMBIGUITY, robotToCamera);
 
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
@@ -80,12 +82,12 @@ public class Vision extends SubsystemBase {
             .withTimestampReplay();
   }
 
-  @Override
   /**
    * Runs every scheduler loop. 1. Fetch fresh vision data (unless replaying logs) 2. Update
    * replay/log values 3. Process and inject pose measurements into drivetrain
    */
   public void periodic() {
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     if (!Utils.isReplay()) {
       fetchInputs();
@@ -110,6 +112,8 @@ public class Vision extends SubsystemBase {
       return;
     }
 
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
     Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
 
     if (estimate.isEmpty()) {
@@ -118,6 +122,8 @@ public class Vision extends SubsystemBase {
     }
 
     EstimatedRobotPose visionEstimate = estimate.get();
+
+    Robot.telemetry().log("NBUIBUIBUIBVUIVBIUB", visionEstimate.estimatedPose, Pose3d.struct);
 
     robotPose = visionEstimate.estimatedPose.toPose2d();
     robotPoseTimestamp = visionEstimate.timestampSeconds;
@@ -157,7 +163,9 @@ public class Vision extends SubsystemBase {
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
     drivetrain.addVisionMeasurement(
-        robotPose, robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        new Pose2d(robotPose.getTranslation(), drivetrain.getRotation()),
+        robotPoseTimestamp,
+        VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
   /**
