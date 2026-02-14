@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.epilogue.Logged;
 
 /**
@@ -16,12 +15,6 @@ import edu.wpi.first.epilogue.Logged;
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
 // the root directory of this project.
-
-
-// TODO: Figure out why this doesn't work
-// package frc.robot.subsystems.vision;
-
-import edu.wpi.first.epilogue.Logged;
 
 @Logged
 public interface VisionIO {
