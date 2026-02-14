@@ -31,7 +31,7 @@ public class IndexerIOSIM implements IndexerIO {
     this.speed = speed;
   }
 
-  public void updateVisual() {
+  public void update() {
     IndexerMotorAlphaSim.updateIndexer(speed * 20);
     Robot.telemetry().log("Indexer Alpha Speed", speed);
     SmartDashboard.putData("Indexer Alpha Visual", this.IndexerMotorAlphaSim.getMechanism());

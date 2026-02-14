@@ -23,5 +23,5 @@ public interface IndexerIO {
     return RotationsPerSecond.of(0);
   }
 
-  public default void updateVisual() {}
+  public default void update() {}
 }
