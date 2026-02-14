@@ -1,5 +1,14 @@
 package frc.robot.constants;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+
+/**
+ * Centralized configuration for all vision-related tuning and camera mounting geometry.
+ *
+ * <p>This class contains no logic
+ */
 public class VisionConstants {
   // ==================== Base Trust Levels ====================
 
@@ -30,6 +39,38 @@ public class VisionConstants {
 
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
+
+  public static record VisionConfig(String name, Transform3d robotToCamera) {}
+
+  /**
+   * Defines a single vision camera configuration.
+   *
+   * @param name The exact PhotonVision camera name (must match NetworkTables name)
+   * @param robotToCamera Transform from robot center to camera lens in meters and radians.
+   *     Translation3d: +X forward, +Y left, +Z up (WPILib coordinate system). Rotation3d: roll (X),
+   *     pitch (Y), yaw (Z) in radians.
+   */
+  public static final VisionConfig[] kVisionConfigs = {
+    // new VisionConfig("FrontLeft", new Transform3d(new Translation3d(), new Rotation3d())),
+    // new VisionConfig("FrontRight", new Transform3d(new Translation3d(), new Rotation3d())),
+    new VisionConfig(
+        "BackLeft",
+        new Transform3d(
+            new Translation3d(9.61367, -16.48053, 28.975),
+            new Rotation3d(
+                0.0,
+                Math.toRadians(0.0),
+                Math.toRadians(-90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
+    new VisionConfig(
+        "BackRight",
+        new Transform3d(
+            new Translation3d(9.61367, 16.48053, 28.975),
+            new Rotation3d(
+                0.0,
+                Math.toRadians(0.0),
+                Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
+    // new VisionConfig("FuelCam", new Transform3d(new Translation3d(), new Rotation3d())),
+  };
 
   private VisionConstants() {
     throw new UnsupportedOperationException("This is a utility class!");

@@ -16,13 +16,21 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.*;
 
+/**
+ * Vision subsystem responsible for: reading AprilTag detections from PhotonVision; estimating robot
+ * field pose; dynamically scaling measurement trust; and feeding vision measurements into the
+ * drivetrain pose estimator
+ *
+ * <p>One instance of this class represents a single physical camera.
+ */
 @Logged
 public class Vision extends SubsystemBase {
 
   private final PhotonCamera camera;
   private final PhotonPoseEstimator poseEstimator;
   private final CommandSwerveDrivetrain drivetrain;
-
+  // === Vision state calculated each cycle ===
+  // These values are updated from PhotonVision and optionally replayed in simulation.
   private Pose2d robotPose = new Pose2d();
   private double robotPoseTimestamp = 0.0;
   private int tagCount = 0;
@@ -31,6 +39,11 @@ public class Vision extends SubsystemBase {
 
   private final HootAutoReplay autoReplay;
 
+  /**
+   * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
+   * @param robotToCamera Transform from robot center to camera (meters, radians)
+   * @param drivetrain Reference to drivetrain for pose fusion
+   */
   public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
 
     this.drivetrain = drivetrain;
@@ -68,6 +81,10 @@ public class Vision extends SubsystemBase {
   }
 
   @Override
+  /**
+   * Runs every scheduler loop. 1. Fetch fresh vision data (unless replaying logs) 2. Update
+   * replay/log values 3. Process and inject pose measurements into drivetrain
+   */
   public void periodic() {
 
     if (!Utils.isReplay()) {
@@ -78,6 +95,12 @@ public class Vision extends SubsystemBase {
     processInputs();
   }
 
+  /**
+   * Pulls latest AprilTag detection results and converts them into a field-relative Pose2d
+   * estimate.
+   *
+   * <p>If no valid pose is found, vision state is reset.
+   */
   private void fetchInputs() {
 
     PhotonPipelineResult result = camera.getLatestResult();
@@ -114,23 +137,33 @@ public class Vision extends SubsystemBase {
     if (tagCount == 0 || robotPoseTimestamp == 0.0) {
       return;
     }
-
+    // Reject single-tag solutions with high ambiguity.
+    // Multi-tag solutions are inherently more stable.
     if (tagCount == 1 && ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
       return;
     }
-
+    // Dynamically scale measurement
+    // More tags = more trust
+    // Closer = more trust
+    // Larger std dev = less influence in pose estimator.
     double xyStdDev = VisionConstants.BASE_XY_STD_DEV / tagCount;
     double thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / tagCount;
-
+    // Squared distance scaling penalizes far-away tag estimates heavily,
+    // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(avgTagDistance, 2);
 
     xyStdDev *= distanceScale;
     thetaStdDev *= distanceScale;
-
+    // Inject measurement into drivetrain pose estimator.
+    // Std deviations control how much the estimator trusts vision vs odometry.
     drivetrain.addVisionMeasurement(
         robotPose, robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
+  /**
+   * Clears current vision state when no valid estimate is available. Prevents stale measurements
+   * from being reused.
+   */
   private void reset() {
     robotPose = new Pose2d();
     robotPoseTimestamp = 0.0;
