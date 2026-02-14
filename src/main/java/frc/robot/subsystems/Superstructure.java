@@ -58,9 +58,6 @@ public class Superstructure {
   }
 
   public void periodic() {
-    shooter.setGoingTowardsAllianceZone(drivetrain.isGoingTowardsAllianceZone());
-    shooter.setDidIntake(didIntake);
-
     currentState = handleStateTransitions();
     applyStates();
 

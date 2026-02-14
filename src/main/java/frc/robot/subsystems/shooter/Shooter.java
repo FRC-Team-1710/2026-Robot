@@ -90,7 +90,7 @@ public class Shooter {
   public Angle getHoodAngle() {
     return this.m_io.getHoodAngle();
   }
-  
+
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
