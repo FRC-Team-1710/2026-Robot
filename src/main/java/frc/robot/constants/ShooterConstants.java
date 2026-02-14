@@ -43,6 +43,8 @@ public final class ShooterConstants {
 
   public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
 
+  public static final double JAM_DETCH_TIME = 1.0;
+
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
   }

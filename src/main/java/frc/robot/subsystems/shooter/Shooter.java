@@ -46,8 +46,7 @@ public class Shooter {
 
     this.m_ballcount = 0;
 
-    // TODO : move to constance
-    this.m_jamDetect = new Debouncer(1);
+    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETCH_TIME);
   }
 
   public void periodic() {
