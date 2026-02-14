@@ -47,10 +47,7 @@ public class ShooterIOSIM implements ShooterIO {
 
     SmartDashboard.putData("Hood", this.m_hoodMechanism.getMechanism());
 
-    SmartDashboard.putBoolean("ShooterSim Fuel Sim", fuelSim != null);
     if (fuelSim == null) return;
-
-    SmartDashboard.putNumber("Fuel Storage", fuelSim.getCurrentFuelStorage());
 
     if (m_shooterDebouncer.calculate(fuelSim.getCurrentFuelStorage() > 0)
         && getVelocity().isNear(ShooterMath.getShooterRPM(), 0.1)) {
@@ -64,8 +61,6 @@ public class ShooterIOSIM implements ShooterIO {
             ShooterMath.m_robotPose.plus(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation(),
             ShooterMath.findShooterVelocity3d().times(mult).inverse().toTranslation3d());
       }
-      SmartDashboard.putNumber("Distance", ShooterMath.calculateDistance());
-      SmartDashboard.putNumber("Multiplier", mult);
       fuelSim.removeFuelFromStorage(1);
       leftShooter = !leftShooter;
       m_shooterDebouncer.calculate(false);
