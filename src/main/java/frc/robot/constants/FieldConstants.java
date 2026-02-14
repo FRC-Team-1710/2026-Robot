@@ -1,9 +1,12 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.apriltag.AprilTagFields.kDefaultField;
 import static edu.wpi.first.units.Units.Inches;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
+import java.io.IOException;
 import java.util.HashMap;
 
 /** Field constants RELATIVE TO THE BLUE ALLIANCE (frc coordinate system) */
@@ -33,6 +36,23 @@ public class FieldConstants {
   public static final Distance kDepotWidth = Inches.of(42);
   public static final Distance kDepotLength = Inches.of(24);
   public static final Distance kDepotDistanceFromWall = Inches.of(213.84375);
+
+  public static final AprilTagFieldLayout kAprilTags;
+
+  static {
+    try {
+      if (Mode.currentMode == Mode.currentMode.SIMULATION) {
+        kAprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
+      } else {
+        kAprilTags = AprilTagFieldLayout.loadField(kDefaultField);
+        // AprilTagFieldLayout.loadFromResource(
+        //     "src/main/java/frc/robot/utils/wpicalfields/practicefield.json");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static final Distance kDepotCenterDistanceFromWall =
       kDepotDistanceFromWall.plus(kDepotWidth.div(2));
 
