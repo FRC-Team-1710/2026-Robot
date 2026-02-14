@@ -39,6 +39,7 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.SwerveTelemetry;
 import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.Velocity3d;
 import java.util.function.Supplier;
 
 /**
@@ -50,6 +51,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
+
+  @SuppressWarnings("unused")
+  private double m_currentOdometryThreadFrequency = 0;
 
   private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
@@ -69,6 +73,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
+  /* Override default swerve request for a higher priority one (used in auto) */
+  private boolean autonomousRequestOverride = false;
 
   // SysId routines
 
@@ -227,7 +233,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    * @return Command to run
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-    return Commands.run(() -> this.setControl(requestSupplier.get()));
+    return Commands.run(() -> this.applyRequest(requestSupplier.get()));
+  }
+
+  public void applyRequest(SwerveRequest request) {
+    if (!DriverStation.isAutonomous() || !autonomousRequestOverride) {
+      this.setControl(request);
+    }
+  }
+
+  public void applyPriorityRequestAuto(SwerveRequest request) {
+    if (DriverStation.isAutonomous() && autonomousRequestOverride) {
+      this.setControl(request);
+    }
   }
 
   public void periodic() {
@@ -270,8 +288,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     swerveTelemetry.desiredStates = getModuleTargets();
     swerveTelemetry.rotation = getRotation();
 
-    // TODO make a more reliable pose
-    ShooterMath.input(new Pose3d(getPose()));
+    m_currentOdometryThreadFrequency = getOdometryFrequency();
+
+    ShooterMath.input(new Pose3d(getPose()), Velocity3d.from(getFieldSpeeds()));
+    ShooterMath.calculate();
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
@@ -281,7 +301,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public double rescaleRotation(double rotation) {
-    return MathUtil.clamp(Math.copySign(MathUtil.applyDeadband(rotation, 0.075), rotation), -1, 1);
+    return Math.copySign(MathUtil.applyDeadband(Math.abs(rotation), 0.075), rotation);
+  }
+
+  public void setAutonomousRequestOverride(boolean override) {
+    this.autonomousRequestOverride = override;
   }
 
   private void startSimThread() {

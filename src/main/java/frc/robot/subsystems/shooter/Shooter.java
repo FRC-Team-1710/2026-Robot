@@ -1,11 +1,12 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -13,48 +14,61 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.ShooterMath.ShootState;
 
 @Logged
 public class Shooter {
-  private SHOOTER_STATE m_state;
+  private SHOOTER_STATE m_currentState;
 
   private final ShooterIO m_io;
 
   private final TimesConsumer m_timesConsumer;
 
-  private AngularVelocity m_velocity = RotationsPerSecond.of(0);
-  private Angle m_hoodAngle = Degrees.of(0);
+  private AngularVelocity m_velocity;
+  private Angle m_hoodAngle;
 
-  private boolean m_isGoingTowardsAllianceZone = false;
-  private boolean m_didIntake = false;
+  private boolean m_isGoingTowardsAllianceZone;
+  private boolean m_didIntake;
+
+  private int m_ballcount;
+
+  private Debouncer m_jamDetect;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
-    this.m_state = SHOOTER_STATE.STOP;
+    this.m_currentState = SHOOTER_STATE.STOP;
+
+    this.m_velocity = RotationsPerSecond.of(0);
+    this.m_hoodAngle = Degrees.of(0);
+
+    this.m_isGoingTowardsAllianceZone = false;
+    this.m_didIntake = false;
+
+    this.m_ballcount = 0;
+
+    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
   }
 
   public void periodic() {
 
-    switch (this.m_state) {
+    switch (this.m_currentState) {
       case SHOOT:
-        ShootState math = ShooterMath.calculateShootState();
-
-        this.m_velocity = DegreesPerSecond.of(math.desiredAngle());
-        this.m_hoodAngle = Degrees.of(math.desiredRPM());
+        this.m_velocity = ShooterMath.getShooterRPM();
+        this.m_hoodAngle = ShooterMath.getShooterAngle();
         break;
 
       default:
-        this.m_velocity = this.m_state.m_velocity;
-        this.m_hoodAngle = this.m_state.m_hoodAngle;
+        this.m_velocity = this.m_currentState.m_velocity;
+        this.m_hoodAngle = this.m_currentState.m_hoodAngle;
         break;
     }
+
+    if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) this.m_ballcount++;
 
     this.m_io.setTargetVelocity(this.m_velocity);
     this.m_io.setHoodAngle(this.m_hoodAngle);
 
-    this.m_io.update();
+    this.m_io.update(m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
   public AngularVelocity getVelocity() {
@@ -93,9 +107,9 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(250), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(750), Degrees.of(0));
+    IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(60), Degrees.of(0)),
+    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(60), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -109,18 +123,31 @@ public class Shooter {
   }
 
   public void setState(SHOOTER_STATE pState) {
-    if (!this.m_state.m_subsystemPeriodicFrequency.isEquivalent(
+    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
-    if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
-      this.m_state = SHOOTER_STATE.PRESET_SCORE;
-    } else {
-      this.m_state = pState;
-    }
+    // if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
+    //   this.m_state = SHOOTER_STATE.PRESET_SCORE;
+    // } else {
+    this.m_currentState = pState;
+    // }
   }
 
   public SHOOTER_STATE getState() {
-    return this.m_state;
+    return this.m_currentState;
+  }
+
+  public int getBallCount() {
+    return this.m_ballcount;
+  }
+
+  public void resetBallCount() {
+    this.m_ballcount = 0;
+  }
+
+  public boolean isJammed() {
+    return this.m_jamDetect.calculate(
+        !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
   }
 }

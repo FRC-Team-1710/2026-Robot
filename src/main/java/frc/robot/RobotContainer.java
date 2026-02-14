@@ -7,14 +7,15 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autonomous.AutosChooser;
+import frc.robot.constants.Alliance;
+import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
@@ -41,10 +42,11 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 @Logged
 public class RobotContainer {
@@ -78,7 +80,8 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOCTRE(), consumer);
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer = new Indexer(new IndexerIOCTRE(), consumer);
+        indexer =
+            new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
 
         cameras =
             // Create a stream of Vision objects from the camera configs
@@ -99,14 +102,16 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOSIM(), consumer);
         shooter = new Shooter(new ShooterIOSIM(), consumer);
         feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer = new Indexer(new IndexerIOSIM(), consumer);
+        indexer =
+            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
         break;
 
       default:
         intake = new Intake(new IntakeIO() {}, consumer);
         shooter = new Shooter(new ShooterIO() {}, consumer);
         feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer = new Indexer(new IndexerIO() {}, consumer);
+        indexer =
+            new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
         break;
     }
 
@@ -128,10 +133,10 @@ public class RobotContainer {
           drivetrain::getFieldSpeeds);
 
       fuelSim.registerIntake(
-          -width / 2,
           width / 2,
+          width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
+          -length / 2,
           length / 2,
-          length / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
           () -> superstructure.getCurrentState() == CurrentStates.Intake);
 
       fuelSim.setSubticks(5);
@@ -150,8 +155,10 @@ public class RobotContainer {
     driver
         .start()
         .onTrue(
-            drivetrain.runOnce(
-                () -> drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero))));
+            Commands.runOnce(
+                    () ->
+                        drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero)))
+                .ignoringDisable(true));
 
     driver
         .rightTrigger()
@@ -173,54 +180,60 @@ public class RobotContainer {
         .negate()
         .and(driver.rightTrigger().negate())
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
+
+    mech.rightBumper()
+        .onTrue(
+            Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
+                .ignoringDisable(true));
+
+    mech.leftBumper()
+        .onTrue(
+            Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
+                .ignoringDisable(true));
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getAuto();
+    return autoChooser.selectAuto(drivetrain);
   }
 
-  public HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> getAllSubsystems() {
-    HashMap<Subsystems, Pair<Runnable, Pair<Time, Time>>> map = new HashMap<>();
-    map.put(
-        Subsystems.Superstructure,
-        new Pair<Runnable, Pair<Time, Time>>(
+  public SubsystemInfo[] getAllSubsystems() {
+    ArrayList<SubsystemInfo> map = new ArrayList<>();
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Superstructure,
             superstructure::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 1))));
-    map.put(
-        Subsystems.Intake,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 1)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Intake,
             intake::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0))));
-    map.put(
-        Subsystems.Shooter,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Shooter,
             shooter::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0))));
-    map.put(
-        Subsystems.Indexer,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Indexer,
             indexer::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0))));
-    map.put(
-        Subsystems.Feeder,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Feeder,
             feeder::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(60),
-                Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0))));
-    map.put(
-        Subsystems.Drive,
-        new Pair<Runnable, Pair<Time, Time>>(
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Drive,
             drivetrain::periodic,
-            new Pair<Time, Time>(
-                Milliseconds.of(20), Milliseconds.of((20.0 / Subsystems.values().length) * 5))));
-    return map;
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
+    return map.toArray(new SubsystemInfo[0]);
   }
 }

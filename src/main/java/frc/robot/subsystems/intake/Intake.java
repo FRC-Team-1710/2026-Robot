@@ -20,83 +20,83 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Intake {
-  private final IntakeIO io;
-  private final TimesConsumer timesConsumer;
-  private IntakeStates currentState;
+  private final IntakeIO m_io;
+  private final TimesConsumer m_timesConsumer;
+  private IntakeStates m_currentState;
 
-  private final Debouncer jamTime =
-      new Debouncer(JamDetectionConstants.Intake.jamMinimumTime.in(Seconds));
-  private final Debouncer minimumJamTime =
-      new Debouncer(JamDetectionConstants.Intake.jamDetectionDisabledTime.in(Seconds));
-  private final Debouncer jamUndoTime =
-      new Debouncer(JamDetectionConstants.Intake.jamUndoTime.in(Seconds));
+  private final Debouncer m_jamTime =
+      new Debouncer(JamDetectionConstants.Intake.kJamMinimumTime.in(Seconds));
+  private final Debouncer m_minimumJamTime =
+      new Debouncer(JamDetectionConstants.Intake.kJamDetectionDisabledTime.in(Seconds));
+  private final Debouncer m_jamUndoTime =
+      new Debouncer(JamDetectionConstants.Intake.kJamUndoTime.in(Seconds));
 
-  private boolean wasJammed = false;
+  private boolean m_wasJammed = false;
 
   /** Creates a new Intake. */
   public Intake(IntakeIO io, TimesConsumer consumer) {
-    this.io = io;
-    this.timesConsumer = consumer;
+    this.m_io = io;
+    this.m_timesConsumer = consumer;
 
-    this.currentState = IntakeStates.Up;
+    this.m_currentState = IntakeStates.Up;
   }
 
   public void periodic() {
     // This method will be called once per scheduler run
-    io.setAngle(currentState.setpoint);
-    switch (currentState) {
+    m_io.setAngle(m_currentState.setpoint);
+    switch (m_currentState) {
       case Intaking:
         // IMPORTANT, keep every if statement different!
-        if (minimumJamTime.calculate(true)) {
-          if (jamTime.calculate(isJammed()) || wasJammed) {
-            wasJammed = true;
-            if (jamUndoTime.calculate(true)) {
-              jamTime.calculate(false);
-              jamUndoTime.calculate(false);
-              wasJammed = false;
-              io.setIntakeMotor(currentState.speed);
+        if (m_minimumJamTime.calculate(true)) {
+          if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
+            m_wasJammed = true;
+            if (m_jamUndoTime.calculate(true)) {
+              m_jamTime.calculate(false);
+              m_jamUndoTime.calculate(false);
+              m_wasJammed = false;
+              m_io.setIntakeMotor(m_currentState.speed);
             } else {
-              io.setIntakeMotor(IntakeStates.Jammed.speed);
+              m_io.setIntakeMotor(IntakeStates.Jammed.speed);
             }
           } else {
-            jamUndoTime.calculate(false);
-            io.setIntakeMotor(currentState.speed);
+            m_jamUndoTime.calculate(false);
+            m_io.setIntakeMotor(m_currentState.speed);
           }
         } else {
-          jamTime.calculate(false);
-          jamUndoTime.calculate(false);
-          wasJammed = false;
-          io.setIntakeMotor(currentState.speed);
+          m_jamTime.calculate(false);
+          m_jamUndoTime.calculate(false);
+          m_wasJammed = false;
+          m_io.setIntakeMotor(m_currentState.speed);
         }
         break;
       default:
-        jamTime.calculate(false);
-        minimumJamTime.calculate(false);
-        jamUndoTime.calculate(false);
-        wasJammed = false;
-        io.setIntakeMotor(currentState.speed);
+        m_jamTime.calculate(false);
+        m_minimumJamTime.calculate(false);
+        m_jamUndoTime.calculate(false);
+        m_wasJammed = false;
+        m_io.setIntakeMotor(m_currentState.speed);
         break;
     }
   }
 
   public boolean isJammed() {
-    return io.getRollerCurrent().in(Amps) >= JamDetectionConstants.Intake.jamCurrent.in(Amps)
-        && io.getRollerVelocity().in(RotationsPerSecond)
-            <= JamDetectionConstants.Intake.jamSpeedThreshold.in(RotationsPerSecond);
+    return m_io.getRollerCurrent().in(Amps) >= JamDetectionConstants.Intake.kJamCurrent.in(Amps)
+        && m_io.getRollerVelocity().in(RotationsPerSecond)
+            <= JamDetectionConstants.Intake.kJamSpeedThreshold.in(RotationsPerSecond);
   }
 
   public void setState(IntakeStates state) {
-    if (!currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
-      timesConsumer.accept(Subsystems.Intake, state.subsystemPeriodicFrequency);
+    if (!m_currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Intake, state.subsystemPeriodicFrequency);
     }
-    currentState = state;
+    m_currentState = state;
   }
 
   public enum IntakeStates {
     Up(Milliseconds.of(60), Degrees.of(90), 0),
     Down(Milliseconds.of(60), Degrees.of(-14.5), 0),
     Jammed(Milliseconds.of(20), Degrees.of(-14.5), -0.3),
-    Intaking(Milliseconds.of(20), Degrees.of(0), .3);
+    Intaking(Milliseconds.of(20), Degrees.of(0), 1);
 
     private final Time subsystemPeriodicFrequency;
     private final Angle setpoint;

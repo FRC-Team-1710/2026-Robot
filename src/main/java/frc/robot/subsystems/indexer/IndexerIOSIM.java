@@ -13,22 +13,30 @@ import frc.robot.utils.MechanismUtil.IndexerVisualSim;
 @Logged
 public class IndexerIOSIM implements IndexerIO {
 
-  private final IndexerVisualSim IndexerVisualSim;
+  private final IndexerVisualSim IndexerMotorAlphaSim;
+  private final IndexerVisualSim IndexerMotorBetaSim;
+
+  @SuppressWarnings("unused")
   private final DCMotor gearbox;
+
   private double speed = 0.0;
 
   public IndexerIOSIM() {
     gearbox = DCMotor.getKrakenX60(1);
-    this.IndexerVisualSim = new IndexerVisualSim("Indexer", 0.125);
+    this.IndexerMotorAlphaSim = new IndexerVisualSim("Indexer", 0.125);
+    this.IndexerMotorBetaSim = new IndexerVisualSim("Indexer", 0.125);
   }
 
-  public void setSpeed(double speed) {
+  public void setIndexMotor(double speed) {
     this.speed = speed;
   }
 
-  public void updateVisual() {
-    IndexerVisualSim.updateIndexer(speed * 20);
-    Robot.telemetry().log("Indexer Speed", speed);
-    SmartDashboard.putData("Indexer Visual", this.IndexerVisualSim.getMechanism());
+  public void update() {
+    IndexerMotorAlphaSim.updateIndexer(speed * 20);
+    Robot.telemetry().log("Indexer Alpha Speed", speed);
+    SmartDashboard.putData("Indexer Alpha Visual", this.IndexerMotorAlphaSim.getMechanism());
+    IndexerMotorBetaSim.updateIndexer(speed * 20);
+    Robot.telemetry().log("Indexer Beta Speed", speed);
+    SmartDashboard.putData("Indexer Beta Visual", this.IndexerMotorBetaSim.getMechanism());
   }
 }

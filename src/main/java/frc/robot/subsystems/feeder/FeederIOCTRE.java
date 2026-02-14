@@ -1,5 +1,6 @@
 package frc.robot.subsystems.feeder;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -16,6 +17,9 @@ public class FeederIOCTRE implements FeederIO {
   private final TalonFX m_feederLeft;
   private final TalonFX m_feederRight;
 
+  private final BaseStatusSignal[] m_feederSignals;
+  private final BaseStatusSignal[] m_feederFollowerSignals;
+
   public FeederIOCTRE() {
     this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
     this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_FOLLOWER_MOTOR);
@@ -23,21 +27,29 @@ public class FeederIOCTRE implements FeederIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
 
-    this.m_feederLeft.setControl(
+    this.m_feederRight.setControl(
         new Follower(CanIdConstants.Feeder.FEEDER_MOTOR, MotorAlignmentValue.Opposed));
+
+    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft);
+    m_feederFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_feederRight);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederFollowerSignals);
+
+    m_feederLeft.optimizeBusUtilization();
+    m_feederRight.optimizeBusUtilization();
   }
 
-  public void update() {}
-
-  public void setVelocity(boolean clockwise) {
-    this.m_feederRight.set(clockwise ? 0.25 : -0.25);
+  public void update(double dtSeconds) {
+    BaseStatusSignal.refreshAll(m_feederSignals);
+    BaseStatusSignal.refreshAll(m_feederFollowerSignals);
   }
 
-  public void stop() {
-    this.m_feederRight.stopMotor();
+  public void setFeeder(double percent) {
+    this.m_feederLeft.set(percent);
   }
 }
