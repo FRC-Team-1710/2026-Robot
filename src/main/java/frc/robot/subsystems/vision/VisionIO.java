@@ -21,8 +21,6 @@ import edu.wpi.first.epilogue.Logged;
 // TODO: Figure out why this doesn't work
 // package frc.robot.subsystems.vision;
 
-import frc.robot.utils.VisionUtil;
-import frc.robot.utils.VisionUtil;
 import edu.wpi.first.epilogue.Logged;
 
 @Logged
