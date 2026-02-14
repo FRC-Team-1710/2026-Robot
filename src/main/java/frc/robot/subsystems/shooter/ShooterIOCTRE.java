@@ -32,7 +32,7 @@ public class ShooterIOCTRE implements ShooterIO {
   private final BaseStatusSignal[] m_flyWheelSignals;
   private final BaseStatusSignal[] m_flyWheelFollowerSignals;
   private final BaseStatusSignal[] m_hoodSignals;
-  
+
   private final DigitalInput m_breamBreaker;
   private final DigitalInput m_breamBreakerFollower;
 
