@@ -10,6 +10,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -29,7 +30,10 @@ public class Shooter {
   private boolean m_isGoingTowardsAllianceZone;
   private boolean m_didIntake;
 
-  private int m_ballcount;
+  private Timer m_FPSTimer;
+  private double m_FPS;
+
+  private int m_fuelCount;
 
   private Debouncer m_jamDetect;
 
@@ -44,7 +48,11 @@ public class Shooter {
     this.m_isGoingTowardsAllianceZone = false;
     this.m_didIntake = false;
 
-    this.m_ballcount = 0;
+    this.m_fuelCount = 0;
+    this.m_FPS = 0;
+
+    this.m_FPSTimer = new Timer();
+    this.m_FPSTimer.start();
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
   }
@@ -63,12 +71,19 @@ public class Shooter {
         break;
     }
 
-    if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) this.m_ballcount++;
+    if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
+      if (this.m_FPSTimer.get() != 0) {
+        this.m_FPS = 1 / (2 * this.m_FPSTimer.get());
+      }
+      this.m_FPSTimer.reset();
+
+      this.m_fuelCount++;
+    }
 
     this.m_io.setTargetVelocity(this.m_velocity);
     this.m_io.setHoodAngle(this.m_hoodAngle);
 
-    this.m_io.update(m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
+    this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
   public AngularVelocity getVelocity() {
@@ -139,11 +154,15 @@ public class Shooter {
   }
 
   public int getBallCount() {
-    return this.m_ballcount;
+    return this.m_fuelCount;
   }
 
   public void resetBallCount() {
-    this.m_ballcount = 0;
+    this.m_fuelCount = 0;
+  }
+
+  public double getFPS() {
+    return this.m_FPS;
   }
 
   public boolean isJammed() {
