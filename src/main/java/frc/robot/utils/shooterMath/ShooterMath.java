@@ -70,6 +70,9 @@ public class ShooterMath {
     addInterpolatableValues(3.46, 61, 0.137 * 360); // METERS, RPS, DEGREES
     addInterpolatableValues(3.99, 63, 0.145 * 360); // METERS, RPS, DEGREES
     addInterpolatableValues(4.50, 66, 0.15 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(5.02, 69, 0.156 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(5.32, 72, 0.156 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(5.78, 77.5, 0.156 * 360); // METERS, RPS, DEGREES
   }
 
   public static double calculateDistance() {
