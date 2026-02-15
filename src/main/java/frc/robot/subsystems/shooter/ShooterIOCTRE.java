@@ -138,7 +138,7 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public AngularVelocity getVelocity() {
-    return DegreesPerSecond.of(this.m_flyWheel.get());
+    return this.m_flyWheel.getVelocity().getValue();
   }
 
   public AngularVelocity getTargetVelocity() {

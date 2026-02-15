@@ -322,7 +322,7 @@ public class Superstructure {
   }
 
   private Rotation2d getRotationForScore() {
-    return ShooterMath.getRobotRotation();
+    return ShooterMath.getRobotRotation().plus(Rotation2d.k180deg);
   }
 
   /** The wanted states of superstructure */

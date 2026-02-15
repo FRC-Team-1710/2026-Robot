@@ -3,6 +3,7 @@ package frc.robot.utils.shooterMath;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -220,6 +221,10 @@ public class ShooterMath {
         !m_RedAlliance.getAsBoolean()
             ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
             : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    Robot.telemetry().log("X_DISTANCE", x_distance);
+    Robot.telemetry().log("RPS", rpsMap.get(x_distance));
+    Robot.telemetry().log("RadPS", RotationsPerSecond.of(rpsMap.get(x_distance)));
 
     return rpsMap.get(x_distance);
   }
