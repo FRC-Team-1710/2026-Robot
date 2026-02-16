@@ -31,6 +31,7 @@ public class Shooter {
   private boolean m_didIntake;
 
   private Timer m_FPSTimer;
+  private int m_FPSIndex;
   private double m_FPS;
 
   private int m_fuelCount;
@@ -72,12 +73,14 @@ public class Shooter {
     }
 
     if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
-      if (this.m_FPSTimer.get() != 0) {
-        this.m_FPS = 1 / (2 * this.m_FPSTimer.get());
-      }
-      this.m_FPSTimer.reset();
-
+      this.m_FPSIndex++;
       this.m_fuelCount++;
+    }
+
+    if (this.m_FPSTimer.get() > 1) {
+      this.m_FPS = this.m_FPSIndex;
+      this.m_FPSIndex = 0;
+      this.m_FPSTimer.restart();
     }
 
     this.m_io.setTargetVelocity(this.m_velocity);
