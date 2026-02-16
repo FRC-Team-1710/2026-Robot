@@ -11,7 +11,6 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.*;
@@ -26,7 +25,7 @@ import org.photonvision.targeting.*;
 @Logged
 public class Vision extends SubsystemBase {
 
-  private final PhotonCamera camera;
+  private final VisionIO[] cameras;
   private final PhotonPoseEstimator poseEstimator;
   private final CommandSwerveDrivetrain drivetrain;
   // === Vision state calculated each cycle ===
@@ -44,40 +43,40 @@ public class Vision extends SubsystemBase {
    * @param robotToCamera Transform from robot center to camera (meters, radians)
    * @param drivetrain Reference to drivetrain for pose fusion
    */
-  public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
+  public Vision(VisionIO[] cameras, CommandSwerveDrivetrain drivetrain) {
 
     this.drivetrain = drivetrain;
 
-    camera = new PhotonCamera(cameraName);
-
+    this.cameras = cameras;
     poseEstimator = new PhotonPoseEstimator(FieldConstants.kAprilTags, robotToCamera);
 
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-    autoReplay =
-        new HootAutoReplay()
-            .withStruct(
-                "PhotonVision/" + cameraName + "/RobotPose",
-                Pose2d.struct,
-                () -> robotPose,
-                val -> robotPose = val.value)
-            .withDouble(
-                "PhotonVision/" + cameraName + "/RobotPoseTimestamp",
-                () -> robotPoseTimestamp,
-                val -> robotPoseTimestamp = val.value)
-            .withInteger(
-                "PhotonVision/" + cameraName + "/TagCount",
-                () -> tagCount,
-                val -> tagCount = val.value.intValue())
-            .withDouble(
-                "PhotonVision/" + cameraName + "/AvgTagDistance",
-                () -> avgTagDistance,
-                val -> avgTagDistance = val.value)
-            .withDouble(
-                "PhotonVision/" + cameraName + "/Ambiguity",
-                () -> ambiguity,
-                val -> ambiguity = val.value)
-            .withTimestampReplay();
+    // TODO Fix later
+    // autoReplay =
+    //     new HootAutoReplay()
+    //         .withStruct(
+    //             "PhotonVision/" + cameraName + "/RobotPose",
+    //             Pose2d.struct,
+    //             () -> robotPose,
+    //             val -> robotPose = val.value)
+    //         .withDouble(
+    //             "PhotonVision/" + cameraName + "/RobotPoseTimestamp",
+    //             () -> robotPoseTimestamp,
+    //             val -> robotPoseTimestamp = val.value)
+    //         .withInteger(
+    //             "PhotonVision/" + cameraName + "/TagCount",
+    //             () -> tagCount,
+    //             val -> tagCount = val.value.intValue())
+    //         .withDouble(
+    //             "PhotonVision/" + cameraName + "/AvgTagDistance",
+    //             () -> avgTagDistance,
+    //             val -> avgTagDistance = val.value)
+    //         .withDouble(
+    //             "PhotonVision/" + cameraName + "/Ambiguity",
+    //             () -> ambiguity,
+    //             val -> ambiguity = val.value)
+    //         .withTimestampReplay();
   }
 
   @Override

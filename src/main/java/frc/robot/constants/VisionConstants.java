@@ -1,5 +1,7 @@
 package frc.robot.constants;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -41,6 +43,9 @@ public class VisionConstants {
   public static final double MAX_THETA_STD_DEV = 1.0;
 
   public static record PoseCameraConfig(String name, Transform3d robotToCamera) {}
+
+  public static final AprilTagFieldLayout kTagLayout =
+                AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   /**
    * Defines a single vision pose camera configuration.
