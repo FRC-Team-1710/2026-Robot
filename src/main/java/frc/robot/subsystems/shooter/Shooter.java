@@ -169,4 +169,12 @@ public class Shooter {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
   }
+
+  public boolean hasBreakerBroke() {
+    return this.m_io.hasBreakerBroke();
+  }
+
+  public boolean hasBreakerFollowerBroke() {
+    return this.m_io.hasBreakerFollowerBroke();
+  }
 }

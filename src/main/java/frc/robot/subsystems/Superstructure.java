@@ -188,7 +188,7 @@ public class Superstructure {
   private void shoot() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Up);
+    intake.setState(shooter.getFPS() < 2 ? IntakeStates.Up : IntakeStates.Down);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
