@@ -6,13 +6,10 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.*;
 
 /**
@@ -26,7 +23,6 @@ import org.photonvision.targeting.*;
 public class Vision extends SubsystemBase {
 
   private final VisionIO[] cameras;
-  private final PhotonPoseEstimator poseEstimator;
   private final CommandSwerveDrivetrain drivetrain;
   // === Vision state calculated each cycle ===
   // These values are updated from PhotonVision and optionally replayed in simulation.
@@ -48,9 +44,6 @@ public class Vision extends SubsystemBase {
     this.drivetrain = drivetrain;
 
     this.cameras = cameras;
-    poseEstimator = new PhotonPoseEstimator(FieldConstants.kAprilTags, robotToCamera);
-
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
     // TODO Fix later
     // autoReplay =
