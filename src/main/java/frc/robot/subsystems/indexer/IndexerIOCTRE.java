@@ -16,16 +16,14 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 /** Creates a new IndexIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
-  private final TalonFX m_IndexerAlpha;
-  private final TalonFX m_IndexerBeta;
+  private final TalonFX m_IndexerMotor;
 
   TalonFXConfiguration motorConfig;
 
   private final BaseStatusSignal[] m_indexerSignals;
 
   public IndexerIOCTRE() {
-    this.m_IndexerAlpha = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_ALPHA);
-    this.m_IndexerBeta = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR_BETA);
+    this.m_IndexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -34,14 +32,13 @@ public class IndexerIOCTRE implements IndexerIO {
     motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
     motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
-    m_IndexerAlpha.getConfigurator().apply(motorConfig);
-    m_IndexerBeta.getConfigurator().apply(motorConfig);
+    m_IndexerMotor.getConfigurator().apply(motorConfig);
 
-    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_IndexerAlpha, m_IndexerBeta);
+    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_IndexerMotor);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_indexerSignals);
 
-    m_IndexerAlpha.optimizeBusUtilization();
+    m_IndexerMotor.optimizeBusUtilization();
   }
 
   public void update() {
@@ -49,7 +46,6 @@ public class IndexerIOCTRE implements IndexerIO {
   }
 
   public void setIndexMotor(double speed) {
-    m_IndexerAlpha.set(speed);
-    m_IndexerBeta.set(speed);
+    m_IndexerMotor.set(speed);
   }
 }
