@@ -125,7 +125,7 @@ public class RobotContainer {
       fuelSim.enableAirResistance();
     }
 
-    autoChooser = new AutosChooser(superstructure, drivetrain);
+    autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
 
     configureBindings();
   }

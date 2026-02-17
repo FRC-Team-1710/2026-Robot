@@ -19,6 +19,7 @@ import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.shooter.Shooter;
 import java.util.HashMap;
 
 /** Add your docs here. */
@@ -31,7 +32,8 @@ public class AutosChooser {
   private boolean m_climb;
   private boolean m_depot;
 
-  public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
+  public AutosChooser(
+      Superstructure superstructure, CommandSwerveDrivetrain drivetrain, Shooter shooter) {
     pathBuilder =
         new FollowPath.Builder(
                 drivetrain, // The drive subsystem to require
@@ -91,17 +93,17 @@ public class AutosChooser {
         () -> {
           drivetrain.setAutonomousRequestOverride(true);
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
-          superstructure.setWantedStateCommand(WantedStates.ShootAuto);
-          // .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0); // TODO: replace with
-          // shooter beam break logic
+          superstructure
+              .setWantedStateCommand(WantedStates.ShootAuto)
+              .until(() -> shooter.notShooting());
         });
 
     FollowPath.registerEventTrigger(
         "ShootWhileMoving",
         () -> {
-          superstructure.setWantedStateCommand(WantedStates.ShootAuto);
-          // .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0); // TODO: replace with
-          // shooter beam break logic
+          superstructure
+              .setWantedStateCommand(WantedStates.ShootAuto)
+              .until(() -> shooter.notShooting()).;
         });
 
     FollowPath.registerEventTrigger(
@@ -162,7 +164,7 @@ public class AutosChooser {
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(
-            pathBuilder.build(new Path("zone3cycleright")),
+            pathBuilder.build(new Path("zone3cycleright")).until(Shooter.notShooting()),
             pathBuilder.build(new Path("zone1cyclestraight")),
             pathBuilder.build(new Path("zone3cycleleft")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));

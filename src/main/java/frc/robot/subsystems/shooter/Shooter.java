@@ -10,6 +10,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -147,5 +148,16 @@ public class Shooter {
   public boolean isJammed() {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
+  }
+
+  public boolean notShooting() {
+    Timer timer = new Timer();
+    timer.start();
+    for (int i = 0; i < 100; i++) {
+      if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
+        timer.restart();
+      }
+    }
+    return timer.hasElapsed(1);
   }
 }
