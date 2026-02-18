@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 @Logged
+@SuppressWarnings("unused")
 public class LedsIOCTRE implements LedsIO {
   private boolean[] m_output;
 
