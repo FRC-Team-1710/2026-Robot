@@ -4,6 +4,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DigitalOutput;
 
 @Logged
+@SuppressWarnings("unused")
 public class LedsIOCTRE implements LedsIO {
   private final DigitalOutput JohnRomero; // Bit 1 (1)
   private final DigitalOutput JohnCarmack; // Bit 2 (2)
