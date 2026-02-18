@@ -193,7 +193,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.selectAuto(drivetrain);
+    return autoChooser.selectAuto(drivetrain, shooter);
   }
 
   public SubsystemInfo[] getAllSubsystems() {

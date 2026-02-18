@@ -57,10 +57,10 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(m_climb, m_depot).get("ZONE1"));
-    addPath(Auto.ZONE3, autoPathing(m_climb, m_depot).get("ZONE3"));
-    addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot).get("RIGHTINSIDE"));
-    addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot).get("LEFTINSIDE"));
+    addPath(Auto.ZONE1, autoPathing(m_climb, m_depot, shooter).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(m_climb, m_depot, shooter).get("ZONE3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot, shooter).get("RIGHTINSIDE"));
+    addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot, shooter).get("LEFTINSIDE"));
 
     SmartDashboard.putBoolean("Auto/Climb?", m_climb);
     SmartDashboard.putBoolean("Auto/Depot?", m_depot);
@@ -95,7 +95,7 @@ public class AutosChooser {
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
           superstructure
               .setWantedStateCommand(WantedStates.ShootAuto)
-              .until(() -> shooter.notShooting());
+              .until(() -> shooter.getFPS() < 0.5);
         });
 
     FollowPath.registerEventTrigger(
@@ -103,7 +103,7 @@ public class AutosChooser {
         () -> {
           superstructure
               .setWantedStateCommand(WantedStates.ShootAuto)
-              .until(() -> shooter.notShooting()).;
+              .until(() -> shooter.getFPS() < 0.5);
         });
 
     FollowPath.registerEventTrigger(
@@ -148,7 +148,7 @@ public class AutosChooser {
     autoChooser.addOption(auto.name(), auto);
   }
 
-  public Command selectAuto(CommandSwerveDrivetrain drivetrain) {
+  public Command selectAuto(CommandSwerveDrivetrain drivetrain, Shooter shooter) {
 
     boolean m_climbValue = SmartDashboard.getBoolean("Auto/Climb?", m_climb);
     boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", m_depot);
@@ -156,15 +156,16 @@ public class AutosChooser {
     String currentAuto = autoChooser.getSelected().toString();
     SmartDashboard.putString("Auto/Selected", currentAuto);
 
-    return autoPathing(m_climbValue, depotValue).get(currentAuto);
+    return autoPathing(m_climbValue, depotValue, shooter).get(currentAuto);
   }
 
-  public static HashMap<String, Command> autoPathing(Boolean climbPath, Boolean depotPath) {
+  public static HashMap<String, Command> autoPathing(
+      Boolean climbPath, Boolean depotPath, Shooter shooter) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(
-            pathBuilder.build(new Path("zone3cycleright")).until(Shooter.notShooting()),
+            pathBuilder.build(new Path("zone3cycleright")).until(() -> shooter.getFPS() < 0.5),
             pathBuilder.build(new Path("zone1cyclestraight")),
             pathBuilder.build(new Path("zone3cycleleft")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));

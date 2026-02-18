@@ -169,15 +169,4 @@ public class Shooter {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
   }
-
-  public boolean notShooting() {
-    Timer timer = new Timer();
-    timer.start();
-    for (int i = 0; i < 100; i++) {
-      if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
-        timer.restart();
-      }
-    }
-    return timer.hasElapsed(1);
-  }
 }
