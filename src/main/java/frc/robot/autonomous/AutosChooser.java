@@ -172,11 +172,17 @@ public class AutosChooser {
     listOfPaths.put(
         "ZONE1",
         Commands.sequence(
-            pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
-            pathBuilder.build(new Path("zone1cycleleft")),
-            pathBuilder.build(new Path("zone1cyclestraight")),
-            pathBuilder.build(new Path("zone1cycleright")),
-            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
+            pathBuilder
+                .build(new Path("depot"))
+                .until(() -> shooter.getFPS() < 0.5)
+                .onlyIf(() -> depotPath),
+            pathBuilder.build(new Path("zone1cycleleft")).until(() -> shooter.getFPS() < 0.5),
+            pathBuilder.build(new Path("zone1cyclestraight")).until(() -> shooter.getFPS() < 0.5),
+            pathBuilder.build(new Path("zone1cycleright")).until(() -> shooter.getFPS() < 0.5),
+            pathBuilder
+                .build(new Path("zone1climb"))
+                .until(() -> shooter.getFPS() < 0.5)
+                .onlyIf(() -> climbPath)));
     listOfPaths.put(
         "RIGHTINSIDE",
         Commands.sequence(
