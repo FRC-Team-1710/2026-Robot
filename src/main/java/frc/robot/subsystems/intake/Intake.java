@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
@@ -20,28 +21,45 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Intake {
+  @Logged(importance = Importance.DEBUG)
   private final IntakeIO m_io;
+
+  @Logged(importance = Importance.DEBUG)
   private final TimesConsumer m_timesConsumer;
+
+  @Logged(importance = Importance.DEBUG)
   private IntakeStates m_currentState;
 
   // Jam for rollers
+  @Logged(importance = Importance.DEBUG)
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamMinimumTime.in(Seconds));
+
+  @Logged(importance = Importance.DEBUG)
   private final Debouncer m_minimumJamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamDetectionDisabledTime.in(Seconds));
+
+  @Logged(importance = Importance.DEBUG)
   private final Debouncer m_jamUndoTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamUndoTime.in(Seconds));
 
+  @Logged(importance = Importance.DEBUG)
   private boolean m_wasJammed = false;
 
   // Stuck for deployment
+  @Logged(importance = Importance.DEBUG)
   private final Debouncer m_stuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckMinimumTime.in(Seconds));
+
+  @Logged(importance = Importance.DEBUG)
   private final Debouncer m_minimumStuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckDetectionDisabledTime.in(Seconds));
+
+  @Logged(importance = Importance.DEBUG)
   private final Debouncer m_stuckUndoTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckUndoTime.in(Seconds));
 
+  @Logged(importance = Importance.DEBUG)
   private boolean m_wasStuck = false;
 
   /** Creates a new Intake. */
@@ -141,6 +159,7 @@ public class Intake {
     }
   }
 
+  @Logged(importance = Importance.DEBUG)
   public boolean isJammed() {
     return m_io.getRollerCurrent().in(Amps)
             >= JamDetectionConstants.IntakeRollers.kJamCurrent.in(Amps)
@@ -148,6 +167,7 @@ public class Intake {
             <= JamDetectionConstants.IntakeRollers.kJamSpeedThreshold.in(RotationsPerSecond);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public boolean isStuck() {
     return m_io.getDeploymentCurrent().in(Amps)
         >= JamDetectionConstants.DeploymentMotor.kStuckCurrent.in(Amps);

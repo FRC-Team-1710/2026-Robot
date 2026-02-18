@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -29,14 +30,17 @@ public interface IntakeIO {
 
   public default void update() {}
 
+  @Logged(importance = Importance.DEBUG)
   public default Current getRollerCurrent() {
     return Amps.of(0);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getRollerVelocity() {
     return RotationsPerSecond.of(0);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public default Current getDeploymentCurrent() {
     return Amps.of(0);
   }

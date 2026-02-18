@@ -4,15 +4,19 @@ import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Feeder {
+  @Logged(importance = Importance.DEBUG)
   private FEEDER_STATE m_currentState;
+  @Logged(importance = Importance.DEBUG)
   private final FeederIO m_io;
 
+  @Logged(importance = Importance.DEBUG)
   private final TimesConsumer m_timesConsumer;
 
   public Feeder(FeederIO io, TimesConsumer consumer) {

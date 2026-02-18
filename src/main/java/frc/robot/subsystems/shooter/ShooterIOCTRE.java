@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -22,18 +23,28 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
+  @Logged(importance = Importance.DEBUG)
   private final MotionMagicVelocityVoltage m_velocityManager;
+  @Logged(importance = Importance.DEBUG)
   private final PositionVoltage m_positionManager;
 
+  @Logged(importance = Importance.DEBUG)
   private final TalonFX m_flyWheel;
+  @Logged(importance = Importance.DEBUG)
   private final TalonFX m_flyWheelFollower;
+  @Logged(importance = Importance.DEBUG)
   private final TalonFX m_hood;
 
+  @Logged(importance = Importance.DEBUG)
   private final BaseStatusSignal[] m_flyWheelSignals;
+  @Logged(importance = Importance.DEBUG)
   private final BaseStatusSignal[] m_flyWheelFollowerSignals;
+  @Logged(importance = Importance.DEBUG)
   private final BaseStatusSignal[] m_hoodSignals;
 
+  @Logged(importance = Importance.DEBUG)
   private final DigitalInput m_breamBreaker;
+  @Logged(importance = Importance.DEBUG)
   private final DigitalInput m_breamBreakerFollower;
 
   public ShooterIOCTRE() {
@@ -115,10 +126,12 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(pVelocity));
   }
 
+  @Logged(importance = Importance.DEBUG)
   public AngularVelocity getVelocity() {
     return DegreesPerSecond.of(this.m_flyWheel.get());
   }
 
+  @Logged(importance = Importance.DEBUG)
   public AngularVelocity getTargetVelocity() {
     return DegreesPerSecond.of(this.m_velocityManager.Velocity);
   }
@@ -131,14 +144,17 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
+  @Logged(importance = Importance.DEBUG)
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
   }
 
+  @Logged(importance = Importance.DEBUG)
   public boolean hasBreakerBroke() {
     return this.m_breamBreaker.get();
   }
 
+  @Logged(importance = Importance.DEBUG)
   public boolean hasBreakerFollowerBroke() {
     return this.m_breamBreakerFollower.get();
   }

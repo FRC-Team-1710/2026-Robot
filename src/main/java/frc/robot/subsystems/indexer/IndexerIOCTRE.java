@@ -16,10 +16,13 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 /** Creates a new IndexIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
+  @Logged(importance = Logged.Importance.DEBUG)
   private final TalonFX m_IndexerMotor;
 
+  @Logged(importance = Logged.Importance.DEBUG)
   TalonFXConfiguration motorConfig;
 
+  @Logged(importance = Logged.Importance.DEBUG)
   private final BaseStatusSignal[] m_indexerSignals;
 
   public IndexerIOCTRE() {

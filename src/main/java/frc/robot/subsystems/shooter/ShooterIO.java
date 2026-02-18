@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
@@ -19,24 +20,29 @@ public interface ShooterIO {
 
   public default void setTargetVelocity(AngularVelocity pVelocity) {}
 
+  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getVelocity() {
     return RotationsPerSecond.of(0);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getTargetVelocity() {
     return RotationsPerSecond.of(0);
   }
 
   public default void setHoodAngle(Angle pAngle) {}
 
+  @Logged(importance = Importance.DEBUG)
   public default Angle getHoodAngle() {
     return Degrees.of(0);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public default boolean hasBreakerBroke() {
     return false;
   }
 
+  @Logged(importance = Importance.DEBUG)
   public default boolean hasBreakerFollowerBroke() {
     return false;
   }

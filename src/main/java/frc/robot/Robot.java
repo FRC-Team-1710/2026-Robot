@@ -33,12 +33,16 @@ import frc.robot.utils.LogEverything;
 @Logged
 @SuppressWarnings("unused")
 public class Robot extends DynamicTimedRobot {
+  @Logged(importance = Importance.DEBUG)
   private Command m_autonomousCommand;
 
+  @Logged(importance = Importance.DEBUG)
   private final RobotContainer m_robotContainer;
+  @Logged(importance = Importance.DEBUG)
   private final HootAutoReplay hootAutoReplay =
       new HootAutoReplay().withTimestampReplay().withJoystickReplay();
 
+  @Logged(importance = Importance.DEBUG)
   private final PowerDistribution pdhLogging = new PowerDistribution();
 
   public Robot() {
@@ -166,6 +170,7 @@ public class Robot extends DynamicTimedRobot {
   @Override
   public void testExit() {}
 
+  @Logged(importance = Importance.DEBUG)
   public static EpilogueBackend telemetry() {
     return Epilogue.getConfig().backend.getNested("Outputs");
   }

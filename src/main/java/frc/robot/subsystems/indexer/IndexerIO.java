@@ -15,10 +15,12 @@ import edu.wpi.first.units.measure.Current;
 public interface IndexerIO {
   public default void setIndexMotor(double speed) {}
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public default Current getIndexMotorCurrent() {
     return Amps.of(0);
   }
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public default AngularVelocity getIndexMotorVelocity() {
     return RotationsPerSecond.of(0);
   }

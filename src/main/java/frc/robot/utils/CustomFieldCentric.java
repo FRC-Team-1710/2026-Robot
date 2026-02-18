@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -36,22 +37,32 @@ import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 
 @Logged
 public class CustomFieldCentric implements SwerveRequest {
+  @Logged(importance = Importance.DEBUG)
   public Rotation2d rotationTarget = Rotation2d.kZero;
 
+  @Logged(importance = Importance.DEBUG)
   public Pose2d currentBumpLocation = Pose2d.kZero;
 
+  @Logged(importance = Importance.DEBUG)
   public LinearVelocity xVelocity = MetersPerSecond.of(0);
+
+  @Logged(importance = Importance.DEBUG)
   public LinearVelocity yVelocity = MetersPerSecond.of(0);
+
+  @Logged(importance = Importance.DEBUG)
   public AngularVelocity angularVelocity = RadiansPerSecond.of(0);
 
+  @Logged(importance = Importance.DEBUG)
   private final Pigeon2 gyro;
 
+  @Logged(importance = Importance.DEBUG)
   private final PIDController yAssistPID =
       new PIDController(
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 2 : 0.0);
 
+  @Logged(importance = Importance.DEBUG)
   private final ProfiledPIDController rotationLockPID =
       new ProfiledPIDController(
           Mode.currentMode == CurrentMode.SIMULATION ? 50 : 0.0,
@@ -64,23 +75,31 @@ public class CustomFieldCentric implements SwerveRequest {
   @NotLogged private boolean shouldResetYAssistPID = true;
   @NotLogged private boolean shouldResetRotationPID = true;
 
+  @Logged(importance = Importance.DEBUG)
   private double maxBumpSpeed = 0;
 
+  @Logged(importance = Importance.DEBUG)
   public RequestStates currentDriveState = RequestStates.DRIVER_CONTROLLED;
 
+  @Logged(importance = Importance.DEBUG)
   private final SwerveRequest.ApplyFieldSpeeds driveRequest =
       new SwerveRequest.ApplyFieldSpeeds()
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
           .withSteerRequestType(SteerRequestType.Position);
 
   /* Logging vars */
+  @Logged(importance = Importance.DEBUG)
   private boolean stillGoingOverBump = false;
+
+  @Logged(importance = Importance.DEBUG)
   private boolean towardsBump = false;
 
   @SuppressWarnings("unused")
+  @Logged(importance = Importance.DEBUG)
   private double m_lastLoopTime = 0;
 
   @SuppressWarnings("unused")
+  @Logged(importance = Importance.DEBUG)
   private Pose2d m_poseLookingForBump = Pose2d.kZero;
 
   public CustomFieldCentric(Pigeon2 gyro) {

@@ -26,17 +26,27 @@ import org.photonvision.targeting.*;
 @Logged
 public class Vision extends SubsystemBase {
 
+  @Logged(importance = Logged.Importance.DEBUG)
   private final PhotonCamera camera;
+  @Logged(importance = Logged.Importance.DEBUG)
   private final PhotonPoseEstimator poseEstimator;
+  @Logged(importance = Logged.Importance.DEBUG)
   private final CommandSwerveDrivetrain drivetrain;
   // === Vision state calculated each cycle ===
   // These values are updated from PhotonVision and optionally replayed in simulation.
+  
+  @Logged(importance = Logged.Importance.DEBUG)
   private Pose2d robotPose = new Pose2d();
+  @Logged(importance = Logged.Importance.DEBUG)
   private double robotPoseTimestamp = 0.0;
+  @Logged(importance = Logged.Importance.DEBUG)
   private int tagCount = 0;
+  @Logged(importance = Logged.Importance.DEBUG)
   private double avgTagDistance = 0.0;
+  @Logged(importance = Logged.Importance.DEBUG)
   private double ambiguity = 0.0;
 
+  @Logged(importance = Logged.Importance.DEBUG)
   private final HootAutoReplay autoReplay;
 
   /**
@@ -172,22 +182,27 @@ public class Vision extends SubsystemBase {
     ambiguity = 0.0;
   }
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public Pose2d getRobotPose() {
     return robotPose;
   }
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public double getRobotPoseTimestamp() {
     return robotPoseTimestamp;
   }
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public int getTagCount() {
     return tagCount;
   }
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public double getAvgTagDistance() {
     return avgTagDistance;
   }
 
+  @Logged(importance = Logged.Importance.DEBUG)
   public double getAmbiguity() {
     return ambiguity;
   }

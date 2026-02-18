@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -34,10 +35,16 @@ public class Superstructure {
   @NotLogged private Indexer indexer;
   @NotLogged private Feeder feeder;
 
+  @Logged(importance = Importance.DEBUG)
   private WantedStates wantedState = WantedStates.Default;
+
+  @Logged(importance = Importance.DEBUG)
   private CurrentStates currentState = CurrentStates.Idle;
 
+  @Logged(importance = Importance.DEBUG)
   private boolean shouldAssistLeft = false;
+
+  @Logged(importance = Importance.DEBUG)
   private boolean didIntake = false;
 
   public Superstructure(
@@ -314,6 +321,7 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
   }
 
+  @Logged(importance = Importance.DEBUG)
   private boolean allAtTarget() {
     return shooter.isAtTargetVelocity()
         && shooter.isHoodAtTargetAngle()
@@ -321,6 +329,7 @@ public class Superstructure {
             < 2.5;
   }
 
+  @Logged(importance = Importance.DEBUG)
   private Rotation2d getRotationForScore() {
     return ShooterMath.getRobotRotation();
   }
@@ -373,6 +382,7 @@ public class Superstructure {
     return Commands.runOnce(() -> setWantedState(state)).ignoringDisable(true);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public CurrentStates getCurrentState() {
     return currentState;
   }

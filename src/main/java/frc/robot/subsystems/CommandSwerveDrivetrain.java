@@ -9,6 +9,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -48,32 +49,46 @@ import java.util.function.Supplier;
  */
 @Logged
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+  @Logged(importance = Importance.DEBUG)
   private static final double kSimLoopPeriod = 0.005; // 5 ms
+  @Logged(importance = Importance.DEBUG)
   private Notifier m_simNotifier = null;
+  @Logged(importance = Importance.DEBUG)
   private double m_lastSimTime;
 
   @SuppressWarnings("unused")
+  @Logged(importance = Importance.DEBUG)
   private double m_currentOdometryThreadFrequency = 0;
 
+  @Logged(importance = Importance.DEBUG)
   private final SwerveTelemetry swerveTelemetry = new SwerveTelemetry();
 
+  @Logged(importance = Importance.DEBUG)
   private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
+  @Logged(importance = Importance.DEBUG)
   private AngularVelocity MaxAngularRate = TunerConstants.kMaxAngularRate;
 
+  @Logged(importance = Importance.DEBUG)
   private final CustomFieldCentric fieldCentric;
 
+  @Logged(importance = Importance.DEBUG)
   private DriveStates currentState = DriveStates.DRIVER_CONTROLLED;
 
   /** Controller inputs for default teleop */
+  @Logged(importance = Importance.DEBUG)
   private CommandXboxController inputController;
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
+  @Logged(importance = Importance.DEBUG)
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
   /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
+  @Logged(importance = Importance.DEBUG)
   private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
   /* Keep track if we've ever applied the operator perspective before or not */
+  @Logged(importance = Importance.DEBUG)
   private boolean m_hasAppliedOperatorPerspective = false;
   /* Override default swerve request for a higher priority one (used in auto) */
+  @Logged(importance = Importance.DEBUG)
   private boolean autonomousRequestOverride = false;
 
   // SysId routines
@@ -106,9 +121,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   //////////////////////////////// Translation /////////////////////////
 
+  @Logged(importance = Importance.DEBUG)
   private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
       new SwerveRequest.SysIdSwerveTranslation();
 
+  @Logged(importance = Importance.DEBUG)
   private final SysIdRoutine m_sysIdRoutineToApply =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -151,6 +168,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             null,
   //             this));
 
+  @Logged(importance = Importance.DEBUG)
   public SwerveRequest.ApplyRobotSpeeds bLineRequest = new SwerveRequest.ApplyRobotSpeeds();
 
   /**
@@ -359,34 +377,42 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public boolean isGoingTowardsAllianceZone() {
     return fieldCentric.isGoingToAllianceZone(getPose());
   }
 
+  @Logged(importance = Importance.DEBUG)
   public Pose2d getPose() {
     return getState().Pose;
   }
 
+  @Logged(importance = Importance.DEBUG)
   public Rotation2d getRotation() {
     return getPose().getRotation();
   }
 
+  @Logged(importance = Importance.DEBUG)
   public SwerveModuleState[] getModuleStates() {
     return getState().ModuleStates;
   }
 
+  @Logged(importance = Importance.DEBUG)
   public SwerveModuleState[] getModuleTargets() {
     return getState().ModuleTargets;
   }
 
+  @Logged(importance = Importance.DEBUG)
   public ChassisSpeeds getRobotSpeeds() {
     return getState().Speeds;
   }
 
+  @Logged(importance = Importance.DEBUG)
   public ChassisSpeeds getFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotSpeeds(), getRotation());
   }
 
+  @Logged(importance = Importance.DEBUG)
   public ChassisSpeeds getTargetFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(
         getKinematics().toChassisSpeeds(getModuleTargets()), getRotation());
@@ -415,6 +441,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   /** Returns true if the robot is in its own alliance zone. */
+  @Logged(importance = Importance.DEBUG)
   public boolean inAllianceZone() {
     return (Alliance.redAlliance
         ? getPose().getX()

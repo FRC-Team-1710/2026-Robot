@@ -14,6 +14,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -25,15 +26,21 @@ import frc.robot.utils.TalonFXUtil;
 @SuppressWarnings("unused")
 public class IntakeIOCTRE implements IntakeIO {
   /** Creates a new Intake. */
+  @Logged(importance = Importance.DEBUG)
   private final TalonFX m_intakeMotor;
 
+  @Logged(importance = Importance.DEBUG)
   private final TalonFX m_deploymentMotor;
 
   @NotLogged private final DynamicMotionMagicVoltage m_request;
 
+  @Logged(importance = Importance.DEBUG)
   private Angle m_angleSetpoint;
 
+  @Logged(importance = Importance.DEBUG)
   private final BaseStatusSignal[] m_intakeSignals;
+
+  @Logged(importance = Importance.DEBUG)
   private final BaseStatusSignal[] m_deploymentSignals;
 
   public IntakeIOCTRE() {
@@ -94,14 +101,17 @@ public class IntakeIOCTRE implements IntakeIO {
     m_intakeMotor.set(speed);
   }
 
+  @Logged(importance = Importance.DEBUG)
   public AngularVelocity getRollerVelocity() {
     return m_intakeMotor.getRotorVelocity().getValue();
   }
 
+  @Logged(importance = Importance.DEBUG)
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent().getValue();
   }
 
+  @Logged(importance = Importance.DEBUG)
   public Current getDeploymentCurrent() {
     return m_deploymentMotor.getStatorCurrent().getValue();
   }
