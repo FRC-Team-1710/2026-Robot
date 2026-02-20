@@ -44,6 +44,7 @@ public class IntakeIOSIM implements IntakeIO {
 
     SmartDashboard.putNumber("Intake/JamTest/Velocity", 0);
     SmartDashboard.putNumber("Intake/JamTest/Current", 0);
+    SmartDashboard.putNumber("Intake/StuckTest/DeploymentCurrent", 0);
   }
 
   public void setAngle(Angle angle) {
@@ -70,5 +71,9 @@ public class IntakeIOSIM implements IntakeIO {
 
   public Current getRollerCurrent() {
     return Amps.of(SmartDashboard.getNumber("Intake/JamTest/Current", 0));
+  }
+
+  public Current getDeploymentCurrent() {
+    return Amps.of(SmartDashboard.getNumber("Intake/StuckTest/DeploymentCurrent", 0));
   }
 }

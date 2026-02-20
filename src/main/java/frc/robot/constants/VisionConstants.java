@@ -3,6 +3,7 @@ package frc.robot.constants;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 
 /**
  * Centralized configuration for all vision-related tuning and camera mounting geometry.
@@ -54,28 +55,40 @@ public class VisionConstants {
     new PoseCameraConfig(
         "FrontLeft",
         new Transform3d(
-            new Translation3d(7.769, -13.341, 7.995),
-            new Rotation3d(0.0, Math.toRadians(45.0), Math.toRadians(5.0)))),
+            new Translation3d(
+                Units.inchesToMeters(7.769),
+                Units.inchesToMeters(13.341),
+                Units.inchesToMeters(7.995)),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(175.0)))),
     new PoseCameraConfig(
         "FrontRight",
         new Transform3d(
-            new Translation3d(7.769, 13.341, 7.995),
-            new Rotation3d(0.0, Math.toRadians(-45.0), Math.toRadians(-5.0)))),
+            new Translation3d(
+                Units.inchesToMeters(7.769),
+                Units.inchesToMeters(-13.341),
+                Units.inchesToMeters(7.995)),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(185.0)))),
     new PoseCameraConfig(
         "BackLeft",
         new Transform3d(
-            new Translation3d(9.61367, -16.48053, 28.975),
+            new Translation3d(
+                Units.inchesToMeters(-9.61367),
+                Units.inchesToMeters(16.48053),
+                Units.inchesToMeters(28.975)),
             new Rotation3d(
-                0.0,
-                Math.toRadians(0.0),
+                Math.toRadians(180),
+                Math.toRadians(180),
                 Math.toRadians(-90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
     new PoseCameraConfig(
         "BackRight",
         new Transform3d(
-            new Translation3d(9.61367, 16.48053, 28.975),
+            new Translation3d(
+                Units.inchesToMeters(-9.61367),
+                Units.inchesToMeters(-16.48053),
+                Units.inchesToMeters(28.975)),
             new Rotation3d(
-                0.0,
-                Math.toRadians(0.0),
+                Math.toRadians(180),
+                Math.toRadians(180),
                 Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
   };
 
@@ -85,7 +98,10 @@ public class VisionConstants {
     new FuelCameraConfig(
         "FuelCam",
         new Transform3d(
-            new Translation3d(15.247, 0.0, 21.381),
+            new Translation3d(
+                Units.inchesToMeters(15.247),
+                Units.inchesToMeters(0.0),
+                Units.inchesToMeters(21.381)),
             new Rotation3d(
                 0.0,
                 Math.toRadians(0.0),

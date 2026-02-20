@@ -147,4 +147,62 @@ public class ShooterMath {
   public static ShotSolution getCurrentSolution() {
     return currentSolution;
   }
+
+  /* INTERPOLATING METHODS AND MATH */
+  /** Adds a RPS value for the current robot pose distance. */
+  public static void addRPS(double rps) {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    rpsMap.put(x_distance, rps);
+  }
+
+  /** Adds an angle value for the current robot pose distance. */
+  public static void addAngle(double angle) {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    angleMap.put(x_distance, angle);
+  }
+
+  /** Gets the interpolated RPS based on the current robot pose distance. */
+  public static double getInterpolatedRPS() {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    Robot.telemetry().log("X_DISTANCE", x_distance);
+    Robot.telemetry().log("RPS", rpsMap.get(x_distance));
+    Robot.telemetry().log("RadPS", RotationsPerSecond.of(rpsMap.get(x_distance)));
+
+    return rpsMap.get(x_distance);
+  }
+
+  /** Gets the interpolated angle based on the current robot pose distance. */
+  public static double getInterpolatedAngle() {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    return angleMap.get(x_distance);
+  }
+
+  public static void addInterpolatableValues(double distance, double rps, double angle) {
+    rpsMap.put(distance, rps);
+    angleMap.put(distance, angle);
+  }
 }

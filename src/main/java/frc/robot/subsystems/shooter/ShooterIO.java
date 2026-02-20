@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.utils.FuelSim;
 
 @Logged
 public interface ShooterIO {
@@ -40,4 +41,6 @@ public interface ShooterIO {
   public default boolean hasBreakerFollowerBroke() {
     return false;
   }
+
+  public default void setFuelSim(FuelSim fuelSim) {}
 }
