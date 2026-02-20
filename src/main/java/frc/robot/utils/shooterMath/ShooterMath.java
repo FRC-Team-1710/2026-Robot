@@ -104,7 +104,7 @@ public class ShooterMath {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
     Robot.telemetry()
-        .log("HOLY COWS", m_robotPose.getTranslation().toTranslation2d().getDistance(hubPosition));
+        .log("shooterDistanceToHubMeters", m_robotPose.getTranslation().toTranslation2d().getDistance(hubPosition));
     Rotation2d hubAngle = m_robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
     return new Velocity3d(
         findShooterVelocity(),
