@@ -194,7 +194,8 @@ public class CustomFieldCentric implements SwerveRequest {
       case ROTATION_LOCK:
         rotationLockPID.setGoal(rotationTarget.getRadians());
 
-        SmartDashboard.putNumber("RotationLockSetpointRadians", rotationLockPID.getSetpoint().position);
+        SmartDashboard.putNumber(
+            "RotationLockSetpointRadians", rotationLockPID.getSetpoint().position);
 
         wantedSpeeds =
             new ChassisSpeeds(
