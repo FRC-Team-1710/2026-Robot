@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -27,6 +28,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.FieldConstants;
@@ -36,57 +38,79 @@ import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 
 @Logged
 public class CustomFieldCentric implements SwerveRequest {
+  @Logged(importance = Importance.CRITICAL)
   public Rotation2d rotationTarget = Rotation2d.kZero;
 
+  @Logged(importance = Importance.DEBUG)
   public Pose2d currentBumpLocation = Pose2d.kZero;
 
+  @Logged(importance = Importance.CRITICAL)
   public LinearVelocity xVelocity = MetersPerSecond.of(0);
+
+  @Logged(importance = Importance.CRITICAL)
   public LinearVelocity yVelocity = MetersPerSecond.of(0);
+
+  @Logged(importance = Importance.CRITICAL)
   public AngularVelocity angularVelocity = RadiansPerSecond.of(0);
 
-  private final Pigeon2 gyro;
+  @NotLogged private final Pigeon2 gyro;
 
+  @Logged(importance = Importance.INFO)
   private final PIDController yAssistPID =
       new PIDController(
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 2 : 0.0);
 
+  @Logged(importance = Importance.INFO)
   private final ProfiledPIDController rotationLockPID =
       new ProfiledPIDController(
-          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 0.0,
+          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 9,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
           new Constraints(
-              Mode.currentMode == CurrentMode.SIMULATION ? 3 : 0.0,
-              Mode.currentMode == CurrentMode.SIMULATION ? 4 : 0.0));
+              // Mode.currentMode == CurrentMode.SIMULATION ?
+              3,
+              //  : 0.0,
+              // Mode.currentMode == CurrentMode.SIMULATION ?
+              4
+              //  : 0.0
+              ));
 
   @NotLogged private boolean shouldResetYAssistPID = true;
   @NotLogged private boolean shouldResetRotationPID = true;
 
+  @Logged(importance = Importance.INFO)
   private double maxBumpSpeed = 0;
 
+  @Logged(importance = Importance.CRITICAL)
   public RequestStates currentDriveState = RequestStates.DRIVER_CONTROLLED;
 
+  @NotLogged
   private final SwerveRequest.ApplyFieldSpeeds driveRequest =
       new SwerveRequest.ApplyFieldSpeeds()
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
           .withSteerRequestType(SteerRequestType.Position);
 
   /* Logging vars */
+  @Logged(importance = Importance.INFO)
   private boolean stillGoingOverBump = false;
+
+  @Logged(importance = Importance.INFO)
   private boolean towardsBump = false;
 
-  @SuppressWarnings("unused")
+  @Logged(importance = Importance.INFO)
   private double m_lastLoopTime = 0;
 
-  @SuppressWarnings("unused")
+  @Logged(importance = Importance.INFO)
   private Pose2d m_poseLookingForBump = Pose2d.kZero;
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
     // Enable PID wrap from -180 to 180 deg
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
+
+    SmartDashboard.putData(rotationLockPID);
   }
 
   @Override
@@ -186,6 +210,9 @@ public class CustomFieldCentric implements SwerveRequest {
       case ROTATION_LOCK:
         rotationLockPID.setGoal(rotationTarget.getRadians());
 
+        SmartDashboard.putNumber(
+            "RotationLockSetpointRadians", rotationLockPID.getSetpoint().position);
+
         wantedSpeeds =
             new ChassisSpeeds(
                 xVelocity,
@@ -268,7 +295,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param target The target rotation
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withTargetRotation(Rotation2d target) {
     this.rotationTarget = target;
     return this;
@@ -280,7 +306,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target x velocity
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withVelocityX(LinearVelocity velocity) {
     this.xVelocity = velocity;
     return this;
@@ -292,7 +317,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target x velocity in meters/second
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withVelocityX(double velocity) {
     this.xVelocity = MetersPerSecond.of(velocity);
     return this;
@@ -304,7 +328,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target y velocity
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withVelocityY(LinearVelocity velocity) {
     this.yVelocity = velocity;
     return this;
@@ -316,7 +339,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target y velocity in meters/second
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withVelocityY(double velocity) {
     this.yVelocity = MetersPerSecond.of(velocity);
     return this;
@@ -328,7 +350,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target theta velocity
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withRotationalRate(AngularVelocity velocity) {
     this.angularVelocity = velocity;
     return this;
@@ -340,7 +361,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param velocity The target theta velocity in radians/second
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withRotationalRate(double velocity) {
     this.angularVelocity = RadiansPerSecond.of(velocity);
     return this;
@@ -352,7 +372,6 @@ public class CustomFieldCentric implements SwerveRequest {
    * @param state The new {@link RequestState}
    * @return The updated CustomFieldCentric object
    */
-  @NotLogged
   public CustomFieldCentric withDriveState(DriveStates state) {
     switch (state) {
       case DRIVER_CONTROLLED:

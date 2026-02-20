@@ -8,17 +8,23 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
 public class FeederIOCTRE implements FeederIO {
 
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_feederLeft;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_feederRight;
 
-  private final BaseStatusSignal[] m_feederSignals;
-  private final BaseStatusSignal[] m_feederFollowerSignals;
+  @NotLogged private final BaseStatusSignal[] m_feederSignals;
+
+  @NotLogged private final BaseStatusSignal[] m_feederFollowerSignals;
 
   public FeederIOCTRE() {
     this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);

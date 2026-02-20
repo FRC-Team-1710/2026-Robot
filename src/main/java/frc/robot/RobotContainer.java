@@ -7,7 +7,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,6 +20,7 @@ import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
+import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
@@ -40,10 +42,12 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @Logged
 public class RobotContainer {
@@ -54,14 +58,26 @@ public class RobotContainer {
 
   private final AutosChooser autoChooser;
 
+  @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
 
   /* Create subsystems (uses simulated versions when running in simulation) */
+  @Logged(importance = Importance.CRITICAL)
   private final Intake intake;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Shooter shooter;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Indexer indexer;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Feeder feeder;
 
+  // Should add logging soon
+  @NotLogged private Vision[] cameras;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
 
   public RobotContainer(TimesConsumer consumer) {
@@ -75,6 +91,20 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer =
             new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras =
+            // Create a stream of Vision objects from the camera configs
+            Arrays.stream(VisionConstants.kPoseCameraConfigs)
+                // For each config, create a new Vision subsystem with the appropriate arguments
+                .map(
+                    config ->
+                        new Vision(
+                            config.name(),
+                            config.robotToCamera(),
+                            drivetrain)) // TODO: Fix this stuff :p
+                // Collect the stream back into an array of Vision subsystems
+                .toArray(Vision[]::new);
+
         break;
 
       case SIMULATION:
@@ -98,7 +128,7 @@ public class RobotContainer {
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
-      fuelSim = new FuelSim("FeulSim");
+      fuelSim = new FuelSim("FuelSim");
       fuelSim.spawnStartingFuel();
 
       double width = Units.inchesToMeters(39.875);
@@ -136,9 +166,7 @@ public class RobotContainer {
     driver
         .start()
         .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero)))
+            Commands.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
                 .ignoringDisable(true));
 
     driver
@@ -173,6 +201,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
   }
 
+  @NotLogged
   public Command getAutonomousCommand() {
     return autoChooser.selectAuto(drivetrain);
   }
@@ -211,10 +240,19 @@ public class RobotContainer {
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
     map.add(
         new SubsystemInfo(
+            Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
+    map.add(
+        new SubsystemInfo(
             Subsystems.Drive,
             drivetrain::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
     return map.toArray(new SubsystemInfo[0]);
+  }
+
+  private void cycleVision() {
+    for (Vision vision : cameras) {
+      vision.periodic();
+    }
   }
 }

@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -11,6 +12,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -23,18 +26,30 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  private final MotionMagicVelocityVoltage m_velocityManager;
-  private final PositionVoltage m_positionManager;
+  @NotLogged private final MotionMagicVelocityVoltage m_velocityManager;
 
+  @NotLogged private final PositionVoltage m_positionManager;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_flyWheel;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_flyWheelFollower;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_hood;
 
-  private final BaseStatusSignal[] m_flyWheelSignals;
-  private final BaseStatusSignal[] m_flyWheelFollowerSignals;
-  private final BaseStatusSignal[] m_hoodSignals;
+  private final TalonFX m_hoodFollower;
 
+  @NotLogged private final BaseStatusSignal[] m_flyWheelSignals;
+  @NotLogged private final BaseStatusSignal[] m_flyWheelFollowerSignals;
+  @NotLogged private final BaseStatusSignal[] m_hoodSignals;
+  @NotLogged private final BaseStatusSignal[] m_hoodFollowerSignals;
+
+  @Logged(importance = Importance.INFO)
   private final DigitalInput m_breamBreaker;
+
+  @Logged(importance = Importance.INFO)
   private final DigitalInput m_breamBreakerFollower;
 
   public ShooterIOCTRE() {
@@ -42,6 +57,7 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_flyWheelFollower = new TalonFX(CanIdConstants.Shooter.SHOOTER_FOLLOWER_MOTOR);
 
     this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
+    this.m_hoodFollower = new TalonFX(CanIdConstants.Shooter.HOOD_FOLLOWER_MOTOR);
 
     this.m_breamBreaker = new DigitalInput(0);
     this.m_breamBreakerFollower = new DigitalInput(1);
@@ -58,6 +74,8 @@ public class ShooterIOCTRE implements ShooterIO {
 
     flywheelConfig.MotorOutput.PeakForwardDutyCycle = 1;
     flywheelConfig.MotorOutput.PeakReverseDutyCycle = 0;
+    // flywheelConfig.Voltage.PeakForwardVoltage = 1;
+    // flywheelConfig.Voltage.PeakReverseVoltage = 0;
 
     flywheelConfig.MotionMagic.MotionMagicCruiseVelocity =
         ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
@@ -71,18 +89,24 @@ public class ShooterIOCTRE implements ShooterIO {
         ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
     flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
-    flywheelConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0;
-
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, flywheelConfig, 2);
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheelFollower, flywheelConfig, 2);
 
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
+    hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    hoodConfig.Slot0.kP = 75;
+
     hoodConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.HOOD_SUPPLY_CURRENT_LIMIT;
     hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
+    hoodConfig.Feedback.SensorToMechanismRatio = 13.2;
+
     TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 2);
+    TalonFXUtil.applyConfigWithRetries(this.m_hoodFollower, hoodConfig, 2);
 
     this.m_velocityManager = new MotionMagicVelocityVoltage(0).withSlot(0);
     this.m_positionManager = new PositionVoltage(0);
@@ -90,20 +114,27 @@ public class ShooterIOCTRE implements ShooterIO {
     m_flyWheelSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheel);
     m_flyWheelFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_flyWheelFollower);
     m_hoodSignals = TalonFXUtil.getBasicStatusSignals(m_hood);
+    m_hoodFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_hoodFollower);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_flyWheelSignals);
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_flyWheelFollowerSignals);
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_hoodSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_hoodFollowerSignals);
 
     m_flyWheel.optimizeBusUtilization();
     m_flyWheelFollower.optimizeBusUtilization();
     m_hood.optimizeBusUtilization();
+    m_hoodFollower.optimizeBusUtilization();
+
+    m_hood.setPosition(Degrees.of(ShooterConstants.HOOD_MIN));
+    m_hoodFollower.setPosition(Degrees.of(ShooterConstants.HOOD_MIN));
   }
 
   public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_flyWheelSignals);
     BaseStatusSignal.refreshAll(m_flyWheelFollowerSignals);
     BaseStatusSignal.refreshAll(m_hoodSignals);
+    BaseStatusSignal.refreshAll(m_hoodFollowerSignals);
   }
 
   public void stop() {
@@ -112,14 +143,21 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setTargetVelocity(AngularVelocity pVelocity) {
-    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(pVelocity));
-    this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(pVelocity));
+    if (pVelocity.in(RotationsPerSecond) == 0) {
+      this.m_flyWheel.stopMotor();
+      this.m_flyWheelFollower.stopMotor();
+    } else {
+      this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(pVelocity));
+      this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(pVelocity));
+    }
   }
 
+  @NotLogged
   public AngularVelocity getVelocity() {
-    return DegreesPerSecond.of(this.m_flyWheel.get());
+    return this.m_flyWheel.getVelocity().getValue();
   }
 
+  @NotLogged
   public AngularVelocity getTargetVelocity() {
     return DegreesPerSecond.of(this.m_velocityManager.Velocity);
   }
@@ -130,21 +168,25 @@ public class ShooterIOCTRE implements ShooterIO {
             MathUtil.clamp(
                 pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
     this.m_hood.setControl(m_positionManager.withPosition(ClampedAngle));
+    this.m_hoodFollower.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
+  @NotLogged
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
   }
 
-  public void setFuelSim(FuelSim fuelSim) {
-    // CTRE implementation does not use FuelSim
-  }
-  
+  @NotLogged
   public boolean hasBreakerBroke() {
     return this.m_breamBreaker.get();
   }
 
+  @NotLogged
   public boolean hasBreakerFollowerBroke() {
     return this.m_breamBreakerFollower.get();
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    // CTRE implementation does not use FuelSim
   }
 }

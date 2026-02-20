@@ -6,7 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.HootEpilogueBackend;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
@@ -15,6 +14,10 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -31,14 +34,14 @@ import frc.robot.utils.DynamicTimedRobot;
 import frc.robot.utils.LogEverything;
 
 @Logged
-@SuppressWarnings("unused")
 public class Robot extends DynamicTimedRobot {
+  @Logged(importance = Importance.DEBUG)
   private Command m_autonomousCommand;
 
+  @Logged(importance = Importance.CRITICAL)
   private final RobotContainer m_robotContainer;
-  private final HootAutoReplay hootAutoReplay =
-      new HootAutoReplay().withTimestampReplay().withJoystickReplay();
 
+  @Logged(importance = Importance.INFO)
   private final PowerDistribution pdhLogging = new PowerDistribution();
 
   public Robot() {
@@ -88,13 +91,22 @@ public class Robot extends DynamicTimedRobot {
     addAllSubsystems(m_robotContainer.getAllSubsystems());
 
     SmartDashboard.putBoolean("Reset Fuel Sim", false);
+
+    telemetry()
+        .log(
+            "CameraTransform",
+            new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(7.769),
+                    Units.inchesToMeters(13.341),
+                    Units.inchesToMeters(7.995)),
+                new Rotation3d(Math.toRadians(180), Math.toRadians(135), Math.toRadians(175.0))),
+            Transform3d.struct);
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    hootAutoReplay.update();
 
     MatchState.updateAutonomousWinner();
 

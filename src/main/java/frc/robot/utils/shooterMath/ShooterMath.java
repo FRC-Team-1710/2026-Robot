@@ -3,12 +3,14 @@ package frc.robot.utils.shooterMath;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -57,6 +59,20 @@ public class ShooterMath {
   private static ShootState m_shootState;
   private static Rotation2d m_robotRotation;
 
+  /* INTERPOLATING TREE MAPS */
+  private static InterpolatingDoubleTreeMap rpsMap = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
+
+  static { // Week 5 Saturday Testing
+    // Adding values to the Interpolatable maps
+    addInterpolatableValues(2.2, 50, 0.0874 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(2.5, 51.5, 0.1 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3, 53, 0.11 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3.5, 57.5, 0.138 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(4, 59, 0.15 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(5, 71.5, 0.156 * 360); // METERS, RPS, DEGREES
+  }
+
   public static double calculateDistance() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
     return !m_RedAlliance.getAsBoolean()
@@ -87,6 +103,10 @@ public class ShooterMath {
   public static Velocity3d findShooterVelocity3d() {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
+    Robot.telemetry()
+        .log(
+            "shooterDistanceToHubMeters",
+            m_robotPose.getTranslation().toTranslation2d().getDistance(hubPosition));
     Rotation2d hubAngle = m_robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
     return new Velocity3d(
         findShooterVelocity(),
@@ -164,5 +184,63 @@ public class ShooterMath {
   /** Returns the current rotation of the robot. */
   public static Rotation2d getRobotRotation() {
     return m_robotRotation;
+  }
+
+  /* INTERPOLATING METHODS AND MATH */
+  /** Adds a RPS value for the current robot pose distance. */
+  public static void addRPS(double rps) {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    rpsMap.put(x_distance, rps);
+  }
+
+  /** Adds an angle value for the current robot pose distance. */
+  public static void addAngle(double angle) {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    angleMap.put(x_distance, angle);
+  }
+
+  /** Gets the interpolated RPS based on the current robot pose distance. */
+  public static double getInterpolatedRPS() {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    Robot.telemetry().log("X_DISTANCE", x_distance);
+    Robot.telemetry().log("RPS", rpsMap.get(x_distance));
+    Robot.telemetry().log("RadPS", RotationsPerSecond.of(rpsMap.get(x_distance)));
+
+    return rpsMap.get(x_distance);
+  }
+
+  /** Gets the interpolated angle based on the current robot pose distance. */
+  public static double getInterpolatedAngle() {
+    Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    return angleMap.get(x_distance);
+  }
+
+  public static void addInterpolatableValues(double distance, double rps, double angle) {
+    rpsMap.put(distance, rps);
+    angleMap.put(distance, angle);
   }
 }

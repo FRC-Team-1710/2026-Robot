@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.JamDetectionConstants;
@@ -19,19 +20,30 @@ import java.util.function.BooleanSupplier;
 
 @Logged
 public class Indexer {
+  @Logged(importance = Logged.Importance.CRITICAL)
   private final IndexerIO io;
-  private final TimesConsumer timesConsumer;
+
+  @NotLogged private final TimesConsumer timesConsumer;
+
+  @Logged(importance = Logged.Importance.CRITICAL)
   private IndexStates currentState = IndexStates.Idle;
+
+  @NotLogged
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamMinimumTime.in(Seconds));
+
+  @NotLogged
   private final Debouncer minimumJamTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamDetectionDisabledTime.in(Seconds));
+
+  @NotLogged
   private final Debouncer m_jamUndoTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamUndoTime.in(Seconds));
 
+  @Logged(importance = Logged.Importance.INFO)
   private boolean wasJammed = false;
 
-  private final BooleanSupplier bumpSupplier;
+  @NotLogged private final BooleanSupplier bumpSupplier;
 
   /** Creates a new Index. */
   public Indexer(IndexerIO io, TimesConsumer consumer, BooleanSupplier bumpSupplier) {
@@ -84,6 +96,7 @@ public class Indexer {
     }
   }
 
+  @Logged(importance = Logged.Importance.INFO)
   public boolean isJammed() {
     return io.getIndexMotorCurrent().in(Amps) >= JamDetectionConstants.Indexer.kJamCurrent.in(Amps)
         && io.getIndexMotorVelocity().in(RotationsPerSecond)
@@ -100,7 +113,7 @@ public class Indexer {
   public enum IndexStates {
     Indexing(Milliseconds.of(20), 0.5),
 
-    Idle(Milliseconds.of(20), 0.5),
+    Idle(Milliseconds.of(20), 0),
 
     Jammed(Milliseconds.of(60), 0);
 

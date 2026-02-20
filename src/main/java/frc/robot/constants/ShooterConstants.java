@@ -22,7 +22,7 @@ public final class ShooterConstants {
   public static final double kV = 0.12;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kP = 0.1;
+  public static final double kP = 0.75;
 
   // ==================== Current Limits ====================
   public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
@@ -35,8 +35,8 @@ public final class ShooterConstants {
   public static final double MOTION_MAGIC_ACCELERATION = 150.0;
 
   // ======================== Shooter Physical Constants ===========================
-  public static final double HOOD_MAX = 10;
-  public static final double HOOD_MIN = 0;
+  public static final double HOOD_MAX = 56.16; // 42.5;
+  public static final double HOOD_MIN = 31.5;
 
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
 
@@ -44,6 +44,8 @@ public final class ShooterConstants {
   public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);
 
   public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
+
+  public static final double JAM_DETECT_TIME = 1.0;
 
   public static final Transform3d kLEFT_SHOOTER_OFFSET =
       new Transform3d(0.3, 0.1, 0.3, Rotation3d.kZero);
