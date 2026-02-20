@@ -4,6 +4,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
@@ -22,7 +23,7 @@ import org.photonvision.targeting.*;
  *
  * <p>One instance of this class represents a single physical camera.
  */
-public class Vision extends SubsystemBase {
+public class Vision implements Subsystem {
 
   private final PhotonCamera camera;
 

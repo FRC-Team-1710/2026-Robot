@@ -38,16 +38,13 @@ public class ShooterIOCTRE implements ShooterIO {
 
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_hood;
+
   private final TalonFX m_hoodFollower;
 
   @NotLogged private final BaseStatusSignal[] m_flyWheelSignals;
   @NotLogged private final BaseStatusSignal[] m_flyWheelFollowerSignals;
   @NotLogged private final BaseStatusSignal[] m_hoodSignals;
   @NotLogged private final BaseStatusSignal[] m_hoodFollowerSignals;
-
-  @NotLogged private final BaseStatusSignal[] m_flyWheelFollowerSignals;
-
-  @NotLogged private final BaseStatusSignal[] m_hoodSignals;
 
   @Logged(importance = Importance.INFO)
   private final DigitalInput m_breamBreaker;
