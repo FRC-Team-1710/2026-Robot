@@ -95,7 +95,7 @@ public class Robot extends DynamicTimedRobot {
 
     telemetry()
         .log(
-            "bnuiecfgyui",
+            "CameraTransform",
             new Transform3d(
                 new Translation3d(
                     Units.inchesToMeters(7.769),
