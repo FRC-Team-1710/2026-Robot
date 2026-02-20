@@ -23,25 +23,22 @@ import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
-@SuppressWarnings("unused")
 public class IntakeIOCTRE implements IntakeIO {
   /** Creates a new Intake. */
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotor;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
   @NotLogged private final DynamicMotionMagicVoltage m_request;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
 
-  @Logged(importance = Importance.DEBUG)
-  private final BaseStatusSignal[] m_intakeSignals;
+  @NotLogged private final BaseStatusSignal[] m_intakeSignals;
 
-  @Logged(importance = Importance.DEBUG)
-  private final BaseStatusSignal[] m_deploymentSignals;
+  @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
@@ -101,17 +98,17 @@ public class IntakeIOCTRE implements IntakeIO {
     m_intakeMotor.set(speed);
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public AngularVelocity getRollerVelocity() {
     return m_intakeMotor.getRotorVelocity().getValue();
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent().getValue();
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public Current getDeploymentCurrent() {
     return m_deploymentMotor.getStatorCurrent().getValue();
   }

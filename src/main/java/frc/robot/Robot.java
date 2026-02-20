@@ -6,7 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.HootEpilogueBackend;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
@@ -31,18 +30,14 @@ import frc.robot.utils.DynamicTimedRobot;
 import frc.robot.utils.LogEverything;
 
 @Logged
-@SuppressWarnings("unused")
 public class Robot extends DynamicTimedRobot {
   @Logged(importance = Importance.DEBUG)
   private Command m_autonomousCommand;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private final RobotContainer m_robotContainer;
-  @Logged(importance = Importance.DEBUG)
-  private final HootAutoReplay hootAutoReplay =
-      new HootAutoReplay().withTimestampReplay().withJoystickReplay();
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   private final PowerDistribution pdhLogging = new PowerDistribution();
 
   public Robot() {
@@ -97,8 +92,6 @@ public class Robot extends DynamicTimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    hootAutoReplay.update();
 
     MatchState.updateAutonomousWinner();
 
@@ -170,7 +163,6 @@ public class Robot extends DynamicTimedRobot {
   @Override
   public void testExit() {}
 
-  @Logged(importance = Importance.DEBUG)
   public static EpilogueBackend telemetry() {
     return Epilogue.getConfig().backend.getNested("Outputs");
   }

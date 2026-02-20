@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -19,38 +20,34 @@ import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
 public class Shooter {
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private SHOOTER_STATE m_currentState;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private final ShooterIO m_io;
 
-  @Logged(importance = Importance.DEBUG)
-  private final TimesConsumer m_timesConsumer;
+  @NotLogged private final TimesConsumer m_timesConsumer;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private AngularVelocity m_velocity;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private Angle m_hoodAngle;
 
-  @Logged(importance = Importance.DEBUG)
-  private boolean m_isGoingTowardsAllianceZone;
+  @NotLogged private boolean m_isGoingTowardsAllianceZone;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   private boolean m_didIntake;
 
-  @Logged(importance = Importance.DEBUG)
-  private Timer m_FPSTimer;
+  @NotLogged private Timer m_FPSTimer;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
 
-  @Logged(importance = Importance.DEBUG)
-  private Debouncer m_jamDetect;
+  @NotLogged private Debouncer m_jamDetect;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -101,34 +98,34 @@ public class Shooter {
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public AngularVelocity getVelocity() {
     return this.m_io.getVelocity();
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public AngularVelocity getTargetVelocity() {
     return this.m_velocity;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public boolean isAtTargetVelocity() {
     return this.getVelocity()
         .isNear(getTargetVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE);
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public boolean isHoodAtTargetAngle() {
     return this.getHoodAngle()
         .isNear(getTargetHoodAngle(), ShooterConstants.HOOD_TARGET_ERROR_RANGE);
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public Angle getHoodAngle() {
     return this.m_io.getHoodAngle();
   }
@@ -170,38 +167,38 @@ public class Shooter {
     // }
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public int getBallCount() {
     return this.m_fuelCount;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public void resetBallCount() {
     this.m_fuelCount = 0;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public double getFPS() {
     return this.m_FPS;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   public boolean isJammed() {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   public boolean hasBreakerBroke() {
     return this.m_io.hasBreakerBroke();
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   public boolean hasBreakerFollowerBroke() {
     return this.m_io.hasBreakerFollowerBroke();
   }

@@ -25,26 +25,22 @@ import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
-@SuppressWarnings("unused")
 public class Superstructure {
-  private CommandXboxController driver;
-  private CommandXboxController mech;
+  @NotLogged private CommandXboxController driver;
+  @NotLogged private CommandXboxController mech;
   @NotLogged private CommandSwerveDrivetrain drivetrain;
   @NotLogged private Intake intake;
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
   @NotLogged private Feeder feeder;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private WantedStates wantedState = WantedStates.Default;
 
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private CurrentStates currentState = CurrentStates.Idle;
 
-  @Logged(importance = Importance.DEBUG)
-  private boolean shouldAssistLeft = false;
-
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.INFO)
   private boolean didIntake = false;
 
   public Superstructure(
@@ -102,6 +98,7 @@ public class Superstructure {
    *
    * @return the new current state
    */
+  @NotLogged
   private CurrentStates handleStateTransitions() {
     switch (wantedState) {
       case Default:
@@ -321,15 +318,15 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
   }
 
-  @Logged(importance = Importance.DEBUG)
-  private boolean allAtTarget() {
+  @Logged(importance = Importance.CRITICAL)
+  public boolean allAtTarget() {
     return shooter.isAtTargetVelocity()
         && shooter.isHoodAtTargetAngle()
         && Math.abs(drivetrain.getPose().getRotation().minus(getRotationForScore()).getDegrees())
             < 2.5;
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   private Rotation2d getRotationForScore() {
     return ShooterMath.getRobotRotation();
   }
@@ -382,7 +379,7 @@ public class Superstructure {
     return Commands.runOnce(() -> setWantedState(state)).ignoringDisable(true);
   }
 
-  @Logged(importance = Importance.DEBUG)
+  @NotLogged
   public CurrentStates getCurrentState() {
     return currentState;
   }

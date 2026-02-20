@@ -5,19 +5,20 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
 @Logged
 public class Feeder {
-  @Logged(importance = Importance.DEBUG)
+  @Logged(importance = Importance.CRITICAL)
   private FEEDER_STATE m_currentState;
-  @Logged(importance = Importance.DEBUG)
+
+  @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
-  @Logged(importance = Importance.DEBUG)
-  private final TimesConsumer m_timesConsumer;
+  @NotLogged private final TimesConsumer m_timesConsumer;
 
   public Feeder(FeederIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -62,6 +63,7 @@ public class Feeder {
     this.m_currentState = state;
   }
 
+  @NotLogged
   public FEEDER_STATE getState() {
     return this.m_currentState;
   }
