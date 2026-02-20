@@ -14,7 +14,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -39,7 +38,6 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.SwerveTelemetry;
 import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.Velocity3d;
 import java.util.function.Supplier;
 
 /**
@@ -290,8 +288,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     m_currentOdometryThreadFrequency = getOdometryFrequency();
 
-    ShooterMath.input(new Pose3d(getPose()), Velocity3d.from(getFieldSpeeds()));
-    ShooterMath.calculate();
+    ShooterMath.updateRobotState(getPose().getTranslation(), getRobotSpeeds());
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {

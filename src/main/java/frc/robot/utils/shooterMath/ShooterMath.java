@@ -1,161 +1,150 @@
 package frc.robot.utils.shooterMath;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Radians;
-
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.Robot;
-import frc.robot.constants.Alliance;
-import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
-import java.util.function.BooleanSupplier;
 
 /** Utility class for shooter-related mathematical calculations. */
 public class ShooterMath {
-  // ================== Shooter Math Constants ========================
 
-  /* See Desmos for the shooter math calculations: https://www.desmos.com/calculator/sgkhoo58x4 */
-  // Velocity Function Constants (sqrt((kA*x^2)/(kB*x + kC)) + kD)
-  private static final double kA = 2.68496;
-  private static final double kB = 0.11359;
-  private static final double kC = 0.0680981;
-  private static final double kD = 0.746731;
+  // --- Hardware Specs ---
+  private static final double kTopDiameter = 2.0;
+  private static final double kBottomDiameter = 3.0;
+  private static final double kCompression = 1.0;
 
-  // Angle Function Constants (kE * kF ^ x)
-  private static final double kE = 1.60189;
-  private static final double kF = 0.889922;
+  // --- Physics Constants ---
+  private static final double kG = 9.80665;
+  private static final double kTargetHeight = 72.0;
 
-  /** Position of the hub's center */
-  // BLUE ALLIANCE
-  private static final Translation2d kHUB_CENTER_BLUE = FieldConstants.kHubCenterBlue;
+  // Backspin lift reduces required speed by ~12%
+  private static final double kLiftCoefficient = 0.12;
 
-  // RED ALLIANCE
-  private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterRed;
+  // --- Robot State ---
+  private static Translation2d currentTranslation;
+  private static ChassisSpeeds currentSpeeds;
 
-  private static BooleanSupplier m_RedAlliance = () -> Alliance.redAlliance;
+  // Current solution
+  private static ShotSolution currentSolution = new ShotSolution();
 
-  /** Record representing the shoot state with velocity and angle. */
-  public static record ShootState(AngularVelocity desiredRPM, Angle desiredAngle) {}
-
-  // ===================== Class Variables =====================
-  /* Input variables */
-  private static Pose3d m_robotPose = new Pose3d();
-  private static Velocity3d m_robotVelocity = new Velocity3d();
-
-  /* Intermediate Variables */
-  private static Velocity3d m_shootVelocity;
-
-  /* Output Variables */
-  private static ShootState m_shootState;
-  private static Rotation2d m_robotRotation;
-
-  /** Calculates the shooter velocity based on the horizontal distance to the target. */
-  public static LinearVelocity findShooterVelocity(Pose3d robotPose) {
-    // Translation2d to find the x and y of the robot on the field
-    Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
-
-    double x_distance =
-        !m_RedAlliance.getAsBoolean()
-            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
-            : robotTranslation.getDistance(kHUB_CENTER_RED);
-    return MetersPerSecond.of(
-        Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD);
+  public static class ShotSolution {
+    public AngularVelocity flywheelSpeed;
+    public Angle hoodAngle;
+    public Rotation2d robotHeading;
   }
 
-  /** Calculates the shooter angle based on the horizontal distance to the target. */
-  public static Angle findShooterAngle(Pose3d robotPose) {
-    // Translation2d to find the x and y of the robot on the field
-    Translation2d robotTranslation = robotPose.getTranslation().toTranslation2d();
+  public static ShotSolution calculate(
+      double targetH, double relX, double relY, double robVx, double robVy) {
 
-    double x_distance =
-        !m_RedAlliance.getAsBoolean()
-            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
-            : robotTranslation.getDistance(kHUB_CENTER_RED);
-    return Radians.of(kE * Math.pow(kF, x_distance));
+    double d = Math.sqrt(relX * relX + relY * relY);
+    double gravityEffect = kG * (1.0 - kLiftCoefficient);
+
+    // 1. Try for the "Ideal" Lowest RPM Angle (Apex Shot)
+    double idealTheta = Math.atan((targetH + Math.sqrt(d * d + targetH * targetH)) / d);
+    double idealThetaDeg = Math.toDegrees(idealTheta);
+
+    double finalThetaRad;
+    double requiredV0;
+    boolean limited = false;
+
+    // 2. Check Limits and Re-calculate if necessary
+    if (idealThetaDeg < ShooterConstants.HOOD_MIN) {
+      finalThetaRad = Math.toRadians(ShooterConstants.HOOD _MIN);
+      requiredV0 = solveForFixedAngle(d, targetH, finalThetaRad, gravityEffect);
+      limited = true;
+    } else if (idealThetaDeg > MAX_HOOD_ANGLE) {
+      finalThetaRad = Math.toRadians(MAX_HOOD_ANGLE);
+      requiredV0 = solveForFixedAngle(d, targetH, finalThetaRad, gravityEffect);
+      limited = true;
+    } else {
+      finalThetaRad = idealTheta;
+      requiredV0 = Math.sqrt(gravityEffect * (targetH + Math.sqrt(d * d + targetH * targetH)));
+    }
+
+    // 3. Vector Compensation for Moving Robot
+    double unitX = relX / d;
+    double unitY = relY / d;
+    double speedTowardTarget = (robVx * unitX) + (robVy * unitY);
+    double adjustedV0 = requiredV0 + speedTowardTarget;
+
+    // 4. RPM Calculation
+    double v0InchesPerSec = adjustedV0 * 39.37;
+    double dTopEff = WHEEL_TOP_DIA_IN - (COMPRESSION_IN / 2.0);
+    double dBotEff = WHEEL_BOTTOM_DIA_IN - (COMPRESSION_IN / 2.0);
+
+    double topRPM =
+        (2.0 * v0InchesPerSec * 60.0) / (Math.PI * (dTopEff + (LINK_RATIO_B_TO_T * dBotEff)));
+
+    // 5. Build Result
+    ShotSolution sol = new ShotSolution();
+    sol.motorRPM = topRPM * GEAR_RATIO_MOTOR_TO_TOP;
+    sol.hoodAngleDeg = Math.toDegrees(finalThetaRad);
+    sol.isLimited = limited;
+
+    // Lateral Lead Aiming
+    double lateralVel = (robVx * (-unitY)) + (robVy * unitX);
+    double leadAngle = Math.atan2(lateralVel, requiredV0);
+    sol.robotHeadingDeg = Math.toDegrees(Math.atan2(-relY, -relX) - leadAngle);
+
+    return sol;
   }
 
-  /** Calculates the shooter velocity based on the robot's pose and alliance color. */
-  public static Velocity3d findShooterVelocity3d(Pose3d robotPose) {
-    // Velocity3d that uses the distance and rotation to find the shooter velocity
-    Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
-    Rotation2d hubAngle = robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
-    return new Velocity3d(
-        findShooterVelocity(robotPose),
-        new Rotation3d(0.0, findShooterAngle(robotPose).in(Radians), hubAngle.getRadians()));
+  /** Calculates required velocity when the angle is fixed by physical limits. */
+  private static double solveForFixedAngle(double d, double h, double theta, double g) {
+    // Projectile motion formula solving for V0:
+    // V0 = sqrt( (g * d^2) / (2 * cos^2(theta) * (d * tan(theta) - h)) )
+    double numerator = g * Math.pow(d, 2);
+    double denominator = 2 * Math.pow(Math.cos(theta), 2) * (d * Math.tan(theta) - h);
+
+    if (denominator <= 0) return 0; // Target is physically unreachable at this angle
+    return Math.sqrt(numerator / denominator);
   }
 
-  /**
-   * Converts velocity in meters per second to RPM based on the shooter wheel diameter.
-   *
-   * @param vMetersPerSec Velocity in meters per second
-   * @return Velocity in revolutions per minute
-   */
-  public static AngularVelocity velocityToRPM(LinearVelocity vMetersPerSec) {
-    double circumference = Math.PI * ShooterConstants.WHEEL_DIAMETER;
-    return RPM.of(
-        (vMetersPerSec.in(MetersPerSecond) / circumference)
-            * 60.0); // Convert meters per second to revolutions per minute
+  // public static void calculate() {
+  //   double d = currentTranslation.getNorm();
+
+  //   double v0 =
+  //       Math.sqrt(
+  //           (kG * (1.0 - kLiftCoefficient))
+  //               * (kTargetHeight + Math.sqrt(d * d + kTargetHeight * kTargetHeight)));
+
+  //   double unitX = currentTranslation.getX() / d;
+  //   double unitY = currentTranslation.getY() / d;
+
+  //   currentSolution.hoodAngle =
+  //       Radians.of(
+  //           Math.atan((kTargetHeight + Math.sqrt(d * d + kTargetHeight * kTargetHeight)) / d));
+
+  //   currentSolution.flywheelSpeed =
+  //       RotationsPerSecond.of(
+  //           (2.0
+  //                   * (v0
+  //                       + (currentSpeeds.vxMetersPerSecond * unitX)
+  //                       + (currentSpeeds.vyMetersPerSecond * unitY))
+  //                   * 39.37)
+  //               / (Math.PI
+  //                   * ((kTopDiameter - (kCompression / 2.0))
+  //                       + (kBottomDiameter - (kCompression / 2.0)))));
+
+  //   currentSolution.robotHeading =
+  //       Rotation2d.fromRadians(
+  //           Math.atan2(-currentTranslation.getY(), -currentTranslation.getX())
+  //               - Math.atan2(
+  //                   ((currentSpeeds.vxMetersPerSecond * (-unitY))
+  //                       + (currentSpeeds.vyMetersPerSecond * unitX)),
+  //                   v0));
+  // }
+
+  public static void updateRobotState(Translation2d translation, ChassisSpeeds speeds) {
+    currentTranslation = translation;
+    currentSpeeds = speeds;
+
+    calculate();
   }
 
-  /**
-   * Calculates the shoot state (velocity and angle) based on the horizontal distance to the target.
-   *
-   * @param robotPose The current pose of the robot.
-   * @return {@code ShootState} containing desired flywheel RPM and angle
-   */
-  private static ShootState calculateShootState(Velocity3d shootVelocity) {
-    AngularVelocity desiredRPM = velocityToRPM(MetersPerSecond.of(shootVelocity.norm()));
-    Angle desiredAngle = Radians.of(Math.asin(shootVelocity.getZ() / shootVelocity.norm()));
-    return new ShootState(desiredRPM, desiredAngle);
-  }
-
-  /**
-   * Calculates the shoot state (velocity and angle) based on the robot's current pose and alliance
-   * color.
-   *
-   * @return {@code ShootState} containing desired flywheel RPM and angle
-   */
-  public static void calculate() {
-    m_shootVelocity = findShooterVelocity3d(m_robotPose).plus(m_robotVelocity).inverse();
-    m_shootState = calculateShootState(m_shootVelocity);
-    m_robotRotation = new Rotation2d(m_shootVelocity.getX(), m_shootVelocity.getY());
-
-    Robot.telemetry()
-        .log(
-            "ShooterMath",
-            m_shootVelocity.toTranslation3d().plus(m_robotPose.getTranslation()),
-            Translation3d.struct);
-  }
-
-  /**
-   * Inputs the robot's current pose for calculations.
-   *
-   * @param robotPose The current pose of the robot.
-   */
-  public static void input(Pose3d robotPose, Velocity3d robotVelocity) {
-    m_robotPose = robotPose;
-    m_robotVelocity = robotVelocity;
-  }
-
-  /** Returns the current desired shooter RPM. */
-  public static AngularVelocity getShooterRPM() {
-    return m_shootState.desiredRPM();
-  }
-
-  /** Returns the current desired shooter angle. */
-  public static Angle getShooterAngle() {
-    return m_shootState.desiredAngle();
-  }
-
-  public static Rotation2d getRobotRotation() {
-    return m_robotRotation;
+  public static ShotSolution getCurrentSolution() {
+    return currentSolution;
   }
 }
