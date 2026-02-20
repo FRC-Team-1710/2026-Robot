@@ -187,10 +187,6 @@ public class Shooter {
     return this.m_currentState;
   }
 
-  public void setFuelSim(FuelSim fuelSim) {
-    this.m_io.setFuelSim(fuelSim);
-  }
-
   @NotLogged
   public int getBallCount() {
     return this.m_fuelCount;
