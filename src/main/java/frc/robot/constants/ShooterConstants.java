@@ -52,8 +52,6 @@ public final class ShooterConstants {
   public static final Transform3d kRIGHT_SHOOTER_OFFSET =
       new Transform3d(0.3, -0.1, 0.3, Rotation3d.kZero);
 
-  public static final double JAM_DETECT_TIME = 1.0;
-
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
