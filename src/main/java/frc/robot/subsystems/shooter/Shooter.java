@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
+import java.util.ArrayList;
 
 @Logged
 public class Shooter {
@@ -44,6 +46,8 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
+  @NotLogged private ArrayList<Double> m_FPSLists;
+
   @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
 
@@ -61,8 +65,8 @@ public class Shooter {
     this.m_didIntake = false;
 
     this.m_fuelCount = 0;
-    this.m_FPS = 0;
 
+    this.m_FPSLists = new ArrayList<Double>();
     this.m_FPSTimer = new Timer();
     this.m_FPSTimer.start();
 
@@ -73,8 +77,8 @@ public class Shooter {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_velocity = ShooterMath.getShooterRPM();
-        this.m_hoodAngle = ShooterMath.getShooterAngle();
+        this.m_velocity = RotationsPerSecond.of(ShooterMath.getInterpolatedRPS());
+        this.m_hoodAngle = Degrees.of(ShooterMath.getInterpolatedAngle());
         break;
 
       default:
@@ -83,11 +87,22 @@ public class Shooter {
         break;
     }
 
+    // Fuel Tracking
+    double totalTime = 0;
+    for (int i = 0; i < this.m_FPSLists.size(); i++) {
+      totalTime += this.m_FPSLists.get(i);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      if (totalTime <= 1) break;
+      this.m_FPSLists.remove(this.m_FPSLists.size());
+    }
+
     if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
-      if (this.m_FPSTimer.get() != 0) {
-        this.m_FPS = 1 / (2 * this.m_FPSTimer.get());
+      if (this.m_FPSTimer.get() < 1) {
+        this.m_FPSLists.add(this.m_FPSTimer.get());
       }
-      this.m_FPSTimer.reset();
+      this.m_FPSTimer.restart();
 
       this.m_fuelCount++;
     }
@@ -140,9 +155,9 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(60), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(60), Degrees.of(0));
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(65), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -184,7 +199,12 @@ public class Shooter {
 
   @NotLogged
   public double getFPS() {
-    return this.m_FPS;
+    double totalTime = 0;
+    for (int i = 0; i < this.m_FPSLists.size(); i++) {
+      totalTime += this.m_FPSLists.get(i);
+    }
+
+    return totalTime / this.m_FPSLists.size();
   }
 
   @Logged(importance = Importance.INFO)
@@ -201,5 +221,9 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   public boolean hasBreakerFollowerBroke() {
     return this.m_io.hasBreakerFollowerBroke();
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.m_io.setFuelSim(fuelSim);
   }
 }

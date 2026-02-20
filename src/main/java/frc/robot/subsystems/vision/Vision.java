@@ -4,7 +4,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -43,6 +43,8 @@ public class Vision extends SubsystemBase {
 
   private double ambiguity = 0.0;
 
+  private final String m_logPath;
+
   private final HootAutoReplay autoReplay;
 
   /**
@@ -52,13 +54,15 @@ public class Vision extends SubsystemBase {
    */
   public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
 
+    m_logPath = cameraName + "/";
+
     this.drivetrain = drivetrain;
 
     camera = new PhotonCamera(cameraName);
 
-    poseEstimator = new PhotonPoseEstimator(FieldConstants.kAprilTags, robotToCamera);
-
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+    poseEstimator =
+        new PhotonPoseEstimator(
+            FieldConstants.kAprilTags, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
 
     autoReplay =
         new HootAutoReplay()
@@ -86,13 +90,11 @@ public class Vision extends SubsystemBase {
             .withTimestampReplay();
   }
 
-  @Override
   /**
    * Runs every scheduler loop. 1. Fetch fresh vision data (unless replaying logs) 2. Update
    * replay/log values 3. Process and inject pose measurements into drivetrain
    */
   public void periodic() {
-
     if (!Utils.isReplay()) {
       fetchInputs();
     }
@@ -124,6 +126,8 @@ public class Vision extends SubsystemBase {
     }
 
     EstimatedRobotPose visionEstimate = estimate.get();
+
+    Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
 
     robotPose = visionEstimate.estimatedPose.toPose2d();
     robotPoseTimestamp = visionEstimate.timestampSeconds;
@@ -158,12 +162,16 @@ public class Vision extends SubsystemBase {
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(avgTagDistance, 2);
 
+    Robot.telemetry().log(m_logPath + "AcceptedPose", robotPose, Pose2d.struct);
+
     xyStdDev *= distanceScale;
     thetaStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
     drivetrain.addVisionMeasurement(
-        robotPose, robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        new Pose2d(robotPose.getTranslation(), drivetrain.getRotation()),
+        robotPoseTimestamp,
+        VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
   /**

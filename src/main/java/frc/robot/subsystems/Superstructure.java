@@ -22,6 +22,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
@@ -323,12 +324,12 @@ public class Superstructure {
     return shooter.isAtTargetVelocity()
         && shooter.isHoodAtTargetAngle()
         && Math.abs(drivetrain.getPose().getRotation().minus(getRotationForScore()).getDegrees())
-            < 2.5;
+            < 4;
   }
 
   @NotLogged
   private Rotation2d getRotationForScore() {
-    return ShooterMath.getRobotRotation();
+    return ShooterMath.getRobotRotation().plus(Rotation2d.k180deg);
   }
 
   /** The wanted states of superstructure */
@@ -382,5 +383,9 @@ public class Superstructure {
   @NotLogged
   public CurrentStates getCurrentState() {
     return currentState;
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    shooter.setFuelSim(fuelSim);
   }
 }

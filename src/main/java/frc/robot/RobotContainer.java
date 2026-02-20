@@ -158,6 +158,8 @@ public class RobotContainer {
 
     autoChooser = new AutosChooser(superstructure, drivetrain);
 
+    superstructure.setFuelSim(fuelSim);
+
     configureBindings();
   }
 
@@ -165,9 +167,7 @@ public class RobotContainer {
     driver
         .start()
         .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero)))
+            Commands.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
                 .ignoringDisable(true));
 
     driver
@@ -241,10 +241,19 @@ public class RobotContainer {
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
     map.add(
         new SubsystemInfo(
+            Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
+    map.add(
+        new SubsystemInfo(
             Subsystems.Drive,
             drivetrain::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
     return map.toArray(new SubsystemInfo[0]);
+  }
+
+  private void cycleVision() {
+    for (Vision vision : cameras) {
+      vision.periodic();
+    }
   }
 }

@@ -28,6 +28,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.FieldConstants;
@@ -64,12 +65,17 @@ public class CustomFieldCentric implements SwerveRequest {
   @Logged(importance = Importance.INFO)
   private final ProfiledPIDController rotationLockPID =
       new ProfiledPIDController(
-          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 0.0,
+          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 9,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
           new Constraints(
-              Mode.currentMode == CurrentMode.SIMULATION ? 3 : 0.0,
-              Mode.currentMode == CurrentMode.SIMULATION ? 4 : 0.0));
+              // Mode.currentMode == CurrentMode.SIMULATION ?
+              3,
+              //  : 0.0,
+              // Mode.currentMode == CurrentMode.SIMULATION ?
+              4
+              //  : 0.0
+              ));
 
   @NotLogged private boolean shouldResetYAssistPID = true;
   @NotLogged private boolean shouldResetRotationPID = true;
@@ -103,6 +109,8 @@ public class CustomFieldCentric implements SwerveRequest {
     this.gyro = gyro;
     // Enable PID wrap from -180 to 180 deg
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
+
+    SmartDashboard.putData(rotationLockPID);
   }
 
   @Override
@@ -201,6 +209,9 @@ public class CustomFieldCentric implements SwerveRequest {
         break;
       case ROTATION_LOCK:
         rotationLockPID.setGoal(rotationTarget.getRadians());
+
+        SmartDashboard.putNumber(
+            "RotationLockSetpointRadians", rotationLockPID.getSetpoint().position);
 
         wantedSpeeds =
             new ChassisSpeeds(

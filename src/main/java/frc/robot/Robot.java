@@ -14,6 +14,10 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -87,6 +91,17 @@ public class Robot extends DynamicTimedRobot {
     addAllSubsystems(m_robotContainer.getAllSubsystems());
 
     SmartDashboard.putBoolean("Reset Fuel Sim", false);
+
+    telemetry()
+        .log(
+            "CameraTransform",
+            new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(7.769),
+                    Units.inchesToMeters(13.341),
+                    Units.inchesToMeters(7.995)),
+                new Rotation3d(Math.toRadians(180), Math.toRadians(135), Math.toRadians(175.0))),
+            Transform3d.struct);
   }
 
   @Override

@@ -113,7 +113,7 @@ public class Indexer {
   public enum IndexStates {
     Indexing(Milliseconds.of(20), 0.5),
 
-    Idle(Milliseconds.of(20), 0.5),
+    Idle(Milliseconds.of(20), 0),
 
     Jammed(Milliseconds.of(60), 0);
 
