@@ -15,6 +15,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.shooterMath.ShooterMath;
+import java.util.ArrayList;
 
 @Logged
 public class Shooter {
@@ -31,7 +32,7 @@ public class Shooter {
   private boolean m_didIntake;
 
   private Timer m_FPSTimer;
-  private double m_FPS;
+  private ArrayList<Double> m_FPSLists;
 
   private int m_fuelCount;
 
@@ -49,8 +50,8 @@ public class Shooter {
     this.m_didIntake = false;
 
     this.m_fuelCount = 0;
-    this.m_FPS = 0;
 
+    this.m_FPSLists = new ArrayList<Double>();
     this.m_FPSTimer = new Timer();
     this.m_FPSTimer.start();
 
@@ -71,11 +72,22 @@ public class Shooter {
         break;
     }
 
+    // Fuel Tracking
+    double totalTime = 0;
+    for (int i = 0; i < this.m_FPSLists.size(); i++) {
+      totalTime += this.m_FPSLists.get(i);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      if (totalTime <= 1) break;
+      this.m_FPSLists.remove(this.m_FPSLists.size());
+    }
+
     if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
-      if (this.m_FPSTimer.get() != 0) {
-        this.m_FPS = 1 / (2 * this.m_FPSTimer.get());
+      if (this.m_FPSTimer.get() < 1) {
+        this.m_FPSLists.add(this.m_FPSTimer.get());
       }
-      this.m_FPSTimer.reset();
+      this.m_FPSTimer.restart();
 
       this.m_fuelCount++;
     }
@@ -162,7 +174,12 @@ public class Shooter {
   }
 
   public double getFPS() {
-    return this.m_FPS;
+    double totalTime = 0;
+    for (int i = 0; i < this.m_FPSLists.size(); i++) {
+      totalTime += this.m_FPSLists.get(i);
+    }
+
+    return totalTime / this.m_FPSLists.size();
   }
 
   public boolean isJammed() {
