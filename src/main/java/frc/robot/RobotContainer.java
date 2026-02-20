@@ -42,11 +42,13 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSIM;
 import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @Logged
 public class RobotContainer {
@@ -64,10 +66,7 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Indexer indexer;
   private final Feeder feeder;
-
-  // It is used :( (not rly but shhhhh)
-  @SuppressWarnings("unused")
-  private Vision[] cameras;
+  private final Vision vision;
 
   private final Superstructure superstructure;
 
@@ -82,20 +81,12 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer =
             new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
-
-        cameras =
-            // Create a stream of Vision objects from the camera configs
-            Arrays.stream(VisionConstants.kPoseCameraConfigs)
-                // For each config, create a new Vision subsystem with the appropriate arguments
-                .map(
-                    config ->
-                        new Vision(
-                            config.name(),
-                            config.robotToCamera(),
-                            drivetrain)) // TODO: Fix this stuff :p
-                // Collect the stream back into an array of Vision subsystems
-                .toArray(Vision[]::new);
-
+        vision =
+            new Vision(
+                new VisionIOPhotonVision(VisionConstants.kPoseCameraConfigs[0]),
+                new VisionIOPhotonVision(VisionConstants.kPoseCameraConfigs[1]),
+                new VisionIOPhotonVision(VisionConstants.kPoseCameraConfigs[2]),
+                new VisionIOPhotonVision(VisionConstants.kPoseCameraConfigs[3]));
         break;
 
       case SIMULATION:
@@ -104,6 +95,12 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+        vision =
+            new Vision(
+                new VisionIOPhotonVisionSIM(),
+                new VisionIOPhotonVisionSIM(),
+                new VisionIOPhotonVisionSIM(),
+                new VisionIOPhotonVisionSIM());
         break;
 
       default:
@@ -112,6 +109,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+        vision =
+            new Vision(new VisionIO() {}, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
         break;
     }
 

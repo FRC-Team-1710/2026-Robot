@@ -18,11 +18,9 @@ public class Vision extends SubsystemBase {
   // private final HootAutoReplay autoReplay;
 
   /**
-   * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
-   * @param robotToCamera Transform from robot center to camera (meters, radians)
-   * @param drivetrain Reference to drivetrain for pose fusion
+   * @param cameras Array of VisionIO instances representing the cameras
    */
-  public Vision(VisionIO[] cameras) {
+  public Vision(VisionIO... cameras) {
     this.cameras = cameras;
   }
 

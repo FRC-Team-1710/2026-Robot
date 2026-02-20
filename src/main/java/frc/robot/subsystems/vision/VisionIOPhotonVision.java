@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.constants.VisionConstants;
+import frc.robot.constants.VisionConstants.PoseCameraConfig;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +26,9 @@ public class VisionIOPhotonVision implements VisionIO {
 
   private Matrix<N3, N1> m_curStdDevs;
 
-  public VisionIOPhotonVision(String cameraName, Transform3d robotToCamera) {
-    this.m_camera = new PhotonCamera(cameraName);
-    this.m_robotToCamera = robotToCamera;
+  public VisionIOPhotonVision(PoseCameraConfig config) {
+    this.m_camera = new PhotonCamera(config.name());
+    this.m_robotToCamera = config.robotToCamera();
 
     this.m_photonEstimator = new PhotonPoseEstimator(VisionConstants.kTagLayout, m_robotToCamera);
   }
