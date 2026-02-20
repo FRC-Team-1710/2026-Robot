@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,20 +26,22 @@ import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
 
 @Logged
-@SuppressWarnings("unused")
 public class Superstructure {
-  private CommandXboxController driver;
-  private CommandXboxController mech;
+  @NotLogged private CommandXboxController driver;
+  @NotLogged private CommandXboxController mech;
   @NotLogged private CommandSwerveDrivetrain drivetrain;
   @NotLogged private Intake intake;
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
   @NotLogged private Feeder feeder;
 
+  @Logged(importance = Importance.CRITICAL)
   private WantedStates wantedState = WantedStates.Default;
+
+  @Logged(importance = Importance.CRITICAL)
   private CurrentStates currentState = CurrentStates.Idle;
 
-  private boolean shouldAssistLeft = false;
+  @Logged(importance = Importance.INFO)
   private boolean didIntake = false;
 
   public Superstructure(
@@ -96,6 +99,7 @@ public class Superstructure {
    *
    * @return the new current state
    */
+  @NotLogged
   private CurrentStates handleStateTransitions() {
     switch (wantedState) {
       case Default:
@@ -189,7 +193,7 @@ public class Superstructure {
   private void shoot() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Up);
+    intake.setState(shooter.getFPS() < 2 ? IntakeStates.Up : IntakeStates.Down);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -315,13 +319,15 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
   }
 
-  private boolean allAtTarget() {
+  @Logged(importance = Importance.CRITICAL)
+  public boolean allAtTarget() {
     return shooter.isAtTargetVelocity()
         && shooter.isHoodAtTargetAngle()
         && Math.abs(drivetrain.getPose().getRotation().minus(getRotationForScore()).getDegrees())
             < 4;
   }
 
+  @NotLogged
   private Rotation2d getRotationForScore() {
     return ShooterMath.getRobotRotation().plus(Rotation2d.k180deg);
   }
@@ -374,6 +380,7 @@ public class Superstructure {
     return Commands.runOnce(() -> setWantedState(state)).ignoringDisable(true);
   }
 
+  @NotLogged
   public CurrentStates getCurrentState() {
     return currentState;
   }

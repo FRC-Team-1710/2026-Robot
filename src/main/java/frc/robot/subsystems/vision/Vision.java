@@ -2,9 +2,9 @@ package frc.robot.subsystems.vision;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
@@ -23,18 +23,25 @@ import org.photonvision.targeting.*;
  *
  * <p>One instance of this class represents a single physical camera.
  */
-@Logged
-public class Vision {
+public class Vision implements Subsystem {
 
   private final PhotonCamera camera;
+
   private final PhotonPoseEstimator poseEstimator;
+
   private final CommandSwerveDrivetrain drivetrain;
+
   // === Vision state calculated each cycle ===
   // These values are updated from PhotonVision and optionally replayed in simulation.
+
   private Pose2d robotPose = new Pose2d();
+
   private double robotPoseTimestamp = 0.0;
+
   private int tagCount = 0;
+
   private double avgTagDistance = 0.0;
+
   private double ambiguity = 0.0;
 
   private final String m_logPath;

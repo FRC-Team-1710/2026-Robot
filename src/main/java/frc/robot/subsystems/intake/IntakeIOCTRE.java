@@ -5,16 +5,16 @@
 package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -23,25 +23,28 @@ import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
-@SuppressWarnings("unused")
 public class IntakeIOCTRE implements IntakeIO {
   /** Creates a new Intake. */
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotor;
 
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
-  @NotLogged private final MotionMagicVoltage m_request;
+  @NotLogged private final DynamicMotionMagicVoltage m_request;
 
+  @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
 
-  private final BaseStatusSignal[] m_intakeSignals;
-  private final BaseStatusSignal[] m_deploymentSignals;
+  @NotLogged private final BaseStatusSignal[] m_intakeSignals;
+
+  @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
     m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR);
 
-    m_request = new MotionMagicVoltage(0).withSlot(0).withEnableFOC(true);
+    m_request = new DynamicMotionMagicVoltage(0, 0, 0).withSlot(0).withEnableFOC(true);
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
     m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -62,12 +65,6 @@ public class IntakeIOCTRE implements IntakeIO {
     m_slot0Configs.kD = 0; // no output for error derivative
     m_slot0Configs.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
     m_slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
-
-    MotionMagicConfigs m_mmConfig = m_motorConfig.MotionMagic;
-    m_mmConfig.MotionMagicAcceleration =
-        400; // Target acceleration of 400 rps/s (0.25 seconds to max)
-    m_mmConfig.MotionMagicCruiseVelocity =
-        400; // Target acceleration of 400 rps (0.25 seconds to max)
 
     m_deploymentMotor.getConfigurator().apply(m_motorConfig);
     m_intakeMotor.getConfigurator().apply(m_motorConfig);
@@ -101,11 +98,18 @@ public class IntakeIOCTRE implements IntakeIO {
     m_intakeMotor.set(speed);
   }
 
+  @NotLogged
   public AngularVelocity getRollerVelocity() {
     return m_intakeMotor.getRotorVelocity().getValue();
   }
 
+  @NotLogged
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent().getValue();
+  }
+
+  @NotLogged
+  public Current getDeploymentCurrent() {
+    return m_deploymentMotor.getStatorCurrent().getValue();
   }
 }

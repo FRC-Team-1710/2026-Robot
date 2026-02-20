@@ -7,6 +7,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -56,18 +58,26 @@ public class RobotContainer {
 
   private final AutosChooser autoChooser;
 
+  @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
 
   /* Create subsystems (uses simulated versions when running in simulation) */
+  @Logged(importance = Importance.CRITICAL)
   private final Intake intake;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Shooter shooter;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Indexer indexer;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Feeder feeder;
 
-  // It is used :( (not rly but shhhhh)
-  @SuppressWarnings("unused")
-  private Vision[] cameras;
+  // Should add logging soon
+  @NotLogged private Vision[] cameras;
 
+  @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
 
   public RobotContainer(TimesConsumer consumer) {
@@ -191,6 +201,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
   }
 
+  @NotLogged
   public Command getAutonomousCommand() {
     return autoChooser.selectAuto(drivetrain);
   }

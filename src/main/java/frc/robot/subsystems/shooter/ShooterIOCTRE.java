@@ -12,6 +12,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -24,20 +26,30 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  private final MotionMagicVelocityVoltage m_velocityManager;
-  private final PositionVoltage m_positionManager;
+  @NotLogged private final MotionMagicVelocityVoltage m_velocityManager;
 
+  @NotLogged private final PositionVoltage m_positionManager;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_flyWheel;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_flyWheelFollower;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_hood;
+
   private final TalonFX m_hoodFollower;
 
-  private final BaseStatusSignal[] m_flyWheelSignals;
-  private final BaseStatusSignal[] m_flyWheelFollowerSignals;
-  private final BaseStatusSignal[] m_hoodSignals;
-  private final BaseStatusSignal[] m_hoodFollowerSignals;
+  @NotLogged private final BaseStatusSignal[] m_flyWheelSignals;
+  @NotLogged private final BaseStatusSignal[] m_flyWheelFollowerSignals;
+  @NotLogged private final BaseStatusSignal[] m_hoodSignals;
+  @NotLogged private final BaseStatusSignal[] m_hoodFollowerSignals;
 
+  @Logged(importance = Importance.INFO)
   private final DigitalInput m_breamBreaker;
+
+  @Logged(importance = Importance.INFO)
   private final DigitalInput m_breamBreakerFollower;
 
   public ShooterIOCTRE() {
@@ -140,10 +152,12 @@ public class ShooterIOCTRE implements ShooterIO {
     }
   }
 
+  @NotLogged
   public AngularVelocity getVelocity() {
     return this.m_flyWheel.getVelocity().getValue();
   }
 
+  @NotLogged
   public AngularVelocity getTargetVelocity() {
     return DegreesPerSecond.of(this.m_velocityManager.Velocity);
   }
@@ -157,14 +171,17 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_hoodFollower.setControl(m_positionManager.withPosition(ClampedAngle));
   }
 
+  @NotLogged
   public Angle getHoodAngle() {
     return this.m_hood.getPosition().getValue();
   }
 
+  @NotLogged
   public boolean hasBreakerBroke() {
     return this.m_breamBreaker.get();
   }
 
+  @NotLogged
   public boolean hasBreakerFollowerBroke() {
     return this.m_breamBreakerFollower.get();
   }
