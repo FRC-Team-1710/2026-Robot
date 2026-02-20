@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -61,6 +62,8 @@ public class ShooterIOCTRE implements ShooterIO {
 
     flywheelConfig.MotorOutput.PeakForwardDutyCycle = 1;
     flywheelConfig.MotorOutput.PeakReverseDutyCycle = 0;
+    // flywheelConfig.Voltage.PeakForwardVoltage = 1;
+    // flywheelConfig.Voltage.PeakReverseVoltage = 0;
 
     flywheelConfig.MotionMagic.MotionMagicCruiseVelocity =
         ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
@@ -74,8 +77,6 @@ public class ShooterIOCTRE implements ShooterIO {
         ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
     flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
-    flywheelConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0;
-
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheel, flywheelConfig, 2);
     TalonFXUtil.applyConfigWithRetries(this.m_flyWheelFollower, flywheelConfig, 2);
 
@@ -84,9 +85,6 @@ public class ShooterIOCTRE implements ShooterIO {
 
     hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
-    // hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    // hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     hoodConfig.Slot0.kP = 75;
 
@@ -133,8 +131,13 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setTargetVelocity(AngularVelocity pVelocity) {
-    this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(pVelocity));
-    this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(pVelocity));
+    if (pVelocity.in(RotationsPerSecond) == 0) {
+      this.m_flyWheel.stopMotor();
+      this.m_flyWheelFollower.stopMotor();
+    } else {
+      this.m_flyWheel.setControl(this.m_velocityManager.withVelocity(pVelocity));
+      this.m_flyWheelFollower.setControl(this.m_velocityManager.withVelocity(pVelocity));
+    }
   }
 
   public AngularVelocity getVelocity() {

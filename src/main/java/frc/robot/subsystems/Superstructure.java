@@ -319,7 +319,7 @@ public class Superstructure {
     return shooter.isAtTargetVelocity()
         && shooter.isHoodAtTargetAngle()
         && Math.abs(drivetrain.getPose().getRotation().minus(getRotationForScore()).getDegrees())
-            < 2.5;
+            < 4;
   }
 
   private Rotation2d getRotationForScore() {

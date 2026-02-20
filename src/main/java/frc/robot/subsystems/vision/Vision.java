@@ -37,6 +37,8 @@ public class Vision {
   private double avgTagDistance = 0.0;
   private double ambiguity = 0.0;
 
+  private final String m_logPath;
+
   private final HootAutoReplay autoReplay;
 
   /**
@@ -46,15 +48,15 @@ public class Vision {
    */
   public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
 
+    m_logPath = cameraName + "/";
+
     this.drivetrain = drivetrain;
 
     camera = new PhotonCamera(cameraName);
 
     poseEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.kAprilTags, PoseStrategy.LOWEST_AMBIGUITY, robotToCamera);
-
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+            FieldConstants.kAprilTags, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
 
     autoReplay =
         new HootAutoReplay()
@@ -87,8 +89,6 @@ public class Vision {
    * replay/log values 3. Process and inject pose measurements into drivetrain
    */
   public void periodic() {
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-
     if (!Utils.isReplay()) {
       fetchInputs();
     }
@@ -112,8 +112,6 @@ public class Vision {
       return;
     }
 
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-
     Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
 
     if (estimate.isEmpty()) {
@@ -123,7 +121,7 @@ public class Vision {
 
     EstimatedRobotPose visionEstimate = estimate.get();
 
-    Robot.telemetry().log("NBUIBUIBUIBVUIVBIUB", visionEstimate.estimatedPose, Pose3d.struct);
+    Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
 
     robotPose = visionEstimate.estimatedPose.toPose2d();
     robotPoseTimestamp = visionEstimate.timestampSeconds;
@@ -157,6 +155,8 @@ public class Vision {
     // Squared distance scaling penalizes far-away tag estimates heavily,
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(avgTagDistance, 2);
+
+    Robot.telemetry().log(m_logPath + "AcceptedPose", robotPose, Pose2d.struct);
 
     xyStdDev *= distanceScale;
     thetaStdDev *= distanceScale;

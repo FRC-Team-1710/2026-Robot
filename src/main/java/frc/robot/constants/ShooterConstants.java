@@ -22,7 +22,7 @@ public final class ShooterConstants {
   public static final double kV = 0.12;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kP = 0.1;
+  public static final double kP = 0.75;
 
   // ==================== Current Limits ====================
   public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;

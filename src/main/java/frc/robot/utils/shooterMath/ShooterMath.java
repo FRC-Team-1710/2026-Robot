@@ -65,16 +65,12 @@ public class ShooterMath {
 
   static { // Week 5 Saturday Testing
     // Adding values to the Interpolatable maps
-    addInterpolatableValues(2.08, 52.5, 0.0874 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(2.49, 55, 0.101 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(3.03, 58, 0.112 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(3.46, 61, 0.137 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(3.99, 63, 0.145 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(4.50, 66, 0.15 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(5.02, 69, 0.156 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(5.32, 72, 0.156 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(5.78, 77.5, 0.156 * 360); // METERS, RPS, DEGREES
-    addInterpolatableValues(6.0, 83, 0.156 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(2.2, 50, 0.0874 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(2.5, 51.5, 0.1 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3, 53, 0.11 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(3.5, 57.5, 0.138 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(4, 59, 0.15 * 360); // METERS, RPS, DEGREES
+    addInterpolatableValues(5, 71.5, 0.156 * 360); // METERS, RPS, DEGREES
   }
 
   public static double calculateDistance() {

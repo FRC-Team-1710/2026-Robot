@@ -59,7 +59,7 @@ public class VisionConstants {
                 Units.inchesToMeters(7.769),
                 Units.inchesToMeters(13.341),
                 Units.inchesToMeters(7.995)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 45), Math.toRadians(175.0)))),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(175.0)))),
     new PoseCameraConfig(
         "FrontRight",
         new Transform3d(
@@ -67,28 +67,28 @@ public class VisionConstants {
                 Units.inchesToMeters(7.769),
                 Units.inchesToMeters(-13.341),
                 Units.inchesToMeters(7.995)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 45), Math.toRadians(185.0)))),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(185.0)))),
     new PoseCameraConfig(
         "BackLeft",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(9.61367),
+                Units.inchesToMeters(-9.61367),
                 Units.inchesToMeters(16.48053),
                 Units.inchesToMeters(28.975)),
             new Rotation3d(
                 Math.toRadians(180),
-                Math.toRadians(90.0),
+                Math.toRadians(180),
                 Math.toRadians(-90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
     new PoseCameraConfig(
         "BackRight",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(9.61367),
+                Units.inchesToMeters(-9.61367),
                 Units.inchesToMeters(-16.48053),
                 Units.inchesToMeters(28.975)),
             new Rotation3d(
                 Math.toRadians(180),
-                Math.toRadians(0.0),
+                Math.toRadians(180),
                 Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
   };
 
