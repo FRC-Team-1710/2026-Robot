@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
 import java.util.ArrayList;
 
@@ -62,8 +63,8 @@ public class Shooter {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_velocity = ShooterMath.getShooterRPM();
-        this.m_hoodAngle = ShooterMath.getShooterAngle();
+        this.m_velocity = RotationsPerSecond.of(ShooterMath.getInterpolatedRPS());
+        this.m_hoodAngle = Degrees.of(ShooterMath.getInterpolatedAngle());
         break;
 
       default:
@@ -134,9 +135,9 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(60), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(60), Degrees.of(0));
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(65), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -185,5 +186,9 @@ public class Shooter {
   public boolean isJammed() {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.m_io.setFuelSim(fuelSim);
   }
 }
