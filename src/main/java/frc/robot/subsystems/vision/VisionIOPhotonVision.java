@@ -20,7 +20,10 @@ public class VisionIOPhotonVision implements VisionIO {
   private final Transform3d m_robotToCamera;
 
   private final PhotonPoseEstimator m_photonEstimator;
+
+  @SuppressWarnings("unused")
   private EstimatedRobotPose m_poseEstimate;
+
   private CommandSwerveDrivetrain drivetrain;
 
   private Matrix<N3, N1> m_curStdDevs;
