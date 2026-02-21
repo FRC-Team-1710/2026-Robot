@@ -162,8 +162,6 @@ public class ShooterMath {
   /**
    * Calculates the shoot state (velocity and angle) based on the robot's current pose and alliance
    * color.
-   *
-   * @return {@link ShootState} containing desired flywheel RPM and angle
    */
   public static void calculate() {
     m_shootVelocity = findShooterVelocity3d().plus(m_robotVelocity).inverse();
@@ -262,7 +260,10 @@ public class ShooterMath {
 
   /* ============ INTERPOLATING METHODS AND MATH ============ */
 
-  /** Adds a RPS value for the current robot pose distance. */
+  /**
+   * Adds a rotations per second value for the current robot pose distance to the interpolatable
+   * map.
+   */
   public static void addRPS(double rps) {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
 
@@ -274,7 +275,7 @@ public class ShooterMath {
     rpsMap.put(x_distance, rps);
   }
 
-  /** Adds an angle value for the current robot pose distance. */
+  /** Adds an angle value for the current robot pose distance to the interpolatable map. */
   public static void addAngle(double angle) {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
 
@@ -287,9 +288,9 @@ public class ShooterMath {
   }
 
   /**
-   * Gets the interpolated RPS based on the current robot pose distance.
+   * Gets the interpolated rotations per second based on the current robot pose distance.
    *
-   * @return {@code double} representing the interpolated RPS
+   * @return {@code double} representing the interpolated rotations per second
    */
   public static double getInterpolatedRPS() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
