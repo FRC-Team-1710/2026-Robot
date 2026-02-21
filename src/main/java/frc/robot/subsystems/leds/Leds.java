@@ -1,5 +1,6 @@
 package frc.robot.subsystems.leds;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
@@ -39,7 +40,8 @@ public class Leds {
     this.m_io.setValue(LED_STATE.AUTOS, autosVictory && this.m_autosTimer.get() < 3);
 
     double shooterCharge =
-        (this.m_shooter.getVelocity().magnitude() / this.m_shooter.getTargetVelocity().magnitude())
+        (this.m_shooter.getVelocity().in(DegreesPerSecond)
+                / this.m_shooter.getTargetVelocity().in(DegreesPerSecond))
             * 100;
     this.m_io.setFlyWheelCharge(shooterCharge);
 
