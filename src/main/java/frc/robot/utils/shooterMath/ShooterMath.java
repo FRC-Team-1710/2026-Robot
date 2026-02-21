@@ -30,7 +30,26 @@ public class ShooterMath {
     INTERPOLATING
   }
 
+  // Current shooter math state
   private static ShooterMathState m_shooterMathState = ShooterMathState.TRADITIONAL;
+
+  /**
+   * Sets the shooter math state.
+   *
+   * @param state The new shooter math state
+   */
+  public static void setShooterMathState(ShooterMathState state) {
+    m_shooterMathState = state;
+  }
+
+  /**
+   * Gets the current shooter math state.
+   *
+   * @return The current shooter math state
+   */
+  public static ShooterMathState getShooterMathState() {
+    return m_shooterMathState;
+  }
 
   // ================== Shooter Math Constants ========================
 
