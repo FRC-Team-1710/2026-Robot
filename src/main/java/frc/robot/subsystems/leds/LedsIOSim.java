@@ -12,8 +12,7 @@ public class LedsIOSIM implements LedsIO {
     this.m_data = 0;
   }
 
-  public void update(double pDTSeconds) {
-    this.encode();
+  public void update() {
     this.send();
   }
 

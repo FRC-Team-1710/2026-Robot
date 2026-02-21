@@ -18,8 +18,7 @@ public class LedsIOCTRE implements LedsIO {
     // new DigitalOutput[] {m_johnRomero, m_johnCarmack, m_adrianCarmack, m_sandyPetersen};
   }
 
-  public void update(double pDTSeconds) {
-    this.encode();
+  public void update() {
     this.send();
   }
 
