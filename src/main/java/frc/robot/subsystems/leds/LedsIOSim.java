@@ -5,10 +5,10 @@ import frc.robot.Robot;
 
 @Logged
 @SuppressWarnings("unused")
-public class LedsIOSIM implements LedsIO {
+public class LedsIOSim implements LedsIO {
   private int m_data;
 
-  public LedsIOSIM() {
+  public LedsIOSim() {
     this.m_data = 0;
   }
 

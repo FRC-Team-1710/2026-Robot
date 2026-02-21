@@ -39,6 +39,9 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.leds.Leds;
+import frc.robot.subsystems.leds.LedsIO;
+import frc.robot.subsystems.leds.LedsIOCTRE;
+import frc.robot.subsystems.leds.LedsIOSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
@@ -75,8 +78,6 @@ public class RobotContainer {
   @Logged(importance = Importance.CRITICAL)
   private final Feeder feeder;
 
-  private final Leds led;
-
   @Logged(importance = Importance.CRITICAL)
   private final Leds leds;
 
@@ -97,6 +98,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer =
             new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
+        leds = new Leds(new LedsIOCTRE(), shooter);
 
         cameras =
             // Create a stream of Vision objects from the camera configs
@@ -119,6 +121,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+        leds = new Leds(new LedsIOSim(), shooter);
         break;
 
       default:
@@ -127,10 +130,12 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+        leds = new Leds(new LedsIO() {}, shooter);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
+    superstructure =
+        new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder, leds);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
