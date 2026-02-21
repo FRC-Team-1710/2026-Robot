@@ -1,21 +1,15 @@
 package frc.robot.subsystems.leds;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.wpilibj.SerialPort;
+import frc.robot.Robot;
 
 @Logged
 @SuppressWarnings("unused")
-public class LedsIOCTRE implements LedsIO {
+public class LedsIOSIM implements LedsIO {
   private int m_data;
 
-  private final SerialPort m_port;
-
-  public LedsIOCTRE() {
+  public LedsIOSIM() {
     this.m_data = 0;
-
-    this.m_port = new SerialPort(115200, SerialPort.Port.kMXP);
-    // this.m_bits =
-    // new DigitalOutput[] {m_johnRomero, m_johnCarmack, m_adrianCarmack, m_sandyPetersen};
   }
 
   public void update(double pDTSeconds) {
@@ -48,9 +42,13 @@ public class LedsIOCTRE implements LedsIO {
   }
 
   public void send() {
-    byte[] data = new byte[1];
-    data[0] = (byte) (this.m_data & 0xFF);
+    boolean[] array = new boolean[8];
 
-    this.m_port.write(data, data.length);
+    for (int i = 0; i < 8; i++) {
+      boolean value = ((this.m_data >> i) & 1) == 1;
+      array[i] = value;
+    }
+
+    Robot.telemetry().log("Led Bits", array);
   }
 }
