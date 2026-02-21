@@ -20,49 +20,80 @@ import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 
+/**
+ * The Intake subsystem coordinates the intake mechanism: roller control and deployment (arm)
+ * positioning. It contains the high-level state machine for intaking, jam detection and recovery,
+ * and deployment "stuck" detection.
+ *
+ * <p>Responsibilities:
+ *
+ * <ul>
+ *   <li>Manage desired roller speed and deployment setpoint based on {@link Intake.IntakeStates}.
+ *   <li>Detect roller jams and apply a recovery behavior when necessary.
+ *   <li>Detect deployment motor stuck conditions and protect the mechanism.
+ * </ul>
+ *
+ * <p>This class delegates hardware access to an {@link IntakeIO} implementation (CTRE hardware or a
+ * simulation). All public-facing behaviors are expressed through {@link #setState(IntakeStates)}
+ * and the periodic update loop.
+ */
 @Logged
 public class Intake {
+  /** IO implementation used to read sensors and command motors (hardware or simulation). */
   @Logged(importance = Importance.CRITICAL)
   private final IntakeIO m_io;
 
+  /** Callback used to request changes to the subsystem periodic frequency. */
   @NotLogged private final TimesConsumer m_timesConsumer;
 
+  /** Current {@link IntakeStates} state of the intake subsystem. */
   @Logged(importance = Importance.INFO)
   private IntakeStates m_currentState;
 
-  // Jam for rollers
+  /** Debouncer used to detect a sustained jam condition on the rollers. */
   @NotLogged
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamMinimumTime.in(Seconds));
 
+  /** Debouncer that implements a minimum delay before jam detection is enabled. */
   @NotLogged
   private final Debouncer m_minimumJamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamDetectionDisabledTime.in(Seconds));
 
+  /** Debouncer used to time the jam-recovery undo period. */
   @NotLogged
   private final Debouncer m_jamUndoTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamUndoTime.in(Seconds));
 
+  /** True when a jam condition was previously observed and recovery is active. */
   @Logged(importance = Importance.INFO)
   private boolean m_wasJammed = false;
 
-  // Stuck for deployment
+  /** Debouncer used to detect a sustained 'stuck' condition on the deployment motor. */
   @NotLogged
   private final Debouncer m_stuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckMinimumTime.in(Seconds));
 
+  /** Debouncer that implements a minimum delay before stuck detection is enabled. */
   @NotLogged
   private final Debouncer m_minimumStuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckDetectionDisabledTime.in(Seconds));
 
+  /** Debouncer used to time the stuck-recovery undo period. */
   @NotLogged
   private final Debouncer m_stuckUndoTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckUndoTime.in(Seconds));
 
+  /** True when a stuck condition was previously observed and recovery is active. */
   @Logged(importance = Importance.INFO)
   private boolean m_wasStuck = false;
 
-  /** Creates a new Intake. */
+  /**
+   * Constructs an Intake subsystem.
+   *
+   * @param io the hardware/simulation IO implementation used to read sensors and command motors
+   * @param consumer callback used to request subsystem periodic frequency changes
+   */
   public Intake(IntakeIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
@@ -70,6 +101,11 @@ public class Intake {
     this.m_currentState = IntakeStates.Up;
   }
 
+  /**
+   * Periodic update for the intake subsystem. Should be invoked by the robot framework once per
+   * scheduler run. This updates IO, runs jam/stuck detection logic, and commands the IO layer with
+   * the appropriate motor outputs or angle setpoints based on the current state.
+   */
   public void periodic() {
     // This method will be called once per scheduler run
     m_io.update();
@@ -159,6 +195,12 @@ public class Intake {
     }
   }
 
+  /**
+   * Returns true when the intake rollers meet the configured jam criteria (high current and low
+   * velocity).
+   *
+   * @return true if a roller jam is detected
+   */
   @Logged(importance = Importance.CRITICAL)
   public boolean isJammed() {
     return m_io.getRollerCurrent().in(Amps)
@@ -167,12 +209,24 @@ public class Intake {
             <= JamDetectionConstants.IntakeRollers.kJamSpeedThreshold.in(RotationsPerSecond);
   }
 
+  /**
+   * Returns true when the deployment motor current exceeds the configured stuck threshold.
+   *
+   * @return true if the deployment motor is considered stuck
+   */
   @Logged(importance = Importance.CRITICAL)
   public boolean isStuck() {
     return m_io.getDeploymentCurrent().in(Amps)
         >= JamDetectionConstants.DeploymentMotor.kStuckCurrent.in(Amps);
   }
 
+  /**
+   * Request a transition to the given intake state. If the requested state's periodic frequency
+   * differs from the current state's, the subsystem will notify the {@code TimesConsumer} so the
+   * robot scheduler can adjust.
+   *
+   * @param state the desired {@link IntakeStates} to move into
+   */
   public void setState(IntakeStates state) {
     if (!m_currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Intake, state.subsystemPeriodicFrequency);

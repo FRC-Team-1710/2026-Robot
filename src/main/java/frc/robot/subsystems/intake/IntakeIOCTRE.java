@@ -22,28 +22,39 @@ import edu.wpi.first.units.measure.Current;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
+/**
+ * CTRE (TalonFX) implementation of {@link IntakeIO}.
+ *
+ * <p>This class configures TalonFX motor controllers for the intake roller and the deployment
+ * motor, exposes status signals, and provides methods used by the {@link Intake} subsystem to
+ * command motion and read sensor feedback.
+ */
 @Logged
 public class IntakeIOCTRE implements IntakeIO {
-  /** Creates a new Intake. */
+  /** Intake roller motor controller (TalonFX). */
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotor;
 
+  /** Deployment/arm motor controller (TalonFX). */
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
+  /** Motion-magic control request object used for position control. */
   @NotLogged private final DynamicMotionMagicVoltage m_request;
 
+  /** Last commanded angle setpoint for the deployment/arm. */
   @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
 
+  /** Cached status signals for the intake TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_intakeSignals;
 
+  /** Cached status signals for the deployment TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
     m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR);
-
     m_request = new DynamicMotionMagicVoltage(0, 0, 0).withSlot(0).withEnableFOC(true);
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
@@ -83,31 +94,54 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.optimizeBusUtilization();
   }
 
+  /**
+   * Refresh status signals from underlying TalonFX devices. Should be called periodically by the
+   * owning subsystem.
+   */
   public void update() {
     BaseStatusSignal.refreshAll(m_intakeSignals);
     BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
 
+  /**
+   * Command the deployment motor toward the requested angle.
+   *
+   * @param angle desired deploy/setpoint angle
+   */
   public void setAngle(Angle angle) {
     m_angleSetpoint = angle;
     // m_deploymentMotor.setControl(m_request.withPosition(angle));
     m_deploymentMotor.stopMotor();
   }
 
+  /**
+   * Set the intake roller motor output.
+   *
+   * @param speed motor output in the range [-1.0, 1.0]
+   */
   public void setIntakeMotor(double speed) {
     m_intakeMotor.set(speed);
   }
 
+  /**
+   * @return the rotor/angular velocity of the intake roller motor.
+   */
   @NotLogged
   public AngularVelocity getRollerVelocity() {
     return m_intakeMotor.getRotorVelocity().getValue();
   }
 
+  /**
+   * @return the stator current draw of the intake roller motor.
+   */
   @NotLogged
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent().getValue();
   }
 
+  /**
+   * @return the stator current draw of the deployment motor.
+   */
   @NotLogged
   public Current getDeploymentCurrent() {
     return m_deploymentMotor.getStatorCurrent().getValue();
