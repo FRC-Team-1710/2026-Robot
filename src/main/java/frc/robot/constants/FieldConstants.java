@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.Inches;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.constants.Mode.CurrentMode;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -41,7 +43,7 @@ public class FieldConstants {
 
   static {
     try {
-      if (Mode.currentMode == Mode.currentMode.SIMULATION) {
+      if (Mode.currentMode == CurrentMode.SIMULATION) {
         kAprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
       } else {
         kAprilTags = AprilTagFieldLayout.loadField(kDefaultField);
