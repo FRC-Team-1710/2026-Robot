@@ -31,7 +31,6 @@ import frc.robot.utils.MechanismUtil.IntakeVisualSim;
  */
 @Logged
 public class IntakeIOSIM implements IntakeIO {
-  /** Creates a new IntakeIOSIM. */
   /** Motor gearbox model used by the physics simulation. */
   private final DCMotor m_gearbox;
 
@@ -87,7 +86,7 @@ public class IntakeIOSIM implements IntakeIO {
    * @param speed roller speed in range [-1.0, 1.0]
    */
   public void setIntakeMotor(double speed) {
-    m_intakeVisualSim.updateRoller(speed * 20); // updates roller visuals
+    m_intakeVisualSim.updateRoller(speed); // updates roller visuals
     Robot.telemetry().log("RollerSpeed", speed);
   }
 
