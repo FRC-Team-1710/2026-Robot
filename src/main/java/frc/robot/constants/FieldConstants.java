@@ -7,7 +7,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.constants.Mode.CurrentMode;
-
 import java.io.IOException;
 import java.util.HashMap;
 
