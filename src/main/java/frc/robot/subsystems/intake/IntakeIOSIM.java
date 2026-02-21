@@ -31,19 +31,13 @@ import frc.robot.utils.MechanismUtil.IntakeVisualSim;
  */
 @Logged
 public class IntakeIOSIM implements IntakeIO {
-  /** Motor gearbox model used by the physics simulation. */
   private final DCMotor m_gearbox;
 
-  /** Physics simulation for the single-jointed deployment arm. */
   private final SingleJointedArmSim m_armPhysicsSim;
-
-  /** Visual simulation helper for the intake (rollers + arm). */
   private final IntakeVisualSim m_intakeVisualSim;
 
-  /** Last commanded deployment/arm setpoint for the sim. */
   private Angle m_angleSetpoint;
 
-  /** Controller used to track the arm angle in simulation. */
   private final ProfiledPIDController m_PID =
       new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
 

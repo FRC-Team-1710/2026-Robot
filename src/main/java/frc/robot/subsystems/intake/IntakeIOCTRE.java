@@ -31,18 +31,14 @@ import frc.robot.utils.TalonFXUtil;
  */
 @Logged
 public class IntakeIOCTRE implements IntakeIO {
-  /** Intake roller motor controller (TalonFX). */
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotor;
 
-  /** Deployment/arm motor controller (TalonFX). */
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
-  /** Motion-magic control request object used for position control. */
   @NotLogged private final DynamicMotionMagicVoltage m_request;
 
-  /** Last commanded angle setpoint for the deployment/arm. */
   @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
 
