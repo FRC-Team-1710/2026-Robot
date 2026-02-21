@@ -23,6 +23,15 @@ import java.util.function.BooleanSupplier;
 
 /** Utility class for shooter-related mathematical calculations. */
 public class ShooterMath {
+  /* Shooter Math Enum */
+  /** Enum representing the state of the shooter math calculations. */
+  private enum ShooterMathState {
+    TRADITIONAL,
+    INTERPOLATING
+  }
+
+  private static ShooterMathState m_shooterMathState = ShooterMathState.TRADITIONAL;
+
   // ================== Shooter Math Constants ========================
 
   /* See Desmos for the shooter math calculations: https://www.desmos.com/calculator/sgkhoo58x4 */
@@ -208,6 +217,46 @@ public class ShooterMath {
     return m_shootState.desiredAngle();
   }
 
+  /**
+   * Returns the current shoot state based on the shooter math state.
+   *
+   * @return {@code ShootState} containing desired flywheel RPM and angle based on the current
+   *     shooter math state
+   */
+  public static ShootState getShootState() {
+    switch (m_shooterMathState) {
+      case TRADITIONAL:
+        calculate();
+        return m_shootState;
+      case INTERPOLATING:
+        return new ShootState(
+            RotationsPerSecond.of(getInterpolatedRPS()), Radians.of(getInterpolatedAngle()));
+      default:
+        throw new IllegalStateException("Unexpected state: " + m_shooterMathState);
+    }
+  }
+
+  /**
+   * Gets the shoot state based on the current robot pose and a shooter offset.
+   *
+   * @param shooterOffset The offset of the shooter from the robot's pose
+   * @return {@code ShootState} containing desired flywheel RPM and angle based on the current
+   *     shooter math state and the given shooter offset
+   */
+  public static ShootState getShootState(Transform3d shooterOffset) {
+    switch (m_shooterMathState) {
+      case TRADITIONAL:
+        calculate(shooterOffset);
+        return m_shootState;
+      case INTERPOLATING:
+        return new ShootState(
+            RotationsPerSecond.of(getInterpolatedRPS(shooterOffset)),
+            Radians.of(getInterpolatedAngle(shooterOffset)));
+      default:
+        throw new IllegalStateException("Unexpected state: " + m_shooterMathState);
+    }
+  }
+
   /* ============== ALTERNATE SHOOTER METHODS AND MATH ============= */
 
   /**
@@ -307,12 +356,50 @@ public class ShooterMath {
   }
 
   /**
+   * Gets the interpolated RPS based on the current robot pose distance and an offset.
+   *
+   * @return {@code double} representing the interpolated RPS
+   */
+  public static double getInterpolatedRPS(Transform3d shooterOffset) {
+    Translation2d robotTranslation =
+        m_robotPose.plus(shooterOffset).getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    Robot.telemetry().log("X_DISTANCE", x_distance);
+    Robot.telemetry().log("RPS", rpsMap.get(x_distance));
+    Robot.telemetry().log("RadPS", RotationsPerSecond.of(rpsMap.get(x_distance)));
+
+    return rpsMap.get(x_distance);
+  }
+
+  /**
    * Gets the interpolated angle based on the current robot pose distance.
    *
    * @return {@code double} representing the interpolated angle
    */
   public static double getInterpolatedAngle() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
+
+    double x_distance =
+        !m_RedAlliance.getAsBoolean()
+            ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+            : robotTranslation.getDistance(kHUB_CENTER_RED);
+
+    return angleMap.get(x_distance);
+  }
+
+  /**
+   * Gets the interpolated angle based on the current robot pose distance and an offset.
+   *
+   * @return {@code double} representing the interpolated angle
+   */
+  public static double getInterpolatedAngle(Transform3d shooterOffset) {
+    Translation2d robotTranslation =
+        m_robotPose.plus(shooterOffset).getTranslation().toTranslation2d();
 
     double x_distance =
         !m_RedAlliance.getAsBoolean()
