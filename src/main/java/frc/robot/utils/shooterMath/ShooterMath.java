@@ -92,7 +92,7 @@ public class ShooterMath {
   /**
    * Calculates the shooter velocity based on the horizontal distance to the target.
    *
-   * @return {@code LinearVelocity} representing the desired shooter velocity
+   * @return {@link LinearVelocity} representing the desired shooter velocity
    */
   public static LinearVelocity findShooterVelocity() {
     double x_distance = calculateDistance();
@@ -103,7 +103,7 @@ public class ShooterMath {
   /**
    * Calculates the shooter angle based on the horizontal distance to the target.
    *
-   * @return {@code Angle} representing the desired shooter angle
+   * @return {@link Angle} representing the desired shooter angle
    */
   public static Angle findShooterAngle() {
     // Translation2d to find the x and y of the robot on the field
@@ -119,7 +119,7 @@ public class ShooterMath {
   /**
    * Calculates the shooter velocity based on the robot's pose and alliance color.
    *
-   * @return {@code Velocity3d} representing the desired shooter velocity
+   * @return {@link Velocity3d} representing the desired shooter velocity
    */
   public static Velocity3d findShooterVelocity3d() {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
@@ -150,8 +150,8 @@ public class ShooterMath {
   /**
    * Calculates the shoot state (velocity and angle) based on the horizontal distance to the target.
    *
-   * @param shootVelocity The desired shooter velocity as a {@code Velocity3d} object
-   * @return {@code ShootState} containing desired flywheel RPM and angle
+   * @param shootVelocity The desired shooter velocity as a {@link Velocity3d} object
+   * @return {@link ShootState} containing desired flywheel RPM and angle
    */
   private static ShootState calculateShootState(Velocity3d shootVelocity) {
     AngularVelocity desiredRPM = velocityToRPM(MetersPerSecond.of(shootVelocity.norm()));
@@ -163,7 +163,7 @@ public class ShooterMath {
    * Calculates the shoot state (velocity and angle) based on the robot's current pose and alliance
    * color.
    *
-   * @return {@code ShootState} containing desired flywheel RPM and angle
+   * @return {@link ShootState} containing desired flywheel RPM and angle
    */
   public static void calculate() {
     m_shootVelocity = findShooterVelocity3d().plus(m_robotVelocity).inverse();
@@ -192,7 +192,7 @@ public class ShooterMath {
    * Returns the current desired shooter RPM calculated from the previously inputted robot pose and
    * velocity.
    *
-   * @return {@code AngularVelocity} representing the desired shooter RPM
+   * @return {@link AngularVelocity} representing the desired shooter RPM
    */
   public static AngularVelocity getShooterRPM() {
     return m_shootState.desiredRPM();
@@ -202,7 +202,7 @@ public class ShooterMath {
    * Returns the current desired shooter angle calculated from the previously inputted robot pose
    * and velocity.
    *
-   * @return {@code Angle} representing the desired shooter angle
+   * @return {@link Angle} representing the desired shooter angle
    */
   public static Angle getShooterAngle() {
     return m_shootState.desiredAngle();
@@ -227,7 +227,7 @@ public class ShooterMath {
    * Finds the shooter velocity based on a given offset pose.
    *
    * @param offsetPose The offset pose of the shooter from the robot's pose
-   * @return {@code LinearVelocity} representing the desired shooter velocity
+   * @return {@link LinearVelocity} representing the desired shooter velocity
    */
   public static LinearVelocity findShooterVelocity(Pose3d offsetPose) {
     double x_distance = calculateDistance(offsetPose);
@@ -239,7 +239,7 @@ public class ShooterMath {
    * Finds the 3D shooter velocity based on a given offset pose.
    *
    * @param offsetPose The offset pose of the shooter from the robot's pose
-   * @return {@code Velocity3d} representing the desired shooter velocity
+   * @return {@link Velocity3d} representing the desired shooter velocity
    */
   public static Velocity3d findShooterVelocity3d(Pose3d offsetPose) {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
@@ -254,7 +254,7 @@ public class ShooterMath {
    * Calculates the shoot state based on a given shooter offset.
    *
    * @param shooterOffset The offset of the shooter from the robot's pose
-   * @return {@code ShootState} containing desired flywheel RPM and angle
+   * @return {@link ShootState} containing desired flywheel RPM and angle
    */
   public static ShootState calculate(Transform3d shooterOffset) {
     return calculateShootState(findShooterVelocity3d(m_robotPose.plus(shooterOffset)));
@@ -326,7 +326,7 @@ public class ShooterMath {
    * Adds interpolatable values for a given distance, RPS, and angle.
    *
    * @param distance The distance for which to add the values
-   * @param rps The RPS value to add
+   * @param rps The rotations per second value to add
    * @param angle The angle value to add
    */
   public static void addInterpolatableValues(double distance, double rps, double angle) {
