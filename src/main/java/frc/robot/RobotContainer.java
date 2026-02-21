@@ -37,6 +37,10 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
+import frc.robot.subsystems.leds.Leds;
+import frc.robot.subsystems.leds.LedsIO;
+import frc.robot.subsystems.leds.LedsIOCTRE;
+import frc.robot.subsystems.leds.LedsIOSIM;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
@@ -64,6 +68,7 @@ public class RobotContainer {
   private final Shooter shooter;
   private final Indexer indexer;
   private final Feeder feeder;
+  private final Leds led;
 
   // It is used :( (not rly but shhhhh)
   @SuppressWarnings("unused")
@@ -82,6 +87,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer =
             new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
+        led = new Leds(new LedsIOCTRE(), shooter);
 
         cameras =
             // Create a stream of Vision objects from the camera configs
@@ -104,6 +110,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+        led = new Leds(new LedsIOSIM(), shooter);
         break;
 
       default:
@@ -112,10 +119,12 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+        led = new Leds(new LedsIO() {}, shooter);
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
+    superstructure =
+        new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder, led);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
@@ -206,34 +215,40 @@ public class RobotContainer {
             Milliseconds.of((20.0 / Subsystems.values().length) * 1)));
     map.add(
         new SubsystemInfo(
+            Subsystems.Drive,
+            drivetrain::periodic,
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 2)));
+    map.add(
+        new SubsystemInfo(
             Subsystems.Intake,
             intake::periodic,
             Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 20.0)));
     map.add(
         new SubsystemInfo(
             Subsystems.Shooter,
             shooter::periodic,
             Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 40.0)));
     map.add(
         new SubsystemInfo(
             Subsystems.Indexer,
             indexer::periodic,
             Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
     map.add(
         new SubsystemInfo(
             Subsystems.Feeder,
             feeder::periodic,
             Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 6 + 60.0)));
     map.add(
         new SubsystemInfo(
-            Subsystems.Drive,
-            drivetrain::periodic,
+            Subsystems.Leds,
+            led::periodic,
             Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 7)));
     return map.toArray(new SubsystemInfo[0]);
   }
 }

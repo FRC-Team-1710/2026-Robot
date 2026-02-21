@@ -9,6 +9,7 @@ public enum Subsystems {
   Feeder(),
   Shooter(),
   Indexer(),
+  Leds(),
 }
 
 // Do not remove Robot or Epilogue!
