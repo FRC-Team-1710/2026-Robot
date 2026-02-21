@@ -36,7 +36,7 @@ public class ShooterMath {
   private static final double kE = 1.60189;
   private static final double kF = 0.889922;
 
-  /** Position of the hub's center */
+  /* Position of the hub's center */
   // BLUE ALLIANCE
   private static final Translation2d kHUB_CENTER_BLUE = FieldConstants.kHubCenterBlue;
 
