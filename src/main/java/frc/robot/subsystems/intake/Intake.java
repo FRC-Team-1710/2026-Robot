@@ -46,45 +46,36 @@ public class Intake {
   /** Callback used to request changes to the subsystem periodic frequency. */
   @NotLogged private final TimesConsumer m_timesConsumer;
 
-  /** Current {@link IntakeStates} state of the intake subsystem. */
   @Logged(importance = Importance.INFO)
   private IntakeStates m_currentState;
 
-  /** Debouncer used to detect a sustained jam condition on the rollers. */
   @NotLogged
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamMinimumTime.in(Seconds));
 
-  /** Debouncer that implements a minimum delay before jam detection is enabled. */
   @NotLogged
   private final Debouncer m_minimumJamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamDetectionDisabledTime.in(Seconds));
 
-  /** Debouncer used to time the jam-recovery undo period. */
   @NotLogged
   private final Debouncer m_jamUndoTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamUndoTime.in(Seconds));
 
-  /** True when a jam condition was previously observed and recovery is active. */
   @Logged(importance = Importance.INFO)
   private boolean m_wasJammed = false;
 
-  /** Debouncer used to detect a sustained 'stuck' condition on the deployment motor. */
   @NotLogged
   private final Debouncer m_stuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckMinimumTime.in(Seconds));
 
-  /** Debouncer that implements a minimum delay before stuck detection is enabled. */
   @NotLogged
   private final Debouncer m_minimumStuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckDetectionDisabledTime.in(Seconds));
 
-  /** Debouncer used to time the stuck-recovery undo period. */
   @NotLogged
   private final Debouncer m_stuckUndoTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckUndoTime.in(Seconds));
 
-  /** True when a stuck condition was previously observed and recovery is active. */
   @Logged(importance = Importance.INFO)
   private boolean m_wasStuck = false;
 
