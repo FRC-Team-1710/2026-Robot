@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -25,13 +26,13 @@ public class ShooterMath {
   // ================== Shooter Math Constants ========================
 
   /* See Desmos for the shooter math calculations: https://www.desmos.com/calculator/sgkhoo58x4 */
-  // Velocity Function Constants (sqrt((kA*x^2)/(kB*x + kC)) + kD)
+  // Velocity Function Constants for the formula: (sqrt((kA*x^2)/(kB*x + kC)) + kD)
   private static final double kA = 2.68496;
   private static final double kB = 0.11359;
   private static final double kC = 0.0680981;
   private static final double kD = 0.746731;
 
-  // Angle Function Constants (kE * kF ^ x)
+  // Angle Function Constants for the formula: (kE * kF ^ x)
   private static final double kE = 1.60189;
   private static final double kF = 0.889922;
 
@@ -42,6 +43,7 @@ public class ShooterMath {
   // RED ALLIANCE
   private static final Translation2d kHUB_CENTER_RED = FieldConstants.kHubCenterRed;
 
+  // Boolean supplier to determine if the robot is on the red alliance
   private static BooleanSupplier m_RedAlliance = () -> Alliance.redAlliance;
 
   /** Record representing the shoot state with velocity and angle. */
@@ -63,8 +65,8 @@ public class ShooterMath {
   private static InterpolatingDoubleTreeMap rpsMap = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
 
+  // Adding values to the Interpolatable maps
   static { // Week 5 Saturday Testing
-    // Adding values to the Interpolatable maps
     addInterpolatableValues(2.2, 50, 0.0874 * 360); // METERS, RPS, DEGREES
     addInterpolatableValues(2.5, 51.5, 0.1 * 360); // METERS, RPS, DEGREES
     addInterpolatableValues(3, 53, 0.11 * 360); // METERS, RPS, DEGREES
@@ -73,6 +75,13 @@ public class ShooterMath {
     addInterpolatableValues(5, 71.5, 0.156 * 360); // METERS, RPS, DEGREES
   }
 
+  /* ============== TRADITIONAL SHOOTER MATH ============= */
+
+  /**
+   * Calculates the distance from the robot to the hub based on the current alliance color.
+   *
+   * @return {@code double} representing the distance to the hub
+   */
   public static double calculateDistance() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
     return !m_RedAlliance.getAsBoolean()
@@ -80,14 +89,22 @@ public class ShooterMath {
         : robotTranslation.getDistance(kHUB_CENTER_RED);
   }
 
-  /** Calculates the shooter velocity based on the horizontal distance to the target. */
+  /**
+   * Calculates the shooter velocity based on the horizontal distance to the target.
+   *
+   * @return {@code LinearVelocity} representing the desired shooter velocity
+   */
   public static LinearVelocity findShooterVelocity() {
     double x_distance = calculateDistance();
     return MetersPerSecond.of(
         Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD);
   }
 
-  /** Calculates the shooter angle based on the horizontal distance to the target. */
+  /**
+   * Calculates the shooter angle based on the horizontal distance to the target.
+   *
+   * @return {@code Angle} representing the desired shooter angle
+   */
   public static Angle findShooterAngle() {
     // Translation2d to find the x and y of the robot on the field
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
@@ -99,7 +116,11 @@ public class ShooterMath {
     return Radians.of(kE * Math.pow(kF, x_distance));
   }
 
-  /** Calculates the shooter velocity based on the robot's pose and alliance color. */
+  /**
+   * Calculates the shooter velocity based on the robot's pose and alliance color.
+   *
+   * @return {@code Velocity3d} representing the desired shooter velocity
+   */
   public static Velocity3d findShooterVelocity3d() {
     // Velocity3d that uses the distance and rotation to find the shooter velocity
     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
@@ -129,7 +150,7 @@ public class ShooterMath {
   /**
    * Calculates the shoot state (velocity and angle) based on the horizontal distance to the target.
    *
-   * @param robotPose The current pose of the robot.
+   * @param shootVelocity The desired shooter velocity as a {@code Velocity3d} object
    * @return {@code ShootState} containing desired flywheel RPM and angle
    */
   private static ShootState calculateShootState(Velocity3d shootVelocity) {
@@ -160,33 +181,87 @@ public class ShooterMath {
    * Inputs the robot's current pose for calculations.
    *
    * @param robotPose The current pose of the robot.
+   * @param robotVelocity The current velocity of the robot.
    */
   public static void input(Pose3d robotPose, Velocity3d robotVelocity) {
     m_robotPose = robotPose;
     m_robotVelocity = robotVelocity;
   }
 
-  /** Returns the current desired shooter RPM. */
+  /**
+   * Returns the current desired shooter RPM calculated from the previously inputted robot pose and
+   * velocity.
+   *
+   * @return {@code AngularVelocity} representing the desired shooter RPM
+   */
   public static AngularVelocity getShooterRPM() {
     return m_shootState.desiredRPM();
   }
 
-  /** Returns the current desired shooter angle. */
+  /**
+   * Returns the current desired shooter angle calculated from the previously inputted robot pose
+   * and velocity.
+   *
+   * @return {@code Angle} representing the desired shooter angle
+   */
   public static Angle getShooterAngle() {
     return m_shootState.desiredAngle();
   }
 
-  /** Returns the current pose of the robot. */
-  public static Pose3d getRobotPose() {
-    return m_robotPose;
+  /* ============== ALTERNATE SHOOTER METHODS AND MATH ============= */
+
+  /**
+   * Calculates the distance from the shooter to the target based on a given offset pose.
+   *
+   * @param offsetPose The offset pose of the shooter from the robot's pose
+   * @return {@code double} representing the distance to the target
+   */
+  public static double calculateDistance(Pose3d offsetPose) {
+    Translation2d robotTranslation = offsetPose.getTranslation().toTranslation2d();
+    return !m_RedAlliance.getAsBoolean()
+        ? robotTranslation.getDistance(kHUB_CENTER_BLUE)
+        : robotTranslation.getDistance(kHUB_CENTER_RED);
   }
 
-  /** Returns the current rotation of the robot. */
-  public static Rotation2d getRobotRotation() {
-    return m_robotRotation;
+  /**
+   * Finds the shooter velocity based on a given offset pose.
+   *
+   * @param offsetPose The offset pose of the shooter from the robot's pose
+   * @return {@code LinearVelocity} representing the desired shooter velocity
+   */
+  public static LinearVelocity findShooterVelocity(Pose3d offsetPose) {
+    double x_distance = calculateDistance(offsetPose);
+    return MetersPerSecond.of(
+        Math.sqrt((kA * x_distance * x_distance) / (kB * x_distance + kC)) + kD);
   }
 
-  /* INTERPOLATING METHODS AND MATH */
+  /**
+   * Finds the 3D shooter velocity based on a given offset pose.
+   *
+   * @param offsetPose The offset pose of the shooter from the robot's pose
+   * @return {@code Velocity3d} representing the desired shooter velocity
+   */
+  public static Velocity3d findShooterVelocity3d(Pose3d offsetPose) {
+    // Velocity3d that uses the distance and rotation to find the shooter velocity
+    Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
+    Rotation2d hubAngle = m_robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
+    return new Velocity3d(
+        findShooterVelocity(offsetPose),
+        new Rotation3d(0.0, findShooterAngle().in(Radians), hubAngle.getRadians()));
+  }
+
+  /**
+   * Calculates the shoot state based on a given shooter offset.
+   *
+   * @param shooterOffset The offset of the shooter from the robot's pose
+   * @return {@code ShootState} containing desired flywheel RPM and angle
+   */
+  public static ShootState calculate(Transform3d shooterOffset) {
+    return calculateShootState(findShooterVelocity3d(m_robotPose.plus(shooterOffset)));
+  }
+
+  /* ============ INTERPOLATING METHODS AND MATH ============ */
+
   /** Adds a RPS value for the current robot pose distance. */
   public static void addRPS(double rps) {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
@@ -211,7 +286,11 @@ public class ShooterMath {
     angleMap.put(x_distance, angle);
   }
 
-  /** Gets the interpolated RPS based on the current robot pose distance. */
+  /**
+   * Gets the interpolated RPS based on the current robot pose distance.
+   *
+   * @return {@code double} representing the interpolated RPS
+   */
   public static double getInterpolatedRPS() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
 
@@ -227,7 +306,11 @@ public class ShooterMath {
     return rpsMap.get(x_distance);
   }
 
-  /** Gets the interpolated angle based on the current robot pose distance. */
+  /**
+   * Gets the interpolated angle based on the current robot pose distance.
+   *
+   * @return {@code double} representing the interpolated angle
+   */
   public static double getInterpolatedAngle() {
     Translation2d robotTranslation = m_robotPose.getTranslation().toTranslation2d();
 
@@ -239,8 +322,35 @@ public class ShooterMath {
     return angleMap.get(x_distance);
   }
 
+  /**
+   * Adds interpolatable values for a given distance, RPS, and angle.
+   *
+   * @param distance The distance for which to add the values
+   * @param rps The RPS value to add
+   * @param angle The angle value to add
+   */
   public static void addInterpolatableValues(double distance, double rps, double angle) {
     rpsMap.put(distance, rps);
     angleMap.put(distance, angle);
+  }
+
+  /* ============== ROBOT POSE METHODS ============= */
+
+  /**
+   * Returns the current pose of the robot.
+   *
+   * @return {@code Pose3d} representing the current pose of the robot
+   */
+  public static Pose3d getRobotPose() {
+    return m_robotPose;
+  }
+
+  /**
+   * Returns the current rotation of the robot.
+   *
+   * @return {@code Rotation2d} representing the current rotation of the robot
+   */
+  public static Rotation2d getRobotRotation() {
+    return m_robotRotation;
   }
 }
