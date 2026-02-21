@@ -14,7 +14,7 @@ public interface LedsIO {
 
   public default void setValue(LED_STATE pState, boolean pValue) {}
 
-  public default void setFlyWheelCharge(int pPercentage) {}
+  public default void setFlyWheelCharge(double pPercentage) {}
 
   public default void send() {}
 }
