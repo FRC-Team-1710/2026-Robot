@@ -40,9 +40,10 @@ public class LedsIOCTRE implements LedsIO {
     this.m_data = this.m_data | (1 << offset);
   }
 
-  public void setFlyWheelCharge(int pPercentage) {
+  public void setFlyWheelCharge(double pPercentage) {
+    int formatedPercent = (int) (30 * pPercentage);
     for (int i = 0; i < 5; i++) {
-      this.m_data = pPercentage | (1 << i);
+      this.m_data = formatedPercent | (1 << i);
     }
   }
 
