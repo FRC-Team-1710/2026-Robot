@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 
@@ -35,8 +36,9 @@ public final class ShooterConstants {
   public static final double MOTION_MAGIC_ACCELERATION = 150.0;
 
   // ======================== Shooter Physical Constants ===========================
-  public static final double HOOD_MAX = 56.16; // 42.5;
-  public static final double HOOD_MIN = 31.5;
+  // Degrees from horizontal
+  public static final double HOOD_MAX = 41;
+  public static final double HOOD_MIN = 27.5;
 
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
 
@@ -48,9 +50,17 @@ public final class ShooterConstants {
   public static final double JAM_DETECT_TIME = 1.0;
 
   public static final Transform3d kLEFT_SHOOTER_OFFSET =
-      new Transform3d(0.3, 0.1, 0.3, Rotation3d.kZero);
+      new Transform3d(
+          Units.inchesToMeters(4.8),
+          Units.inchesToMeters(4.4),
+          Units.inchesToMeters(22.8),
+          Rotation3d.kZero);
   public static final Transform3d kRIGHT_SHOOTER_OFFSET =
-      new Transform3d(0.3, -0.1, 0.3, Rotation3d.kZero);
+      new Transform3d(
+          Units.inchesToMeters(4.8),
+          Units.inchesToMeters(-4.4),
+          Units.inchesToMeters(22.8),
+          Rotation3d.kZero);
 
   private ShooterConstants() {
     throw new UnsupportedOperationException("This is a utility class!");

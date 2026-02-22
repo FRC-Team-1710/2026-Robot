@@ -23,7 +23,7 @@ import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.FuelSim;
-import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMath2;
 
 @Logged
 public class Superstructure {
@@ -329,7 +329,7 @@ public class Superstructure {
 
   @NotLogged
   private Rotation2d getRotationForScore() {
-    return ShooterMath.getCurrentSolution().robotHeading;
+    return ShooterMath2.currentSolution.robotHeading();
   }
 
   /** The wanted states of superstructure */

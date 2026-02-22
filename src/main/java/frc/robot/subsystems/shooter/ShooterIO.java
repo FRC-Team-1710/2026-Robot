@@ -18,27 +18,43 @@ public interface ShooterIO {
 
   public default void stop() {}
 
-  public default void setTargetVelocity(AngularVelocity pVelocity) {}
+  public default void setLeftTargetVelocity(AngularVelocity pVelocity) {}
 
-  public default AngularVelocity getVelocity() {
+  public default void setRightTargetVelocity(AngularVelocity pVelocity) {}
+
+  public default AngularVelocity getLeftVelocity() {
     return RotationsPerSecond.of(0);
   }
 
-  public default AngularVelocity getTargetVelocity() {
+  public default AngularVelocity getRightVelocity() {
     return RotationsPerSecond.of(0);
   }
 
-  public default void setHoodAngle(Angle pAngle) {}
+  public default AngularVelocity getLeftTargetVelocity() {
+    return RotationsPerSecond.of(0);
+  }
 
-  public default Angle getHoodAngle() {
+  public default AngularVelocity getRightTargetVelocity() {
+    return RotationsPerSecond.of(0);
+  }
+
+  public default void setLeftHoodTarget(Angle pAngle) {}
+
+  public default void setRightHoodTarget(Angle pAngle) {}
+
+  public default Angle getLeftHoodPosition() {
     return Degrees.of(0);
   }
 
-  public default boolean hasBreakerBroke() {
+  public default Angle getRightHoodPosition() {
+    return Degrees.of(0);
+  }
+
+  public default boolean hasBreakerLeftBroke() {
     return false;
   }
 
-  public default boolean hasBreakerFollowerBroke() {
+  public default boolean hasBreakerRightBroke() {
     return false;
   }
 

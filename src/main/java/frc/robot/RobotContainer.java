@@ -75,7 +75,7 @@ public class RobotContainer {
   private final Feeder feeder;
 
   // Should add logging soon
-  @NotLogged private Vision[] cameras;
+  @NotLogged private final Vision[] cameras;
 
   @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
@@ -113,6 +113,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras = new Vision[0];
         break;
 
       default:
@@ -121,6 +123,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras = new Vision[0];
         break;
     }
 
