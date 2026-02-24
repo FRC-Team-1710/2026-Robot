@@ -87,43 +87,29 @@ public class AutosChooser {
           drivetrain.setAutonomousRequestOverride(true);
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
         });
-
+    ;
     FollowPath.registerEventTrigger(
         "Shoot",
         () -> {
           drivetrain.setAutonomousRequestOverride(true);
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
-          superstructure
-              .setWantedStateCommand(WantedStates.ShootAuto)
-              .until(() -> shooter.getFPS() < 0.5);
+          superstructure.setWantedStateCommand(WantedStates.ShootAuto).schedule();
         });
 
     FollowPath.registerEventTrigger(
-        "ShootWhileMoving",
+        "EndShoot",
         () -> {
-          superstructure
-              .setWantedStateCommand(WantedStates.ShootAuto)
-              .until(() -> shooter.getFPS() < 0.5);
-        });
-
-    FollowPath.registerEventTrigger(
-        "Intake",
-        () -> {
-          drivetrain.setAutonomousRequestOverride(false);
-          superstructure
-              .setWantedStateCommand(WantedStates.IntakeAuto)
-              .until(() -> drivetrain.getRobotSpeeds().vxMetersPerSecond < 0);
-          superstructure.setWantedStateCommand(WantedStates.DefaultAuto);
-        });
-
-    FollowPath.registerEventTrigger(
-        "IntakeDepot",
-        () -> {
-          drivetrain.setAutonomousRequestOverride(false);
-          superstructure
-              .setWantedStateCommand(WantedStates.IntakeAuto)
-              .until(() -> drivetrain.getRobotSpeeds().vyMetersPerSecond < 0);
-          superstructure.setWantedStateCommand(WantedStates.DefaultAuto);
+          Commands.waitUntil(() -> shooter.getFPS() < 8)
+              // .schedule()
+              .finallyDo(
+                  () ->
+                      superstructure
+                          .setWantedStateCommand(WantedStates.DefaultAuto)
+                          .alongWith(
+                              Commands.runOnce(
+                                  () -> drivetrain.setAutonomousRequestOverride(false)))
+                          .schedule())
+              .schedule();
         });
 
     FollowPath.setPoseLoggingConsumer(
@@ -137,6 +123,24 @@ public class AutosChooser {
         (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
     FollowPath.setDoubleLoggingConsumer(
         (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
+  }
+
+  public boolean endShoot(Shooter shooter, Superstructure superstructure) {
+    if (shooter.getFPS() < 8) {
+      superstructure.setWantedStateCommand(WantedStates.DefaultAuto).schedule();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public void Shoot(Shooter shooter, Superstructure superstructure) {
+    Commands.sequence(
+        Commands.runOnce(
+            () -> superstructure.setWantedStateCommand(WantedStates.ShootAuto).schedule()),
+        Commands.waitUntil(() -> shooter.getFPS() < 8),
+        Commands.runOnce(
+            () -> superstructure.setWantedStateCommand(WantedStates.DefaultAuto).schedule()));
   }
 
   public void setCustom(Command command) {

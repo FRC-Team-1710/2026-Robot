@@ -20,8 +20,19 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.4895038316763519,
+      "t_ratio": 1.0,
       "lib_key": "IntakeAuto"
+    },
+    {
+      "type": "translation",
+      "x_meters": 7.031012838801711,
+      "y_meters": 2.33311697574893,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 0.9475973008559703,
+      "lib_key": "DefaultAuto"
     },
     {
       "type": "waypoint",
@@ -67,7 +78,12 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.7496523999894326,
+      "t_ratio": 0.21216053849933822,
+      "lib_key": "DefaultAuto"
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 0.7496523999894327,
       "lib_key": "ShootAuto"
     },
     {
@@ -92,8 +108,13 @@
       },
       {
         "value": 2.0,
-        "start_ordinal": 5,
-        "end_ordinal": 5
+        "start_ordinal": 6,
+        "end_ordinal": 7
+      },
+      {
+        "value": 0.5,
+        "start_ordinal": 3,
+        "end_ordinal": 3
       }
     ]
   }

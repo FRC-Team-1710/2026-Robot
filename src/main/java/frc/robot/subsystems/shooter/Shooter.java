@@ -11,6 +11,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.constants.Mode;
+import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -179,7 +181,7 @@ public class Shooter {
       totalTime += this.m_FPSLists.get(i);
     }
 
-    return totalTime / this.m_FPSLists.size();
+    return Mode.currentMode == CurrentMode.SIMULATION ? 5 : totalTime / this.m_FPSLists.size();
   }
 
   public boolean isJammed() {

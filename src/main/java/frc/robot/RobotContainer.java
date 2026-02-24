@@ -137,7 +137,9 @@ public class RobotContainer {
           width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
           -length / 2,
           length / 2,
-          () -> superstructure.getCurrentState() == CurrentStates.Intake);
+          () ->
+              superstructure.getCurrentState() == CurrentStates.Intake
+                  || superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
 
