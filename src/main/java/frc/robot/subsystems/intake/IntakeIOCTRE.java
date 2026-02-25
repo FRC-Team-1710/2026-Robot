@@ -90,7 +90,12 @@ public class IntakeIOCTRE implements IntakeIO {
 
   public void setAngle(Angle angle) {
     m_angleSetpoint = angle;
-    // m_deploymentMotor.setControl(m_request.withPosition(angle));
+    // m_deploymentMotor.setControl(
+    //     m_request.withPosition(
+    //         MathUtil.clamp(
+    //             angle.in(Degrees),
+    //             IntakeConstants.minDeploymentDegrees.in(Degrees),
+    //             IntakeConstants.maxDeploymentDegrees.in(Degrees))));
     m_deploymentMotor.stopMotor();
   }
 

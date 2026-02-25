@@ -19,6 +19,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.utils.MechanismUtil;
 import frc.robot.utils.MechanismUtil.IntakeVisualSim;
 
@@ -37,7 +38,16 @@ public class IntakeIOSIM implements IntakeIO {
   public IntakeIOSIM() {
     m_gearbox = DCMotor.getKrakenX60(1);
     m_armPhysicsSim =
-        new SingleJointedArmSim(m_gearbox, 25, 0.004, 10, -45, 90, false, 45, new double[2]);
+        new SingleJointedArmSim(
+            m_gearbox,
+            25,
+            0.004,
+            10,
+            IntakeConstants.minDeploymentDegrees.in(Radians),
+            IntakeConstants.maxDeploymentDegrees.in(Radians),
+            false,
+            45,
+            new double[2]);
 
     m_intakeVisualSim =
         new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
