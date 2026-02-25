@@ -12,20 +12,6 @@ import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-/**
- * Estimates and TRACKS the field-relative Pose2d of 4.91-inch spheres on the ground.
- *
- * <p>Tracking behaviour:
- *
- * <ul>
- *   <li>Balls that leave the camera's view are <b>remembered</b> at their last known position.
- *   <li>If a ball is seen again near a remembered position (within {@link #MATCH_DISTANCE_M}), the
- *       old position is <b>replaced</b> with the new estimate (handles moved balls).
- *   <li>Each track carries a stable integer ID so downstream code can follow individuals.
- * </ul>
- *
- * <p>Coordinate / ray-cast math is identical to the original — see inline comments.
- */
 public class VisionFuel extends SubsystemBase {
 
   // ── Physical constants ────────────────────────────────────────────────────
@@ -185,25 +171,7 @@ public class VisionFuel extends SubsystemBase {
 
   // ── Track association ─────────────────────────────────────────────────────
 
-  /**
-   * Greedy nearest-neighbour association pass.
-   *
-   * <p>For each detection we find the closest unmatched existing track. If it is within {@link
-   * #MATCH_DISTANCE_M} we update that track (ball moved or re-observed). Otherwise we create a new
-   * track. Any track that received no matching detection this frame is marked as "not currently
-   * visible" but is <em>not</em> removed from the list.
-   *
-   * @param detections raw Pose2d estimates from the camera this frame
-   * @param robotPose current robot pose (used to update sphere heading)
-   */
   private void updateTracks(List<Pose2d> detections, Pose2d robotPose) {
-    // tracks.clear();
-    // for (Pose2d detection : detections) {
-    // name.pose = detection;
-    // tracks.add(name);
-    // break;
-    // tracks.add(new TrackedSphere(detection));
-    // }
     // Mark all tracks as "not seen yet this frame"
     for (TrackedSphere t : tracks) t.markNotSeen();
 
@@ -216,7 +184,7 @@ public class VisionFuel extends SubsystemBase {
 
       for (int i = 0; i < tracks.size(); i++) {
         if (claimed[i]) continue;
-        double d = distance(detection, tracks.get(i).getPose());
+        double d = detection.getTranslation().getDistance(tracks.get(i).getPose().getTranslation());
         if (d < bestDist) {
           bestDist = d;
           bestIdx = i;
@@ -236,12 +204,8 @@ public class VisionFuel extends SubsystemBase {
     // and retains its last known pose automatically (no extra work needed).
   }
 
-  // ── Ray-cast pose estimation (unchanged from v1) ──────────────────────────
+  // ── Ray-cast pose estimation ──────────────────────────
 
-  /**
-   * Converts PhotonVision targets into field-relative sphere Pose2ds via ray-plane intersection at
-   * {@code Z = SPHERE_RADIUS_M}.
-   */
   public static List<Pose2d> estimateSpherePoses(
       Pose2d robotPose, PhotonCamera cam, Transform3d robotToCam) {
     List<Pose2d> results = new ArrayList<>();
@@ -266,7 +230,6 @@ public class VisionFuel extends SubsystemBase {
     if (camZ <= SPHERE_RADIUS_M) return results;
 
     for (PhotonTrackedTarget target : photonResult.getTargets()) {
-
       double yawRad =
           Units.degreesToRadians(
               (178.37 / 4)
@@ -285,9 +248,6 @@ public class VisionFuel extends SubsystemBase {
                       / 720
                       * 177.74
                       / 2);
-
-      Robot.telemetry().log("yehaws", Units.radiansToDegrees(yawRad));
-      Robot.telemetry().log("yehitchs", Units.radiansToDegrees(pitchRad));
 
       // Unit ray in camera frame (NWU: X-forward, Y-left, Z-up)
       double cosPitch = Math.cos(pitchRad);
@@ -312,11 +272,6 @@ public class VisionFuel extends SubsystemBase {
       // Heading: sphere faces the robot (useful for approach commands)
       double dx = robotPose.getX() - sphereX;
       double dy = robotPose.getY() - sphereY;
-      Robot.telemetry()
-          .log(
-              "your mother heheheha",
-              new Pose2d(sphereX, sphereY, Rotation2d.kZero),
-              Pose2d.struct);
       results.add(new Pose2d(sphereX, sphereY, new Rotation2d(Math.atan2(dy, dx))));
     }
 
@@ -360,8 +315,6 @@ public class VisionFuel extends SubsystemBase {
     }
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
-
   /** All tracks — visible AND remembered. */
   public List<TrackedSphere> getAllTracks() {
     return Collections.unmodifiableList(tracks);
@@ -387,7 +340,9 @@ public class VisionFuel extends SubsystemBase {
   public Pose2d getClosestSphere(Pose2d robotPose) {
     return tracks.stream()
         .map(TrackedSphere::getPose)
-        .min(Comparator.comparingDouble(p -> distance(p, robotPose)))
+        .min(
+            Comparator.comparingDouble(
+                p -> p.getTranslation().getDistance(robotPose.getTranslation())))
         .orElse(null);
   }
 
@@ -399,18 +354,14 @@ public class VisionFuel extends SubsystemBase {
     return tracks.stream()
         .filter(TrackedSphere::isCurrentlyVisible)
         .map(TrackedSphere::getPose)
-        .min(Comparator.comparingDouble(p -> distance(p, robotPose)))
+        .min(
+            Comparator.comparingDouble(
+                p -> p.getTranslation().getDistance(robotPose.getTranslation())))
         .orElse(null);
   }
 
   /** Manually clear all stored tracks (e.g. at the start of auto). */
   public void clearAllTracks() {
     tracks.clear();
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  private static double distance(Pose2d a, Pose2d b) {
-    return Math.hypot(a.getX() - b.getX(), a.getY() - b.getY());
   }
 }
