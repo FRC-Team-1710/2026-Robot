@@ -14,8 +14,6 @@ public class LedsIOArduino implements LedsIO {
     this.m_data = 0;
 
     this.m_port = new SerialPort(115200, SerialPort.Port.kMXP);
-    // this.m_bits =
-    // new DigitalOutput[] {m_johnRomero, m_johnCarmack, m_adrianCarmack, m_sandyPetersen};
   }
 
   public void update() {
