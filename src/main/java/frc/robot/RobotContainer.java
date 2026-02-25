@@ -10,6 +10,8 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -20,7 +22,6 @@ import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
-import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
@@ -28,26 +29,19 @@ import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.FeederIO;
-import frc.robot.subsystems.feeder.FeederIOCTRE;
-import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
-import frc.robot.subsystems.indexer.IndexerIOCTRE;
-import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOCTRE;
-import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOCTRE;
-import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionFuel;
 import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
 import java.util.ArrayList;
-import java.util.Arrays;
+import org.photonvision.PhotonCamera;
 
 @Logged
 public class RobotContainer {
@@ -74,8 +68,10 @@ public class RobotContainer {
   @Logged(importance = Importance.CRITICAL)
   private final Feeder feeder;
 
+  @NotLogged private final VisionFuel vision;
+
   // Should add logging soon
-  @NotLogged private Vision[] cameras;
+  @NotLogged private final Vision[] cameras;
 
   @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
@@ -84,45 +80,44 @@ public class RobotContainer {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(driver);
 
-    switch (Mode.currentMode) {
-      case REAL:
-        intake = new Intake(new IntakeIOCTRE(), consumer);
-        shooter = new Shooter(new ShooterIOCTRE(), consumer);
-        feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer =
-            new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
+    // switch (Mode.currentMode) {
+    //   case REAL:
+    //     intake = new Intake(new IntakeIOCTRE(), consumer);
+    //     shooter = new Shooter(new ShooterIOCTRE(), consumer);
+    //     feeder = new Feeder(new FeederIOCTRE(), consumer);
+    //     indexer =
+    //         new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
 
-        cameras =
-            // Create a stream of Vision objects from the camera configs
-            Arrays.stream(VisionConstants.kPoseCameraConfigs)
-                // For each config, create a new Vision subsystem with the appropriate arguments
-                .map(
-                    config ->
-                        new Vision(
-                            config.name(),
-                            config.robotToCamera(),
-                            drivetrain)) // TODO: Fix this stuff :p
-                // Collect the stream back into an array of Vision subsystems
-                .toArray(Vision[]::new);
+    //     cameras =
+    //         // Create a stream of Vision objects from the camera configs
+    //         Arrays.stream(VisionConstants.kPoseCameraConfigs)
+    //             // For each config, create a new Vision subsystem with the appropriate arguments
+    //             .map(
+    //                 config ->
+    //                     new Vision(
+    //                         config.name(),
+    //                         config.robotToCamera(),
+    //                         drivetrain)) // TODO: Fix this stuff :p
+    //             // Collect the stream back into an array of Vision subsystems
+    //             .toArray(Vision[]::new);
 
-        break;
+    //     break;
 
-      case SIMULATION:
-        intake = new Intake(new IntakeIOSIM(), consumer);
-        shooter = new Shooter(new ShooterIOSIM(), consumer);
-        feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer =
-            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
-        break;
+    //   case SIMULATION:
+    // intake = new Intake(new IntakeIOSIM(), consumer);
+    // shooter = new Shooter(new ShooterIOSIM(), consumer);
+    // feeder = new Feeder(new FeederIOSIM(), consumer);
+    // indexer = new Indexer(new IndexerIOSIM(), consumer, () ->
+    // driver.leftBumper().getAsBoolean());
+    //     break;
 
-      default:
-        intake = new Intake(new IntakeIO() {}, consumer);
-        shooter = new Shooter(new ShooterIO() {}, consumer);
-        feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer =
-            new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
-        break;
-    }
+    //   default:
+    intake = new Intake(new IntakeIO() {}, consumer);
+    shooter = new Shooter(new ShooterIO() {}, consumer);
+    feeder = new Feeder(new FeederIO() {}, consumer);
+    indexer = new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+    //     break;
+    // }
 
     superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
 
@@ -154,6 +149,16 @@ public class RobotContainer {
 
       fuelSim.enableAirResistance();
     }
+    vision =
+        new VisionFuel(
+            new PhotonCamera("LOL"),
+            new Transform3d(
+                0,
+                0,
+                Units.inchesToMeters(12.35),
+                new Rotation3d(0, Units.radiansToDegrees((-215)), 0)),
+            drivetrain::getPose);
+    cameras = new Vision[0];
 
     autoChooser = new AutosChooser(superstructure, drivetrain);
 
