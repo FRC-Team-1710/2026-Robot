@@ -5,12 +5,12 @@ import edu.wpi.first.wpilibj.SerialPort;
 
 @Logged
 @SuppressWarnings("unused")
-public class LedsIOCTRE implements LedsIO {
+public class LedsIOArduino implements LedsIO {
   private int m_data;
 
   private final SerialPort m_port;
 
-  public LedsIOCTRE() {
+  public LedsIOArduino() {
     this.m_data = 0;
 
     this.m_port = new SerialPort(115200, SerialPort.Port.kMXP);
@@ -29,7 +29,7 @@ public class LedsIOCTRE implements LedsIO {
         offset = 8;
         break;
 
-      case BROWOUT:
+      case BROWNOUT:
         offset = 7;
         break;
 
@@ -37,7 +37,9 @@ public class LedsIOCTRE implements LedsIO {
         offset = 6;
         break;
     }
-    this.m_data = this.m_data | (1 << offset);
+
+    int bitValue = pValue ? 0 : 1;
+    this.m_data = bitValue | (1 << offset);
   }
 
   public void setFlyWheelCharge(double pPercentage) {

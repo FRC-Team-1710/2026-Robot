@@ -40,7 +40,7 @@ import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.leds.LedsIO;
-import frc.robot.subsystems.leds.LedsIOCTRE;
+import frc.robot.subsystems.leds.LedsIOArduino;
 import frc.robot.subsystems.leds.LedsIOSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
@@ -98,7 +98,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer =
             new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIOCTRE(), shooter);
+        leds = new Leds(new LedsIOArduino(), shooter);
 
         cameras =
             // Create a stream of Vision objects from the camera configs
@@ -255,12 +255,6 @@ public class RobotContainer {
             feeder::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 6 + 60.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Drive,
-            drivetrain::periodic,
-            Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 7)));
     return map.toArray(new SubsystemInfo[0]);
   }
 

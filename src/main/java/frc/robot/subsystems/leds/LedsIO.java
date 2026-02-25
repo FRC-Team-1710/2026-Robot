@@ -8,7 +8,7 @@ public interface LedsIO {
 
   public enum LED_STATE {
     AUTOS,
-    BROWOUT,
+    BROWNOUT,
     ATTACKING
   };
 

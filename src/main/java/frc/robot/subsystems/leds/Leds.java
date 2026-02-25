@@ -30,7 +30,7 @@ public class Leds {
   public void periodic() {
     this.m_io.setValue(LED_STATE.ATTACKING, MatchState.timeTillActive().in(Seconds) <= 3);
     this.m_io.setValue(
-        LED_STATE.BROWOUT, RobotController.isBrownedOut()); // TODO : FLASH IF CLOSE TO BROWNOUT
+        LED_STATE.BROWNOUT, RobotController.isBrownedOut()); // TODO : FLASH IF CLOSE TO BROWNOUT
 
     boolean autosVictory =
         MatchState.autonomousWinnerIsRed.isPresent()

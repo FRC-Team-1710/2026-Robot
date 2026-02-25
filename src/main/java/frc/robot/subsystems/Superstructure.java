@@ -54,7 +54,7 @@ public class Superstructure {
       Shooter shooter,
       Indexer indexer,
       Feeder feeder,
-      Leds io) {
+      Leds leds) {
     this.driver = driver;
     this.mech = mech;
     this.drivetrain = drivetrain;

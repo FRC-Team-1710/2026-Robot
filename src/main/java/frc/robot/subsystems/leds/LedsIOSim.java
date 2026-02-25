@@ -23,7 +23,7 @@ public class LedsIOSim implements LedsIO {
         offset = 8;
         break;
 
-      case BROWOUT:
+      case BROWNOUT:
         offset = 7;
         break;
 
