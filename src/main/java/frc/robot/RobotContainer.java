@@ -7,7 +7,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,18 +58,26 @@ public class RobotContainer {
 
   private final AutosChooser autoChooser;
 
+  @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
 
   /* Create subsystems (uses simulated versions when running in simulation) */
+  @Logged(importance = Importance.CRITICAL)
   private final Intake intake;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Shooter shooter;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Indexer indexer;
+
+  @Logged(importance = Importance.CRITICAL)
   private final Feeder feeder;
 
-  // It is used :( (not rly but shhhhh)
-  @SuppressWarnings("unused")
-  private Vision[] cameras;
+  // Should add logging soon
+  @NotLogged private Vision[] cameras;
 
+  @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
 
   public RobotContainer(TimesConsumer consumer) {
@@ -119,7 +128,7 @@ public class RobotContainer {
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
-      fuelSim = new FuelSim("FeulSim");
+      fuelSim = new FuelSim("FuelSim");
       fuelSim.spawnStartingFuel();
 
       double width = Units.inchesToMeters(39.875);
@@ -150,6 +159,8 @@ public class RobotContainer {
 
     autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
 
+    superstructure.setFuelSim(fuelSim);
+
     configureBindings();
   }
 
@@ -157,9 +168,7 @@ public class RobotContainer {
     driver
         .start()
         .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drivetrain.resetPose(new Pose2d(Feet.of(0), Feet.of(0), Rotation2d.kZero)))
+            Commands.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
                 .ignoringDisable(true));
 
     driver
@@ -194,6 +203,7 @@ public class RobotContainer {
                 .ignoringDisable(true));
   }
 
+  @NotLogged
   public Command getAutonomousCommand() {
     return autoChooser.selectAuto(drivetrain, shooter);
   }
@@ -232,10 +242,19 @@ public class RobotContainer {
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
     map.add(
         new SubsystemInfo(
+            Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
+    map.add(
+        new SubsystemInfo(
             Subsystems.Drive,
             drivetrain::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
     return map.toArray(new SubsystemInfo[0]);
+  }
+
+  private void cycleVision() {
+    for (Vision vision : cameras) {
+      vision.periodic();
+    }
   }
 }

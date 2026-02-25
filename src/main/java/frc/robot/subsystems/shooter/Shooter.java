@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -16,29 +18,42 @@ import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
 import java.util.ArrayList;
 
 @Logged
 public class Shooter {
+  @Logged(importance = Importance.CRITICAL)
   private SHOOTER_STATE m_currentState;
 
+  @Logged(importance = Importance.CRITICAL)
   private final ShooterIO m_io;
 
-  private final TimesConsumer m_timesConsumer;
+  @NotLogged private final TimesConsumer m_timesConsumer;
 
+  @Logged(importance = Importance.CRITICAL)
   private AngularVelocity m_velocity;
+
+  @Logged(importance = Importance.CRITICAL)
   private Angle m_hoodAngle;
 
-  private boolean m_isGoingTowardsAllianceZone;
+  @NotLogged private boolean m_isGoingTowardsAllianceZone;
+
+  @Logged(importance = Importance.INFO)
   private boolean m_didIntake;
 
-  private Timer m_FPSTimer;
-  private ArrayList<Double> m_FPSLists;
+  @NotLogged private Timer m_FPSTimer;
 
+  @Logged(importance = Importance.INFO)
+  private double m_FPS;
+
+  @NotLogged private ArrayList<Double> m_FPSLists;
+
+  @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
 
-  private Debouncer m_jamDetect;
+  @NotLogged private Debouncer m_jamDetect;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -64,8 +79,8 @@ public class Shooter {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_velocity = ShooterMath.getShooterRPM();
-        this.m_hoodAngle = ShooterMath.getShooterAngle();
+        this.m_velocity = RotationsPerSecond.of(ShooterMath.getInterpolatedRPS());
+        this.m_hoodAngle = Degrees.of(ShooterMath.getInterpolatedAngle());
         break;
 
       default:
@@ -100,28 +115,34 @@ public class Shooter {
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
+  @NotLogged
   public AngularVelocity getVelocity() {
     return this.m_io.getVelocity();
   }
 
+  @NotLogged
   public AngularVelocity getTargetVelocity() {
     return this.m_velocity;
   }
 
+  @NotLogged
   public boolean isAtTargetVelocity() {
     return this.getVelocity()
         .isNear(getTargetVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE);
   }
 
+  @NotLogged
   public boolean isHoodAtTargetAngle() {
     return this.getHoodAngle()
         .isNear(getTargetHoodAngle(), ShooterConstants.HOOD_TARGET_ERROR_RANGE);
   }
 
+  @NotLogged
   public Angle getTargetHoodAngle() {
     return this.m_hoodAngle;
   }
 
+  @NotLogged
   public Angle getHoodAngle() {
     return this.m_io.getHoodAngle();
   }
@@ -136,9 +157,9 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(60), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(60), Degrees.of(0));
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(65), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -163,18 +184,22 @@ public class Shooter {
     // }
   }
 
+  @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;
   }
 
+  @NotLogged
   public int getBallCount() {
     return this.m_fuelCount;
   }
 
+  @NotLogged
   public void resetBallCount() {
     this.m_fuelCount = 0;
   }
 
+  @NotLogged
   public double getFPS() {
     double totalTime = 0;
     for (int i = 0; i < this.m_FPSLists.size(); i++) {
@@ -184,8 +209,23 @@ public class Shooter {
     return Mode.currentMode == CurrentMode.SIMULATION ? 5 : totalTime / this.m_FPSLists.size();
   }
 
+  @Logged(importance = Importance.INFO)
   public boolean isJammed() {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerBroke() && !this.m_io.hasBreakerFollowerBroke());
+  }
+
+  @Logged(importance = Importance.INFO)
+  public boolean hasBreakerBroke() {
+    return this.m_io.hasBreakerBroke();
+  }
+
+  @Logged(importance = Importance.INFO)
+  public boolean hasBreakerFollowerBroke() {
+    return this.m_io.hasBreakerFollowerBroke();
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.m_io.setFuelSim(fuelSim);
   }
 }

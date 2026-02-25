@@ -15,7 +15,6 @@ package frc.robot.utils;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -30,14 +29,16 @@ import edu.wpi.first.units.measure.Distance;
  * and data structures for vision measurements. Supports both MegaTag1 (MT1) and MegaTag2 (MT2)
  * vision systems.
  */
-@Logged
 public class VisionUtil {
   public static final Distance FIELD_MARGIN =
       Meters.of(0.5); // Meters beyond field boundaries to accept measurements
+
   public static final Distance Z_MARGIN =
       Meters.of(0.5); // Meters above/below field to accept measurements
+
   public static final AngularVelocity MT2_SPIN_MAX =
       DegreesPerSecond.of(40.0); // Maximum rotation speed for MT2 measurements
+
   public static final double MIN_TAG_AREA = 0.1; // Minimum tag area to be accepted
 
   // Vision measurement constants for MA mode
