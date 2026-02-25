@@ -509,9 +509,6 @@ public class MechanismUtil {
     /** Visual representation of the flywheel spokes that rotate with simulation */
     private final MechanismLigament2d[] spokes;
 
-    /** Current rotation angle for visual animation in degrees */
-    private double visualAngleDeg = 0.0;
-
     public IndexerVisualSim(String name, double rollerRadius) {
       index = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
       MechanismRoot2d root = index.getRoot(name + "Root", ROOT_X, ROOT_Y);
