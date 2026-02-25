@@ -32,12 +32,12 @@ public class Leds {
     this.m_io.setValue(
         LED_STATE.BROWNOUT, RobotController.isBrownedOut()); // TODO : FLASH IF CLOSE TO BROWNOUT
 
-    boolean autosVictory =
-        MatchState.autonomousWinnerIsRed.isPresent()
-            ? MatchState.autonomousWinnerIsRed.get()
-            : false;
-
-    this.m_io.setValue(LED_STATE.AUTOS, autosVictory && this.m_autosTimer.get() < 3);
+    this.m_io.setValue(
+        LED_STATE.AUTOS,
+        (MatchState.autonomousWinnerIsRed.isPresent()
+                ? MatchState.autonomousWinnerIsRed.get()
+                : false)
+            && this.m_autosTimer.get() < 3);
 
     double shooterCharge =
         (this.m_shooter.getVelocity().in(DegreesPerSecond)

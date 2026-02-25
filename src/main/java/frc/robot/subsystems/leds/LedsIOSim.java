@@ -13,7 +13,14 @@ public class LedsIOSim implements LedsIO {
   }
 
   public void update() {
-    this.send();
+    boolean[] array = new boolean[8];
+
+    for (int i = 0; i < 8; i++) {
+      boolean value = ((this.m_data >> i) & 1) == 1;
+      array[i] = value;
+    }
+
+    Robot.telemetry().log("Led Bits", array);
   }
 
   public void setValue(LED_STATE pState, boolean pValue) {
@@ -39,16 +46,5 @@ public class LedsIOSim implements LedsIO {
     for (int i = 0; i < 5; i++) {
       this.m_data = formatedPercent | (1 << i);
     }
-  }
-
-  public void send() {
-    boolean[] array = new boolean[8];
-
-    for (int i = 0; i < 8; i++) {
-      boolean value = ((this.m_data >> i) & 1) == 1;
-      array[i] = value;
-    }
-
-    Robot.telemetry().log("Led Bits", array);
   }
 }

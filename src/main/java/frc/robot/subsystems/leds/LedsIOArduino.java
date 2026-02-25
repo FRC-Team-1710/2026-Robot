@@ -19,7 +19,10 @@ public class LedsIOArduino implements LedsIO {
   }
 
   public void update() {
-    this.send();
+    byte[] data = new byte[1];
+    data[0] = (byte) (this.m_data & 0xFF);
+
+    this.m_port.write(data, data.length);
   }
 
   public void setValue(LED_STATE pState, boolean pValue) {
@@ -47,12 +50,5 @@ public class LedsIOArduino implements LedsIO {
     for (int i = 0; i < 5; i++) {
       this.m_data = formatedPercent | (1 << i);
     }
-  }
-
-  public void send() {
-    byte[] data = new byte[1];
-    data[0] = (byte) (this.m_data & 0xFF);
-
-    this.m_port.write(data, data.length);
   }
 }
