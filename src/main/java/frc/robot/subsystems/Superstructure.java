@@ -20,6 +20,7 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
+import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.FuelSim;
@@ -34,6 +35,7 @@ public class Superstructure {
   @NotLogged private Shooter shooter;
   @NotLogged private Indexer indexer;
   @NotLogged private Feeder feeder;
+  @NotLogged private Leds leds;
 
   @Logged(importance = Importance.CRITICAL)
   private WantedStates wantedState = WantedStates.Default;
@@ -51,7 +53,8 @@ public class Superstructure {
       Intake intake,
       Shooter shooter,
       Indexer indexer,
-      Feeder feeder) {
+      Feeder feeder,
+      Leds leds) {
     this.driver = driver;
     this.mech = mech;
     this.drivetrain = drivetrain;
@@ -59,6 +62,7 @@ public class Superstructure {
     this.shooter = shooter;
     this.indexer = indexer;
     this.feeder = feeder;
+    this.leds = leds;
   }
 
   public void periodic() {
