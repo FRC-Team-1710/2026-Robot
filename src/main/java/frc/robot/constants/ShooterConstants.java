@@ -49,6 +49,8 @@ public final class ShooterConstants {
 
   public static final double JAM_DETECT_TIME = 1.0;
 
+  /* Offsets (center of robot to center of bottom flywheel) */
+
   public static final Transform3d kLEFT_SHOOTER_OFFSET =
       new Transform3d(
           Units.inchesToMeters(4.8),
