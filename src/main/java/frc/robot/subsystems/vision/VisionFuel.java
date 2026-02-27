@@ -170,7 +170,7 @@ public class VisionFuel extends SubsystemBase {
   }
 
   // ── Track association ─────────────────────────────────────────────────────
-
+  // TODO: update the logic here
   private void updateTracks(List<Pose2d> detections, Pose2d robotPose) {
     // Mark all tracks as "not seen yet this frame"
     for (TrackedSphere t : tracks) t.markNotSeen();
@@ -308,6 +308,7 @@ public class VisionFuel extends SubsystemBase {
     }
 
     // Closest ball (visible or remembered)
+    // Todo: make sure to weigh how long its been since its been observed.
     Pose2d closest = getClosestSphere(robotPose);
     if (closest != null) {
       SmartDashboard.putNumber("Sphere Vision/Closest/x", closest.getX());
