@@ -59,7 +59,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @NotLogged private AngularVelocity MaxAngularRate = TunerConstants.kMaxAngularRate;
 
   @Logged(importance = Importance.CRITICAL)
-  private final CustomFieldCentric fieldCentric;
+  public final CustomFieldCentric fieldCentric;
 
   @Logged(importance = Importance.INFO)
   private DriveStates currentState = DriveStates.DRIVER_CONTROLLED;

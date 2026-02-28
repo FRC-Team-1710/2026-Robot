@@ -75,16 +75,10 @@
       "lib_key": "EndShoot"
     },
     {
-      "type": "waypoint",
-      "translation_target": {
-        "x_meters": 3.5692948080456244,
-        "y_meters": 5.320334898449794,
-        "intermediate_handoff_radius_meters": 0.2
-      },
-      "rotation_target": {
-        "rotation_radians": 2.42445745259838,
-        "profiled_rotation": true
-      }
+      "type": "translation",
+      "x_meters": 3.579408653987657,
+      "y_meters": 5.12553813742767,
+      "intermediate_handoff_radius_meters": 0.2
     },
     {
       "type": "translation",

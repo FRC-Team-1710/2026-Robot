@@ -17,9 +17,11 @@ import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.HashMap;
 
 /** Add your docs here. */
@@ -88,12 +90,16 @@ public class AutosChooser {
           drivetrain.setAutonomousRequestOverride(true);
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
         });
-    ;
+
     FollowPath.registerEventTrigger(
         "Shoot",
         () -> {
           drivetrain.setAutonomousRequestOverride(true);
-          drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
+          drivetrain.applyPriorityRequestAuto(
+              drivetrain
+                  .fieldCentric
+                  .withDriveState(DriveStates.ROTATION_LOCK)
+                  .withTargetRotation(ShooterMath2.currentSolution.robotHeading()));
           superstructure.setWantedStateCommand(WantedStates.ShootAuto).schedule();
         });
 

@@ -256,14 +256,14 @@ public class Superstructure {
   }
 
   private void idleAuto() {
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
   }
 
   private void shootAuto() {
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -273,7 +273,7 @@ public class Superstructure {
   }
 
   private void scoreAuto() {
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -312,7 +312,7 @@ public class Superstructure {
   }
 
   private void climbAuto() {
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
