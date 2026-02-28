@@ -93,9 +93,11 @@ public class Shooter {
       totalTime += this.m_FPSLists.get(i);
     }
 
-    for (int i = 0; i < 100; i++) {
-      if (totalTime <= 1) break;
-      this.m_FPSLists.remove(this.m_FPSLists.size());
+    // Ensure the stored FPS time window covers at most ~1 second by removing the
+    // oldest entries until the summed durations are <= 1.0.
+    while (totalTime > 1.0 && !this.m_FPSLists.isEmpty()) {
+      // remove(0) removes the oldest recorded interval; subtract it from the total
+      totalTime -= this.m_FPSLists.remove(0);
     }
 
     if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
@@ -202,6 +204,10 @@ public class Shooter {
     double totalTime = 0;
     for (int i = 0; i < this.m_FPSLists.size(); i++) {
       totalTime += this.m_FPSLists.get(i);
+    }
+
+    if (this.m_FPSLists.isEmpty()) {
+      return 0.0;
     }
 
     return totalTime / this.m_FPSLists.size();
