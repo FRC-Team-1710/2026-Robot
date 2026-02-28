@@ -26,7 +26,7 @@
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
-        "rotation_radians": -2.146256096742186,
+        "rotation_radians": 1.0553146192384977,
         "profiled_rotation": true
       }
     },
@@ -48,7 +48,7 @@
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
-        "rotation_radians": -2.1877573289608963,
+        "rotation_radians": 0.8076002810245282,
         "profiled_rotation": true
       }
     },
@@ -60,7 +60,7 @@
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
-        "rotation_radians": 3.0923227292961752,
+        "rotation_radians": 0.008059806781229206,
         "profiled_rotation": true
       }
     },
