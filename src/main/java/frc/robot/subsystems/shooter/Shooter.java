@@ -56,7 +56,8 @@ public class Shooter {
 
   @NotLogged private ArrayDeque<Double> fpsDeque;
 
-  @NotLogged private double fpsRunningSum = 0.0;
+  @Logged(importance = Importance.DEBUG)
+  private double fpsRunningSum = 0.0;
 
   @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
@@ -123,7 +124,7 @@ public class Shooter {
 
     if ((left && !prevLeftBroken) || (right && !prevRightBroken)) {
       double elapsed = m_FPSTimer.get();
-      if (elapsed < 1.0) fpsDeque.addLast(elapsed); // see deque suggestion below
+      if (elapsed < 1.0) addInterval(elapsed); // see deque suggestion below
       m_FPSTimer.restart();
       m_fuelCount++;
     }
@@ -260,14 +261,18 @@ public class Shooter {
 
   @NotLogged
   public double getFPS() {
-    double totalTime = 0;
-    for (double item : this.fpsDeque) {
-      totalTime += item;
+    if (Mode.currentMode == CurrentMode.SIMULATION) {
+      return 0.3;
     }
 
-    return Mode.currentMode == CurrentMode.SIMULATION
-        ? 0.3
-        : totalTime / (this.fpsDeque.getLast() - this.fpsDeque.getFirst());
+    if (this.fpsDeque.isEmpty() || this.fpsRunningSum <= 0.0) {
+      return 0.0;
+    }
+
+    // FPS = number of events / total time window (events per second)
+    double fps = this.fpsDeque.size() / this.fpsRunningSum;
+    this.m_FPS = fps;
+    return fps;
   }
 
   @Logged(importance = Importance.INFO)
