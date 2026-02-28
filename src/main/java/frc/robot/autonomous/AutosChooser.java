@@ -19,6 +19,7 @@ import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.shooter.Shooter;
 import java.util.HashMap;
 
 /** Add your docs here. */
@@ -31,7 +32,8 @@ public class AutosChooser {
   private boolean m_climb;
   private boolean m_depot;
 
-  public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
+  public AutosChooser(
+      Superstructure superstructure, CommandSwerveDrivetrain drivetrain, Shooter shooter) {
     pathBuilder =
         new FollowPath.Builder(
                 drivetrain, // The drive subsystem to require
@@ -55,10 +57,11 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(m_climb, m_depot).get("ZONE1"));
-    addPath(Auto.ZONE3, autoPathing(m_climb, m_depot).get("ZONE3"));
-    addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot).get("RIGHTINSIDE"));
-    addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot).get("LEFTINSIDE"));
+    addPath(Auto.ZONE1, autoPathing(m_climb, m_depot, shooter).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(m_climb, m_depot, shooter).get("ZONE3"));
+    addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot, shooter).get("RIGHTINSIDE"));
+    addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot, shooter).get("LEFTINSIDE"));
+    addPath(Auto.IDK, autoPathing(m_climb, m_depot, shooter).get("IDK"));
 
     SmartDashboard.putBoolean("Auto/Climb?", m_climb);
     SmartDashboard.putBoolean("Auto/Depot?", m_depot);
@@ -85,6 +88,30 @@ public class AutosChooser {
           drivetrain.setAutonomousRequestOverride(true);
           drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
         });
+    ;
+    FollowPath.registerEventTrigger(
+        "Shoot",
+        () -> {
+          drivetrain.setAutonomousRequestOverride(true);
+          drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
+          superstructure.setWantedStateCommand(WantedStates.ShootAuto).schedule();
+        });
+
+    FollowPath.registerEventTrigger(
+        "EndShoot",
+        () -> {
+          Commands.waitUntil(() -> shooter.getFPS() < -1)
+              // .schedule()
+              .finallyDo(
+                  () ->
+                      superstructure
+                          .setWantedStateCommand(WantedStates.DefaultAuto)
+                          .alongWith(
+                              Commands.runOnce(
+                                  () -> drivetrain.setAutonomousRequestOverride(false)))
+                          .schedule())
+              .schedule();
+        });
 
     FollowPath.setPoseLoggingConsumer(
         (data) ->
@@ -99,6 +126,24 @@ public class AutosChooser {
         (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
   }
 
+  public boolean endShoot(Shooter shooter, Superstructure superstructure) {
+    if (shooter.getFPS() < 8) {
+      superstructure.setWantedStateCommand(WantedStates.DefaultAuto).schedule();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public void Shoot(Shooter shooter, Superstructure superstructure) {
+    Commands.sequence(
+        Commands.runOnce(
+            () -> superstructure.setWantedStateCommand(WantedStates.ShootAuto).schedule()),
+        Commands.waitUntil(() -> shooter.getFPS() < 8),
+        Commands.runOnce(
+            () -> superstructure.setWantedStateCommand(WantedStates.DefaultAuto).schedule()));
+  }
+
   public void setCustom(Command command) {
     autoCommands.put(Auto.CUSTOM, command);
   }
@@ -108,7 +153,7 @@ public class AutosChooser {
     autoChooser.addOption(auto.name(), auto);
   }
 
-  public Command selectAuto(CommandSwerveDrivetrain drivetrain) {
+  public Command selectAuto(CommandSwerveDrivetrain drivetrain, Shooter shooter) {
 
     boolean m_climbValue = SmartDashboard.getBoolean("Auto/Climb?", m_climb);
     boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", m_depot);
@@ -116,16 +161,18 @@ public class AutosChooser {
     String currentAuto = autoChooser.getSelected().toString();
     SmartDashboard.putString("Auto/Selected", currentAuto);
 
-    return autoPathing(m_climbValue, depotValue).get(currentAuto);
+    return autoPathing(m_climbValue, depotValue, shooter).get(currentAuto);
   }
 
-  public static HashMap<String, Command> autoPathing(Boolean climbPath, Boolean depotPath) {
+  public static HashMap<String, Command> autoPathing(
+      Boolean climbPath, Boolean depotPath, Shooter shooter) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(
             pathBuilder.build(new Path("zone3cycleright")),
-            pathBuilder.build(new Path("zone1cyclestraight")),
+            // pathBuilder.build(new Path("zone1cyclestraight")).until(() -> shooter.getFPS() <
+            // 0.5),
             pathBuilder.build(new Path("zone3cycleleft")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
@@ -133,7 +180,7 @@ public class AutosChooser {
         Commands.sequence(
             pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
             pathBuilder.build(new Path("zone1cycleleft")),
-            pathBuilder.build(new Path("zone1cyclestraight")),
+            // pathBuilder.build(new Path("zone1cyclestraight")),
             pathBuilder.build(new Path("zone1cycleright")),
             pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
@@ -144,8 +191,16 @@ public class AutosChooser {
     listOfPaths.put(
         "LEFTINSIDE",
         Commands.sequence(
-            pathBuilder.build(new Path("leftinside")),
-            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
+            pathBuilder.build(new Path("outsideracer")),
+            // pathBuilder.build(new Path("insideracer")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
+
+    listOfPaths.put(
+        "IDK",
+        Commands.sequence(
+            pathBuilder.build(new Path("outsideracer")),
+            pathBuilder.build(new Path("insideracer")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
 
     return listOfPaths;
   }
@@ -157,5 +212,6 @@ public class AutosChooser {
     ZONE3(),
     RIGHTINSIDE(),
     LEFTINSIDE(),
+    IDK(),
   }
 }

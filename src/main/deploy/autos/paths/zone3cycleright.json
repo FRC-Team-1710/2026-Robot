@@ -20,8 +20,19 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.4895038316763519,
+      "t_ratio": 1.0,
       "lib_key": "IntakeAuto"
+    },
+    {
+      "type": "translation",
+      "x_meters": 7.031012838801711,
+      "y_meters": 2.33311697574893,
+      "intermediate_handoff_radius_meters": 0.2
+    },
+    {
+      "type": "event_trigger",
+      "t_ratio": 0.9475973008559703,
+      "lib_key": "DefaultAuto"
     },
     {
       "type": "waypoint",
@@ -56,44 +67,48 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 3.681314742193864,
-        "y_meters": 2.607419535045201,
+        "x_meters": 3.568421247937298,
+        "y_meters": 2.6074195350452003,
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
-        "rotation_radians": 3.1136512992493124,
+        "rotation_radians": -2.296261213913229,
         "profiled_rotation": true
       }
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.7496523999894326,
-      "lib_key": "ShootAuto"
+      "t_ratio": 0.0,
+      "lib_key": "Shoot"
     },
     {
-      "type": "waypoint",
-      "translation_target": {
-        "x_meters": 3.439088909537487,
-        "y_meters": 3.457272051406404,
-        "intermediate_handoff_radius_meters": 0.2
-      },
-      "rotation_target": {
-        "rotation_radians": -2.6686079156223874,
-        "profiled_rotation": true
-      }
+      "type": "event_trigger",
+      "t_ratio": 0.0,
+      "lib_key": "EndShoot"
+    },
+    {
+      "type": "translation",
+      "x_meters": 3.1052811968698038,
+      "y_meters": 2.6154436145841693,
+      "intermediate_handoff_radius_meters": 0.2
     }
   ],
   "constraints": {
     "max_velocity_meters_per_sec": [
       {
         "value": 2.0,
-        "start_ordinal": 2,
+        "start_ordinal": 1,
         "end_ordinal": 2
       },
       {
         "value": 2.0,
         "start_ordinal": 5,
-        "end_ordinal": 5
+        "end_ordinal": 7
+      },
+      {
+        "value": 0.5,
+        "start_ordinal": 3,
+        "end_ordinal": 3
       }
     ]
   }

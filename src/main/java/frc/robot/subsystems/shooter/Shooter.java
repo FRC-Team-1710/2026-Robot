@@ -19,7 +19,6 @@ import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
-import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.ArrayList;
 
@@ -259,7 +258,7 @@ public class Shooter {
       totalTime += this.m_FPSLists.get(i);
     }
 
-    return totalTime / this.m_FPSLists.size();
+    return Mode.currentMode == CurrentMode.SIMULATION ? 0.3 : totalTime / this.m_FPSLists.size();
   }
 
   @Logged(importance = Importance.INFO)
@@ -276,9 +275,5 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   public boolean hasBreakerRightBroke() {
     return this.m_io.hasBreakerRightBroke();
-  }
-
-  public void setFuelSim(FuelSim fuelSim) {
-    this.m_io.setFuelSim(fuelSim);
   }
 }
