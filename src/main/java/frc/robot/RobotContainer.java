@@ -151,7 +151,9 @@ public class RobotContainer {
           width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
           -length / 2,
           length / 2,
-          () -> superstructure.getCurrentState() == CurrentStates.Intake);
+          () ->
+              superstructure.getCurrentState() == CurrentStates.Intake
+                  || superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
 
@@ -160,7 +162,7 @@ public class RobotContainer {
       fuelSim.enableAirResistance();
     }
 
-    autoChooser = new AutosChooser(superstructure, drivetrain);
+    autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
 
     configureBindings();
   }
@@ -210,7 +212,7 @@ public class RobotContainer {
 
   @NotLogged
   public Command getAutonomousCommand() {
-    return autoChooser.selectAuto(drivetrain);
+    return autoChooser.selectAuto(drivetrain, shooter);
   }
 
   public SubsystemInfo[] getAllSubsystems() {
@@ -245,9 +247,9 @@ public class RobotContainer {
             feeder::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
+    // map.add(
+    //     new SubsystemInfo(
+    //         Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
     map.add(
         new SubsystemInfo(
             Subsystems.Drive,
@@ -257,9 +259,9 @@ public class RobotContainer {
     return map.toArray(new SubsystemInfo[0]);
   }
 
-  private void cycleVision() {
-    for (Vision vision : cameras) {
-      vision.periodic();
-    }
-  }
+  //   private void cycleVision() {
+  //     for (Vision vision : cameras) {
+  //       vision.periodic();
+  //     }
+  //   }
 }
