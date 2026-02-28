@@ -1,6 +1,5 @@
 package frc.robot.utils.shooterMath;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -140,12 +139,12 @@ public final class ShooterMath2 {
             robotHeading,
             new ShooterSolution(
                 robotHeading,
-                Degrees.of(phys1.hoodAngle),
+                Radians.of(phys1.hoodAngle),
                 RadiansPerSecond.of(phys1.exitSpeed / SPEED_PER_OMEGA),
                 phys1.clamped),
             new ShooterSolution(
                 robotHeading,
-                Degrees.of(phys2.hoodAngle),
+                Radians.of(phys2.hoodAngle),
                 RadiansPerSecond.of(phys2.exitSpeed / SPEED_PER_OMEGA),
                 phys2.clamped));
   }
