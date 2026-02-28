@@ -36,7 +36,7 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionFuel;
+import frc.robot.subsystems.vision.FuelDetection.VisionFuel;
 import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;

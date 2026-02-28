@@ -1,4 +1,4 @@
-package frc.robot.subsystems.vision;
+package frc.robot.subsystems.vision.FuelDetection;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
