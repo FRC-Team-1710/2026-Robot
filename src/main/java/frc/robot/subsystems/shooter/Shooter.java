@@ -19,7 +19,6 @@ import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
-import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.ArrayList;
 
@@ -83,7 +82,7 @@ public class Shooter {
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
 
-    SmartDashboard.putNumber("Scalarings", 2);
+    SmartDashboard.putNumber("Scalarings", 1.95);
   }
 
   public void periodic() {
@@ -276,9 +275,5 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   public boolean hasBreakerRightBroke() {
     return this.m_io.hasBreakerRightBroke();
-  }
-
-  public void setFuelSim(FuelSim fuelSim) {
-    this.m_io.setFuelSim(fuelSim);
   }
 }
