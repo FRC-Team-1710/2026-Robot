@@ -35,6 +35,7 @@ import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
@@ -75,7 +76,7 @@ public class RobotContainer {
   private final Feeder feeder;
 
   // Should add logging soon
-  @NotLogged private Vision[] cameras;
+  @NotLogged private final Vision[] cameras;
 
   @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
@@ -113,6 +114,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras = new Vision[0];
         break;
 
       default:
@@ -121,6 +124,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras = new Vision[0];
         break;
     }
 
@@ -199,6 +204,10 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
                 .ignoringDisable(true));
+
+    driver.leftTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+    driver.povLeft().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+    driver.povRight().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
   }
 
   @NotLogged

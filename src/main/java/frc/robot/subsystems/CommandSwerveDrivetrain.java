@@ -16,7 +16,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -39,8 +38,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
-import frc.robot.utils.shooterMath.ShooterMath;
-import frc.robot.utils.shooterMath.Velocity3d;
+import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.function.Supplier;
 
 /**
@@ -285,14 +283,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                   MaxAngularRate.times(
                       -rescaleRotation(
                           inputController.getRightX()
-                              + (inputController.povLeft().getAsBoolean()
-                                  ? 1
-                                  : (inputController.povRight().getAsBoolean() ? -1 : 0)))))
+                          // + (inputController.povLeft().getAsBoolean()
+                          //     ? 1
+                          //     : (inputController.povRight().getAsBoolean() ? -1 : 0))
+                          )))
               .withDriveState(currentState));
     }
 
-    ShooterMath.input(new Pose3d(getPose()), Velocity3d.from(getFieldSpeeds()));
-    ShooterMath.calculate();
+    ShooterMath2.calculate(getPose(), getFieldSpeeds());
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {

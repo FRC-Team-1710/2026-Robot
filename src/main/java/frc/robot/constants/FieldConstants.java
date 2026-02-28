@@ -2,10 +2,14 @@ package frc.robot.constants;
 
 import static edu.wpi.first.apriltag.AprilTagFields.kDefaultField;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.constants.Mode.CurrentMode;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -28,20 +32,72 @@ public class FieldConstants {
 
   public static final Distance kStartingLineDistance = Inches.of(158.6);
 
-  public static final Translation2d kHubCenterBlue =
-      new Translation2d(Inches.of(182.11125), kFieldWidth.div(2));
-  public static final Translation2d kHubCenterRed =
-      new Translation2d(Inches.of(469.11125), kFieldWidth.div(2));
+  public static final Translation3d kHubCenterBlue =
+      new Translation3d(Inches.of(182.11125), kFieldWidth.div(2), Inches.of(75.0));
+  public static final Translation3d kHubCenterRed =
+      new Translation3d(Inches.of(469.11125), kFieldWidth.div(2), Inches.of(75.0));
 
   public static final Distance kDepotWidth = Inches.of(42);
   public static final Distance kDepotLength = Inches.of(24);
   public static final Distance kDepotDistanceFromWall = Inches.of(213.84375);
 
+  public static final Distance kHexagonRadius = Inches.of(20.9659045).times(2 / Math.sqrt(3));
+  public static final Translation3d[] kHexagonBlue = {
+    kHubCenterBlue.plus(
+        new Translation3d(
+            new Translation2d(kHexagonRadius.in(Meters), Rotation2d.k180deg))), // closest to ds
+    kHubCenterBlue.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(60))))),
+    kHubCenterBlue.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(120))))),
+    kHubCenterBlue.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(180))))),
+    kHubCenterBlue.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(240))))),
+    kHubCenterBlue.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(300)))))
+  };
+  public static final Translation3d[] kHexagonRed = {
+    kHubCenterRed.plus(
+        new Translation3d(
+            new Translation2d(kHexagonRadius.in(Meters), Rotation2d.kZero))), // closest to ds
+    kHubCenterRed.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.kZero.minus(Rotation2d.fromDegrees(60))))),
+    kHubCenterRed.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.kZero.minus(Rotation2d.fromDegrees(120))))),
+    kHubCenterRed.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.kZero.minus(Rotation2d.fromDegrees(180))))),
+    kHubCenterRed.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.kZero.minus(Rotation2d.fromDegrees(240))))),
+    kHubCenterRed.plus(
+        new Translation3d(
+            new Translation2d(
+                kHexagonRadius.in(Meters), Rotation2d.kZero.minus(Rotation2d.fromDegrees(300)))))
+  };
+
   public static final AprilTagFieldLayout kAprilTags;
 
   static {
     try {
-      if (Mode.currentMode == Mode.currentMode.SIMULATION) {
+      if (Mode.currentMode == CurrentMode.SIMULATION) {
         kAprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
       } else {
         kAprilTags = AprilTagFieldLayout.loadField(kDefaultField);
