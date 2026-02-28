@@ -61,6 +61,7 @@ public class AutosChooser {
     addPath(Auto.ZONE3, autoPathing(m_climb, m_depot, shooter).get("ZONE3"));
     addPath(Auto.RIGHTINSIDE, autoPathing(m_climb, m_depot, shooter).get("RIGHTINSIDE"));
     addPath(Auto.LEFTINSIDE, autoPathing(m_climb, m_depot, shooter).get("LEFTINSIDE"));
+    addPath(Auto.IDK, autoPathing(m_climb, m_depot, shooter).get("IDK"));
 
     SmartDashboard.putBoolean("Auto/Climb?", m_climb);
     SmartDashboard.putBoolean("Auto/Depot?", m_depot);
@@ -99,7 +100,7 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "EndShoot",
         () -> {
-          Commands.waitUntil(() -> shooter.getFPS() < 8)
+          Commands.waitUntil(() -> shooter.getFPS() < 0.5)
               // .schedule()
               .finallyDo(
                   () ->
@@ -169,24 +170,19 @@ public class AutosChooser {
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(
-            pathBuilder.build(new Path("zone3cycleright")).until(() -> shooter.getFPS() < 0.5),
-            pathBuilder.build(new Path("zone1cyclestraight")),
+            pathBuilder.build(new Path("zone3cycleright")),
+            // pathBuilder.build(new Path("zone1cyclestraight")).until(() -> shooter.getFPS() <
+            // 0.5),
             pathBuilder.build(new Path("zone3cycleleft")),
             pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
         "ZONE1",
         Commands.sequence(
-            pathBuilder
-                .build(new Path("depot"))
-                .until(() -> shooter.getFPS() < 0.5)
-                .onlyIf(() -> depotPath),
-            pathBuilder.build(new Path("zone1cycleleft")).until(() -> shooter.getFPS() < 0.5),
-            pathBuilder.build(new Path("zone1cyclestraight")).until(() -> shooter.getFPS() < 0.5),
-            pathBuilder.build(new Path("zone1cycleright")).until(() -> shooter.getFPS() < 0.5),
-            pathBuilder
-                .build(new Path("zone1climb"))
-                .until(() -> shooter.getFPS() < 0.5)
-                .onlyIf(() -> climbPath)));
+            pathBuilder.build(new Path("depot")).onlyIf(() -> depotPath),
+            pathBuilder.build(new Path("zone1cycleleft")),
+            // pathBuilder.build(new Path("zone1cyclestraight")),
+            pathBuilder.build(new Path("zone1cycleright")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
     listOfPaths.put(
         "RIGHTINSIDE",
         Commands.sequence(
@@ -195,8 +191,16 @@ public class AutosChooser {
     listOfPaths.put(
         "LEFTINSIDE",
         Commands.sequence(
-            pathBuilder.build(new Path("leftinside")),
-            pathBuilder.build(new Path("zone3climb")).onlyIf(() -> climbPath)));
+            pathBuilder.build(new Path("outsideracer")),
+            pathBuilder.build(new Path("insideracer")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
+
+    listOfPaths.put(
+        "IDK",
+        Commands.sequence(
+            pathBuilder.build(new Path("outsideracer")),
+            pathBuilder.build(new Path("insideracer")),
+            pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
 
     return listOfPaths;
   }
@@ -208,5 +212,6 @@ public class AutosChooser {
     ZONE3(),
     RIGHTINSIDE(),
     LEFTINSIDE(),
+    IDK(),
   }
 }

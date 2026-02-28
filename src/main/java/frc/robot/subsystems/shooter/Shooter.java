@@ -206,7 +206,7 @@ public class Shooter {
       totalTime += this.m_FPSLists.get(i);
     }
 
-    return Mode.currentMode == CurrentMode.SIMULATION ? 5 : totalTime / this.m_FPSLists.size();
+    return Mode.currentMode == CurrentMode.SIMULATION ? 0.3 : totalTime / this.m_FPSLists.size();
   }
 
   @Logged(importance = Importance.INFO)

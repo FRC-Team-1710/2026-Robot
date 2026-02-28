@@ -240,9 +240,9 @@ public class RobotContainer {
             feeder::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
+    // map.add(
+    //     new SubsystemInfo(
+    //         Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
     map.add(
         new SubsystemInfo(
             Subsystems.Drive,
@@ -252,9 +252,9 @@ public class RobotContainer {
     return map.toArray(new SubsystemInfo[0]);
   }
 
-  private void cycleVision() {
-    for (Vision vision : cameras) {
-      vision.periodic();
-    }
-  }
+  //   private void cycleVision() {
+  //     for (Vision vision : cameras) {
+  //       vision.periodic();
+  //     }
+  //   }
 }
