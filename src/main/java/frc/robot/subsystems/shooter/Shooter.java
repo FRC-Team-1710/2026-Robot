@@ -82,7 +82,7 @@ public class Shooter {
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
 
-    SmartDashboard.putNumber("Scalarings", 2);
+    SmartDashboard.putNumber("Scalarings", 1.95);
   }
 
   public void periodic() {
