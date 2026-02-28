@@ -100,7 +100,7 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "EndShoot",
         () -> {
-          Commands.waitUntil(() -> shooter.getFPS() < 0.5)
+          Commands.waitUntil(() -> shooter.getFPS() < -1)
               // .schedule()
               .finallyDo(
                   () ->
@@ -192,7 +192,7 @@ public class AutosChooser {
         "LEFTINSIDE",
         Commands.sequence(
             pathBuilder.build(new Path("outsideracer")),
-            pathBuilder.build(new Path("insideracer")),
+            // pathBuilder.build(new Path("insideracer")),
             pathBuilder.build(new Path("zone1climb")).onlyIf(() -> climbPath)));
 
     listOfPaths.put(

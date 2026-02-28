@@ -20,13 +20,13 @@
     },
     {
       "type": "translation",
-      "x_meters": 6.140114989731405,
-      "y_meters": 5.673846466287574,
+      "x_meters": 6.755724706665035,
+      "y_meters": 5.7764480857765115,
       "intermediate_handoff_radius_meters": 0.2
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.16845252977519765,
+      "t_ratio": 0.16845252977519845,
       "lib_key": "IntakeAuto"
     },
     {
