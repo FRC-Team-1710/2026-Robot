@@ -34,7 +34,7 @@ public class Feeder {
 
   public enum FEEDER_STATE {
     STOP(Milliseconds.of(60), 0),
-    FEEDING(Milliseconds.of(20), 0.5),
+    FEEDING(Milliseconds.of(20), 0.75),
     REVERSE(Milliseconds.of(20), -0.25);
 
     private final Time m_subsystemPeriodicFrequency;

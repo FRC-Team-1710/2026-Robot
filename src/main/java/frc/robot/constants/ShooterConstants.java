@@ -17,19 +17,20 @@ public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
   /** Static friction compensation */
-  public static final double kS = 0.006;
+  public static final double kS = 4.0;
 
   /** Velocity feedforward (predicts voltage needed for a speed) */
-  public static final double kV = 0.12;
+  public static final double kV = 0.035;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kP = 0.75;
+  public static final double kP = 2.0;
 
   // ==================== Current Limits ====================
   public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
   public static final int FLYWHEEL_STATOR_CURRENT_LIMIT = 80;
 
   public static final int HOOD_SUPPLY_CURRENT_LIMIT = 20;
+  public static final int HOOD_STATOR_CURRENT_LIMIT = 20;
 
   // ==================== Motion Magic (Speed Limits) ====================
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 300.0;
@@ -43,7 +44,7 @@ public final class ShooterConstants {
   public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
 
   /** Range of error for the "isAtTargetVelocity" function */
-  public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);
+  public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(25);
 
   public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
 

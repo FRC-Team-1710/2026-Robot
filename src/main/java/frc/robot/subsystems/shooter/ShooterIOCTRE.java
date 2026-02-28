@@ -5,9 +5,10 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
@@ -25,8 +26,8 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  @NotLogged private final MotionMagicVelocityVoltage m_leftVelocityRequest;
-  @NotLogged private final MotionMagicVelocityVoltage m_rightVelocityRequest;
+  @NotLogged private final VelocityTorqueCurrentFOC m_leftVelocityRequest;
+  @NotLogged private final VelocityTorqueCurrentFOC m_rightVelocityRequest;
 
   @NotLogged private final PositionVoltage m_leftPositionRequest;
   @NotLogged private final PositionVoltage m_rightPositionRequest;
@@ -74,10 +75,6 @@ public class ShooterIOCTRE implements ShooterIO {
     flywheelConfig.Slot0.kV = ShooterConstants.kV;
     flywheelConfig.Slot0.kP = ShooterConstants.kP;
 
-    flywheelConfig.MotionMagic.MotionMagicCruiseVelocity =
-        ShooterConstants.MOTION_MAGIC_CRUISE_VELOCITY;
-    flywheelConfig.MotionMagic.MotionMagicAcceleration = ShooterConstants.MOTION_MAGIC_ACCELERATION;
-
     flywheelConfig.CurrentLimits.SupplyCurrentLimit =
         ShooterConstants.FLYWHEEL_SUPPLY_CURRENT_LIMIT;
     flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -85,6 +82,8 @@ public class ShooterIOCTRE implements ShooterIO {
     flywheelConfig.CurrentLimits.StatorCurrentLimit =
         ShooterConstants.FLYWHEEL_STATOR_CURRENT_LIMIT;
     flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
+    flywheelConfig.TorqueCurrent.PeakReverseTorqueCurrent = -10;
 
     TalonFXUtil.applyConfigWithRetries(this.m_leftFlywheel, flywheelConfig, 5);
     TalonFXUtil.applyConfigWithRetries(this.m_rightFlywheel, flywheelConfig, 5);
@@ -95,17 +94,25 @@ public class ShooterIOCTRE implements ShooterIO {
     hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    hoodConfig.Slot0.kP = 75;
+    hoodConfig.Slot0.kP = 300;
+    hoodConfig.Slot0.kD = 3.5;
+    hoodConfig.Slot0.kG = 0.3;
+    hoodConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
-    hoodConfig.Feedback.SensorToMechanismRatio = 13.2;
+    hoodConfig.Feedback.SensorToMechanismRatio = 26.666666;
+
+    hoodConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.HOOD_STATOR_CURRENT_LIMIT;
+    hoodConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.HOOD_SUPPLY_CURRENT_LIMIT;
+    hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_leftHood, hoodConfig, 5);
     TalonFXUtil.applyConfigWithRetries(this.m_rightHood, hoodConfig, 5);
 
-    this.m_leftVelocityRequest = new MotionMagicVelocityVoltage(0).withSlot(0);
-    this.m_rightVelocityRequest = new MotionMagicVelocityVoltage(0).withSlot(0);
-    this.m_leftPositionRequest = new PositionVoltage(0);
-    this.m_rightPositionRequest = new PositionVoltage(0);
+    this.m_leftVelocityRequest = new VelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_rightVelocityRequest = new VelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_leftPositionRequest = new PositionVoltage(0).withEnableFOC(true);
+    this.m_rightPositionRequest = new PositionVoltage(0).withEnableFOC(true);
 
     m_leftFlywheelSignals = TalonFXUtil.getBasicStatusSignals(m_leftFlywheel);
     m_rightFlywheelSignals = TalonFXUtil.getBasicStatusSignals(m_rightFlywheel);
@@ -143,9 +150,9 @@ public class ShooterIOCTRE implements ShooterIO {
 
   public void setRightTargetVelocity(AngularVelocity pVelocity) {
     if (pVelocity.in(RotationsPerSecond) == 0) {
-      this.m_leftFlywheel.stopMotor();
+      this.m_rightFlywheel.stopMotor();
     } else {
-      this.m_leftFlywheel.setControl(this.m_rightVelocityRequest.withVelocity(pVelocity));
+      this.m_rightFlywheel.setControl(this.m_rightVelocityRequest.withVelocity(pVelocity));
     }
   }
 
@@ -178,7 +185,7 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   public void setRightHoodTarget(Angle pAngle) {
-    this.m_leftHood.setControl(
+    this.m_rightHood.setControl(
         m_leftPositionRequest.withPosition(
             Degrees.of(
                 MathUtil.clamp(

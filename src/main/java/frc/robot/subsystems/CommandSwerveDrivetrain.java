@@ -283,9 +283,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                   MaxAngularRate.times(
                       -rescaleRotation(
                           inputController.getRightX()
-                              + (inputController.povLeft().getAsBoolean()
-                                  ? 1
-                                  : (inputController.povRight().getAsBoolean() ? -1 : 0)))))
+                          // + (inputController.povLeft().getAsBoolean()
+                          //     ? 1
+                          //     : (inputController.povRight().getAsBoolean() ? -1 : 0))
+                          )))
               .withDriveState(currentState));
     }
 

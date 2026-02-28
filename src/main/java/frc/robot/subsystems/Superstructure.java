@@ -184,7 +184,7 @@ public class Superstructure {
 
   private void idle() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
@@ -193,7 +193,7 @@ public class Superstructure {
   private void shoot() {
     drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(shooter.getFPS() < 2 ? IntakeStates.Up : IntakeStates.Down);
+    // intake.setState(shooter.getFPS() < 2 ? IntakeStates.Up : IntakeStates.Down);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -205,7 +205,7 @@ public class Superstructure {
   private void score() {
     drivetrain.setRotationTarget(getRotationForScore());
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     // TODO: Add auto shoot here
     indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -250,7 +250,7 @@ public class Superstructure {
 
   private void climb() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    intake.setState(IntakeStates.Up);
+    // intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
@@ -329,7 +329,7 @@ public class Superstructure {
 
   @NotLogged
   private Rotation2d getRotationForScore() {
-    return ShooterMath2.currentSolution.robotHeading();
+    return ShooterMath2.currentSolution.robotHeading().plus(Rotation2d.k180deg);
   }
 
   /** The wanted states of superstructure */

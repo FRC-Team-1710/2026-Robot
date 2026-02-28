@@ -2,6 +2,7 @@ package frc.robot.subsystems.feeder;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -33,9 +34,13 @@ public class FeederIOCTRE implements FeederIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
+    config.CurrentLimits.StatorCurrentLimit = 40;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
+    TalonFXUtil.applyConfigWithRetries(this.m_feederRight, config, 2);
 
     this.m_feederRight.setControl(
         new Follower(CanIdConstants.Feeder.FEEDER_MOTOR, MotorAlignmentValue.Opposed));
@@ -56,6 +61,6 @@ public class FeederIOCTRE implements FeederIO {
   }
 
   public void setFeeder(double percent) {
-    this.m_feederLeft.set(percent);
+    this.m_feederLeft.setControl(new DutyCycleOut(percent).withEnableFOC(true));
   }
 }

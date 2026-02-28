@@ -13,6 +13,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
@@ -81,15 +82,25 @@ public class Shooter {
     this.m_FPSTimer.start();
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
+
+    SmartDashboard.putNumber("Scalarings", 2);
   }
 
   public void periodic() {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_leftTargetVelocity = ShooterMath2.currentSolution.shooterLeft().flywheelOmega();
+        this.m_leftTargetVelocity =
+            ShooterMath2.currentSolution
+                .shooterLeft()
+                .flywheelOmega()
+                .times(SmartDashboard.getNumber("Scalarings", 0));
         this.m_leftHoodTarget = ShooterMath2.currentSolution.shooterLeft().hoodAngle();
-        this.m_rightTargetVelocity = ShooterMath2.currentSolution.shooterRight().flywheelOmega();
+        this.m_rightTargetVelocity =
+            ShooterMath2.currentSolution
+                .shooterRight()
+                .flywheelOmega()
+                .times(SmartDashboard.getNumber("Scalarings", 0));
         this.m_rightHoodTarget = ShooterMath2.currentSolution.shooterRight().hoodAngle();
         break;
 
@@ -102,24 +113,24 @@ public class Shooter {
     }
 
     // Fuel Tracking
-    double totalTime = 0;
-    for (int i = 0; i < this.m_FPSLists.size(); i++) {
-      totalTime += this.m_FPSLists.get(i);
-    }
+    // double totalTime = 0;
+    // for (int i = 0; i < this.m_FPSLists.size(); i++) {
+    //   totalTime += this.m_FPSLists.get(i);
+    // }
 
-    for (int i = 0; i < 100; i++) {
-      if (totalTime <= 1) break;
-      this.m_FPSLists.remove(this.m_FPSLists.size());
-    }
+    // for (int i = 0; i < 100; i++) {
+    //   if (totalTime <= 1) break;
+    //   this.m_FPSLists.remove(this.m_FPSLists.size());
+    // }
 
-    if (this.m_io.hasBreakerLeftBroke() || this.m_io.hasBreakerRightBroke()) {
-      if (this.m_FPSTimer.get() < 1) {
-        this.m_FPSLists.add(this.m_FPSTimer.get());
-      }
-      this.m_FPSTimer.restart();
+    // if (this.m_io.hasBreakerLeftBroke() || this.m_io.hasBreakerRightBroke()) {
+    //   if (this.m_FPSTimer.get() < 1) {
+    //     this.m_FPSLists.add(this.m_FPSTimer.get());
+    //   }
+    //   this.m_FPSTimer.restart();
 
-      this.m_fuelCount++;
-    }
+    //   this.m_fuelCount++;
+    // }
 
     this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
     this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
@@ -129,7 +140,7 @@ public class Shooter {
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
-  @NotLogged
+  @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
         ? (this.getLeftVelocity()
@@ -139,7 +150,7 @@ public class Shooter {
         : true;
   }
 
-  @NotLogged
+  @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
         ? (this.getLeftHoodPosition()
@@ -201,7 +212,7 @@ public class Shooter {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(65), Degrees.of(0));
+    PRESET_SCORE(Milliseconds.of(20), RotationsPerSecond.of(65), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;

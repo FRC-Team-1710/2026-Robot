@@ -7,6 +7,7 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -85,31 +86,19 @@ public class Intake {
               m_jamTime.calculate(false);
               m_jamUndoTime.calculate(false);
               m_wasJammed = false;
-              m_io.setIntakeMotor(
-                  m_currentState.rollerSpeed,
-                  m_currentState.deploymentVelocity,
-                  m_currentState.deploymentAcceleration);
+              m_io.setIntakeMotor(m_currentState.rollerSpeed);
             } else {
-              m_io.setIntakeMotor(
-                  IntakeStates.Jammed.rollerSpeed,
-                  IntakeStates.Jammed.deploymentVelocity,
-                  IntakeStates.Jammed.deploymentAcceleration);
+              m_io.setIntakeMotor(IntakeStates.Jammed.rollerSpeed);
             }
           } else {
             m_jamUndoTime.calculate(false);
-            m_io.setIntakeMotor(
-                m_currentState.rollerSpeed,
-                m_currentState.deploymentVelocity,
-                m_currentState.deploymentAcceleration);
+            m_io.setIntakeMotor(m_currentState.rollerSpeed);
           }
         } else {
           m_jamTime.calculate(false);
           m_jamUndoTime.calculate(false);
           m_wasJammed = false;
-          m_io.setIntakeMotor(
-              m_currentState.rollerSpeed,
-              m_currentState.deploymentVelocity,
-              m_currentState.deploymentAcceleration);
+          m_io.setIntakeMotor(m_currentState.rollerSpeed);
         }
         break;
       default:
@@ -117,10 +106,7 @@ public class Intake {
         m_minimumJamTime.calculate(false);
         m_jamUndoTime.calculate(false);
         m_wasJammed = false;
-        m_io.setIntakeMotor(
-            m_currentState.rollerSpeed,
-            m_currentState.deploymentVelocity,
-            m_currentState.deploymentAcceleration);
+        m_io.setIntakeMotor(m_currentState.rollerSpeed);
         break;
     }
 
@@ -134,19 +120,31 @@ public class Intake {
               m_stuckTime.calculate(false);
               m_stuckUndoTime.calculate(false);
               m_wasStuck = false;
-              m_io.setAngle(m_currentState.setpoint);
+              m_io.setAngle(
+                  m_currentState.setpoint,
+                  m_currentState.deploymentVelocity,
+                  m_currentState.deploymentAcceleration);
             } else {
-              m_io.setAngle(IntakeStates.Down.setpoint);
+              m_io.setAngle(
+                  IntakeStates.Down.setpoint,
+                  IntakeStates.Down.deploymentVelocity,
+                  IntakeStates.Down.deploymentAcceleration);
             }
           } else {
             m_stuckUndoTime.calculate(false);
-            m_io.setAngle(m_currentState.setpoint);
+            m_io.setAngle(
+                m_currentState.setpoint,
+                m_currentState.deploymentVelocity,
+                m_currentState.deploymentAcceleration);
           }
         } else {
           m_stuckTime.calculate(false);
           m_stuckUndoTime.calculate(false);
           m_wasStuck = false;
-          m_io.setAngle(m_currentState.setpoint);
+          m_io.setAngle(
+              m_currentState.setpoint,
+              m_currentState.deploymentVelocity,
+              m_currentState.deploymentAcceleration);
         }
         break;
       default:
@@ -154,7 +152,10 @@ public class Intake {
         m_minimumStuckTime.calculate(false);
         m_stuckUndoTime.calculate(false);
         m_wasStuck = false;
-        m_io.setAngle(m_currentState.setpoint);
+        m_io.setAngle(
+            m_currentState.setpoint,
+            m_currentState.deploymentVelocity,
+            m_currentState.deploymentAcceleration);
         break;
     }
   }
@@ -182,13 +183,13 @@ public class Intake {
 
   public enum IntakeStates {
     // TODO: Tune when we get deployment motor
-    Up(Milliseconds.of(60), Degrees.of(90), 0, 50, 50),
-    Down(Milliseconds.of(60), Degrees.of(-14.5), 0, 100, 100),
-    Jammed(Milliseconds.of(20), Degrees.of(-14.5), -0.3, 100, 100),
-    Intaking(Milliseconds.of(20), Degrees.of(0), 1, 100, 100);
+    Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.25),
+    Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.25),
+    Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.25),
+    Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.25);
 
     private final Time subsystemPeriodicFrequency;
-    private final Angle setpoint;
+    final Angle setpoint;
     private final double rollerSpeed;
     private final double deploymentVelocity;
     private final double deploymentAcceleration;
