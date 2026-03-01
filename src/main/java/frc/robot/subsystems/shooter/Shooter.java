@@ -20,7 +20,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.shooterMath.ShooterMath2;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 
 @Logged
 public class Shooter {
@@ -54,12 +54,18 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @NotLogged private ArrayList<Double> m_FPSLists;
+  @NotLogged private ArrayDeque<Double> fpsDeque;
+
+  @NotLogged private double fpsRunningSum = 0.0;
 
   @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
 
   @NotLogged private Debouncer m_jamDetect;
+
+  @NotLogged private boolean prevLeftBroken = false;
+
+  @NotLogged private boolean prevRightBroken = false;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -76,7 +82,7 @@ public class Shooter {
 
     this.m_fuelCount = 0;
 
-    this.m_FPSLists = new ArrayList<Double>();
+    this.fpsDeque = new ArrayDeque<Double>();
     this.m_FPSTimer = new Timer();
     this.m_FPSTimer.start();
 
@@ -111,25 +117,18 @@ public class Shooter {
         break;
     }
 
-    // Fuel Tracking
-    // double totalTime = 0;
-    // for (int i = 0; i < this.m_FPSLists.size(); i++) {
-    //   totalTime += this.m_FPSLists.get(i);
-    // }
+    // Fuel Counting
+    boolean left = m_io.hasBreakerLeftBroke();
+    boolean right = m_io.hasBreakerRightBroke();
 
-    // for (int i = 0; i < 100; i++) {
-    //   if (totalTime <= 1) break;
-    //   this.m_FPSLists.remove(this.m_FPSLists.size());
-    // }
-
-    // if (this.m_io.hasBreakerLeftBroke() || this.m_io.hasBreakerRightBroke()) {
-    //   if (this.m_FPSTimer.get() < 1) {
-    //     this.m_FPSLists.add(this.m_FPSTimer.get());
-    //   }
-    //   this.m_FPSTimer.restart();
-
-    //   this.m_fuelCount++;
-    // }
+    if ((left && !prevLeftBroken) || (right && !prevRightBroken)) {
+      double elapsed = m_FPSTimer.get();
+      if (elapsed < 1.0) fpsDeque.addLast(elapsed); // see deque suggestion below
+      m_FPSTimer.restart();
+      m_fuelCount++;
+    }
+    prevLeftBroken = left;
+    prevRightBroken = right;
 
     this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
     this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
@@ -251,14 +250,24 @@ public class Shooter {
     this.m_fuelCount = 0;
   }
 
+  void addInterval(double interval) {
+    fpsDeque.addLast(interval);
+    fpsRunningSum += interval;
+    while (fpsRunningSum > 1.0 && !fpsDeque.isEmpty()) {
+      fpsRunningSum -= fpsDeque.removeFirst();
+    }
+  }
+
   @NotLogged
   public double getFPS() {
     double totalTime = 0;
-    for (int i = 0; i < this.m_FPSLists.size(); i++) {
-      totalTime += this.m_FPSLists.get(i);
+    for (double item : this.fpsDeque) {
+      totalTime += item;
     }
 
-    return Mode.currentMode == CurrentMode.SIMULATION ? 0.3 : totalTime / this.m_FPSLists.size();
+    return Mode.currentMode == CurrentMode.SIMULATION
+        ? 0.3
+        : totalTime / (this.fpsDeque.getLast() - this.fpsDeque.getFirst());
   }
 
   @Logged(importance = Importance.INFO)
