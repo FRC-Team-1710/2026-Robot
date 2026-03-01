@@ -26,6 +26,9 @@ public class Intake {
   @Logged(importance = Importance.CRITICAL)
   private final IntakeIO m_io;
 
+  @Logged(importance = Importance.CRITICAL)
+  private boolean m_wasUp = false;
+
   @NotLogged private final TimesConsumer m_timesConsumer;
 
   @Logged(importance = Importance.INFO)
@@ -146,6 +149,20 @@ public class Intake {
               m_currentState.deploymentVelocity,
               m_currentState.deploymentAcceleration);
         }
+        m_wasUp = false;
+        break;
+      case Jostle:
+        m_stuckTime.calculate(false);
+        m_minimumStuckTime.calculate(false);
+        m_stuckUndoTime.calculate(false);
+        m_wasStuck = false;
+        if (m_io.getSetpointReferenceVelocityIsZero()) {
+          m_wasUp = !m_wasUp;
+        }
+        m_io.setAngle(
+            m_wasUp ? m_currentState.setpoint : m_currentState.alternate,
+            m_currentState.deploymentVelocity,
+            m_currentState.deploymentAcceleration);
         break;
       default:
         m_stuckTime.calculate(false);
@@ -156,6 +173,7 @@ public class Intake {
             m_currentState.setpoint,
             m_currentState.deploymentVelocity,
             m_currentState.deploymentAcceleration);
+        m_wasUp = false;
         break;
     }
   }
@@ -183,13 +201,15 @@ public class Intake {
 
   public enum IntakeStates {
     // TODO: Tune when we get deployment motor
-    Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.25),
-    Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.25),
-    Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.25),
-    Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.25);
+    Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.5),
+    Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.5),
+    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.15), 0, 1, 0.5),
+    Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),
+    Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.5);
 
     private final Time subsystemPeriodicFrequency;
     final Angle setpoint;
+    private final Angle alternate;
     private final double rollerSpeed;
     private final double deploymentVelocity;
     private final double deploymentAcceleration;
@@ -197,14 +217,31 @@ public class Intake {
     IntakeStates(
         Time subsystemPeriodicFrequency,
         Angle angle,
+        Angle alternate,
         double rollerSpeed,
         double deploymentVelocity,
         double deploymentAcceleration) {
       this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
       this.setpoint = angle;
+      this.alternate = alternate;
       this.rollerSpeed = rollerSpeed;
       this.deploymentVelocity = deploymentVelocity;
       this.deploymentAcceleration = deploymentAcceleration;
+    }
+
+    IntakeStates(
+        Time subsystemPeriodicFrequency,
+        Angle angle,
+        double rollerSpeed,
+        double deploymentVelocity,
+        double deploymentAcceleration) {
+      this(
+          subsystemPeriodicFrequency,
+          angle,
+          angle,
+          rollerSpeed,
+          deploymentVelocity,
+          deploymentAcceleration);
     }
   }
 }

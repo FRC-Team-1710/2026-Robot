@@ -82,7 +82,7 @@ public class Shooter {
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
 
-    SmartDashboard.putNumber("Scalarings", 1.95);
+    SmartDashboard.putNumber("Flywheel Scalar", 2);
   }
 
   public void periodic() {
@@ -93,13 +93,13 @@ public class Shooter {
             ShooterMath2.currentSolution
                 .shooterLeft()
                 .flywheelOmega()
-                .times(SmartDashboard.getNumber("Scalarings", 0));
+                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
         this.m_leftHoodTarget = ShooterMath2.currentSolution.shooterLeft().hoodAngle();
         this.m_rightTargetVelocity =
             ShooterMath2.currentSolution
                 .shooterRight()
                 .flywheelOmega()
-                .times(SmartDashboard.getNumber("Scalarings", 0));
+                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
         this.m_rightHoodTarget = ShooterMath2.currentSolution.shooterRight().hoodAngle();
         break;
 

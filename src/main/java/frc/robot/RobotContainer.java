@@ -207,7 +207,10 @@ public class RobotContainer {
 
     driver.leftTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
     driver.povLeft().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
-    driver.povRight().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+    driver.povRight().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Jostle)));
+    driver.povRight().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
+    driver.rightTrigger().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
+    driver.rightTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
   }
 
   @NotLogged
