@@ -5,6 +5,7 @@
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -29,7 +30,7 @@ public class IntakeIOSIM implements IntakeIO {
 
   private final SingleJointedArmSim m_armPhysicsSim;
   private final IntakeVisualSim m_intakeVisualSim;
-  private Angle m_angleSetpoint;
+  private Angle m_angleSetpoint = Degrees.of(0);
 
   private final ProfiledPIDController m_PID =
       new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));

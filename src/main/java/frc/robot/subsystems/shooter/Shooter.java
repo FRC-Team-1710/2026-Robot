@@ -19,6 +19,7 @@ import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.ArrayDeque;
 
@@ -139,22 +140,30 @@ public class Shooter {
   }
 
   @Logged(importance = Importance.CRITICAL)
-  public boolean isAtTargetVelocity() {
+  public boolean isAtLeftTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.getLeftVelocity()
-                .isNear(getLeftTargetVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE)
-            && this.getRightVelocity()
-                .isNear(getRightTargetVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
+        ? (ShooterMath2.currentSolution.shooterLeft().inTolerance(this.getLeftVelocity()))
         : true;
   }
 
   @Logged(importance = Importance.CRITICAL)
-  public boolean isHoodAtTargetAngle() {
+  public boolean isHoodAtLeftTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.getLeftHoodPosition()
-                .isNear(getLeftTargetHood(), ShooterConstants.HOOD_TARGET_ERROR_RANGE)
-            && this.getRightHoodPosition()
-                .isNear(getRightTargetHood(), ShooterConstants.HOOD_TARGET_ERROR_RANGE))
+        ? (ShooterMath2.currentSolution.shooterLeft().inTolerance(this.getLeftHoodPosition()))
+        : true;
+  }
+
+  @Logged(importance = Importance.CRITICAL)
+  public boolean isAtRightTargetVelocity() {
+    return Mode.currentMode == CurrentMode.REAL
+        ? (ShooterMath2.currentSolution.shooterRight().inTolerance(this.getRightVelocity()))
+        : true;
+  }
+
+  @Logged(importance = Importance.CRITICAL)
+  public boolean isHoodAtRightTargetAngle() {
+    return Mode.currentMode == CurrentMode.REAL
+        ? (ShooterMath2.currentSolution.shooterRight().inTolerance(this.getRightHoodPosition()))
         : true;
   }
 
@@ -284,5 +293,9 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   public boolean hasBreakerRightBroke() {
     return this.m_io.hasBreakerRightBroke();
+  }
+
+  public void setFuelSim(FuelSim fuelSim) {
+    this.m_io.setFuelSim(fuelSim);
   }
 }

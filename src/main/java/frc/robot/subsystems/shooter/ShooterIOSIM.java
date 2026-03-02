@@ -60,7 +60,7 @@ public class ShooterIOSIM implements ShooterIO {
     if (fuelSim == null) return;
 
     if (m_shooterDebouncer.calculate(fuelSim.getCurrentFuelStorage() > 0)
-        && getVelocity().isNear(ShooterMath2.currentSolution.shooterLeft().flywheelOmega(), 0.1)) {
+        && fuelSim.shouldShoot.getAsBoolean()) {
       if (leftShooter) {
         fuelSim.spawnFuel(
             new Pose3d(

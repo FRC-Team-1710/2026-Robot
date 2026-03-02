@@ -35,7 +35,6 @@ import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
@@ -160,6 +159,10 @@ public class RobotContainer {
       fuelSim.start();
 
       fuelSim.enableAirResistance();
+
+      fuelSim.shouldShoot = () -> driver.rightTrigger().getAsBoolean();
+
+      shooter.setFuelSim(fuelSim);
     }
 
     autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
@@ -205,12 +208,12 @@ public class RobotContainer {
             Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
                 .ignoringDisable(true));
 
-    driver.leftTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
-    driver.povLeft().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
-    driver.povRight().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Jostle)));
-    driver.povRight().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
-    driver.rightTrigger().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
-    driver.rightTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+    // driver.leftTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+    // driver.povLeft().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+    // driver.povRight().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Jostle)));
+    // driver.povRight().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
+    // driver.rightTrigger().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
+    // driver.rightTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
   }
 
   @NotLogged

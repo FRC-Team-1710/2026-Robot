@@ -25,15 +25,15 @@ public class IndexerIOCTRE implements IndexerIO {
 
   @NotLogged private final BaseStatusSignal[] m_indexerSignals;
 
+  @NotLogged
+  private final DutyCycleOut m_indexerPercentOutput = new DutyCycleOut(0).withEnableFOC(true);
+
   public IndexerIOCTRE() {
     this.m_IndexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
-    motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
-    motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
     m_IndexerMotor.getConfigurator().apply(motorConfig);
 
@@ -49,6 +49,6 @@ public class IndexerIOCTRE implements IndexerIO {
   }
 
   public void setIndexMotor(double speed) {
-    m_IndexerMotor.setControl(new DutyCycleOut(speed));
+    m_IndexerMotor.setControl(m_indexerPercentOutput.withOutput(speed));
   }
 }

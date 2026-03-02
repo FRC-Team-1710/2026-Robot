@@ -27,7 +27,20 @@ public class Feeder {
   }
 
   public void periodic() {
-    this.m_io.setFeeder(this.m_currentState.m_velocity);
+    switch (this.m_currentState) {
+      case FEEDING_LEFT:
+        this.m_io.setLeft(this.m_currentState.m_velocity);
+        this.m_io.setRight(0.0);
+        break;
+      case FEEDING_RIGHT:
+        this.m_io.setLeft(0.0);
+        this.m_io.setRight(this.m_currentState.m_velocity);
+        break;
+      default:
+        this.m_io.setLeft(this.m_currentState.m_velocity);
+        this.m_io.setRight(this.m_currentState.m_velocity);
+        break;
+    }
 
     this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
   }
@@ -35,6 +48,8 @@ public class Feeder {
   public enum FEEDER_STATE {
     STOP(Milliseconds.of(60), 0),
     FEEDING(Milliseconds.of(20), 1),
+    FEEDING_LEFT(Milliseconds.of(20), 1),
+    FEEDING_RIGHT(Milliseconds.of(20), 1),
     REVERSE(Milliseconds.of(20), -0.25);
 
     private final Time m_subsystemPeriodicFrequency;
