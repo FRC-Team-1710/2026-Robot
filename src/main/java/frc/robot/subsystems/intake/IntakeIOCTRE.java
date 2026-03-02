@@ -44,6 +44,8 @@ public class IntakeIOCTRE implements IntakeIO {
 
   @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
+  @NotLogged private final BaseStatusSignal m_deploymentSetpointVelocitySignal;
+
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
     m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR, "rex");
@@ -83,7 +85,12 @@ public class IntakeIOCTRE implements IntakeIO {
     m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
     m_deploymentSignals = TalonFXUtil.getBasicStatusSignals(m_deploymentMotor);
 
+    m_deploymentSetpointVelocitySignal = m_deploymentMotor.getClosedLoopReferenceSlope();
+
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeSignals);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSetpointVelocitySignal);
+
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSignals);
 
     m_intakeMotor.optimizeBusUtilization();
@@ -92,6 +99,7 @@ public class IntakeIOCTRE implements IntakeIO {
 
   public void update() {
     BaseStatusSignal.refreshAll(m_intakeSignals);
+    BaseStatusSignal.refreshAll(m_deploymentSetpointVelocitySignal);
     BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
 
@@ -104,6 +112,10 @@ public class IntakeIOCTRE implements IntakeIO {
       m_deploymentMotor.setControl(
           m_request.withPosition(angle).withAcceleration(acceleration).withVelocity(velocity));
     }
+  }
+
+  public boolean getSetpointReferenceVelocityIsZero() {
+    return m_deploymentSetpointVelocitySignal.getValueAsDouble() == 0;
   }
 
   public void setIntakeMotor(double speed) {

@@ -17,6 +17,10 @@ import edu.wpi.first.units.measure.Current;
 public interface IntakeIO {
   public default void setAngle(Angle angle, double velocity, double acceleration) {}
 
+  public default boolean getSetpointReferenceVelocityIsZero() {
+    return false;
+  }
+
   /**
    * Sets the intake motor parameters.
    *
