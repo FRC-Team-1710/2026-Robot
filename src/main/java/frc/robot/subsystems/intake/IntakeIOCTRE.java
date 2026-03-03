@@ -23,6 +23,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import frc.robot.constants.CanIdConstants;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.utils.TalonFXUtil;
 
@@ -35,7 +36,9 @@ public class IntakeIOCTRE implements IntakeIO {
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
-  @NotLogged private final DynamicMotionMagicVoltage m_request;
+  @NotLogged private final DynamicMotionMagicVoltage m_deploymentRequest;
+
+  @NotLogged private final DutyCycleOut m_intakeRequest;
 
   @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
@@ -48,9 +51,10 @@ public class IntakeIOCTRE implements IntakeIO {
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
-    m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR, "rex");
+    m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR, TunerConstants.kCANBus);
 
-    m_request = new DynamicMotionMagicVoltage(0, 0, 0).withSlot(0).withEnableFOC(true);
+    m_deploymentRequest = new DynamicMotionMagicVoltage(0, 0, 0).withSlot(0).withEnableFOC(true);
+    m_intakeRequest = new DutyCycleOut(0).withEnableFOC(true);
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
     m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -58,6 +62,8 @@ public class IntakeIOCTRE implements IntakeIO {
 
     m_motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
     m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
+
+    m_intakeMotor.getConfigurator().apply(m_motorConfig);
 
     // set slot 0 gains
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
@@ -70,8 +76,6 @@ public class IntakeIOCTRE implements IntakeIO {
     m_slot0Configs.kD = 0; // no output for error derivative
     m_slot0Configs.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
     m_slot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
-
-    m_intakeMotor.getConfigurator().apply(m_motorConfig);
 
     m_motorConfig.Feedback.SensorToMechanismRatio = 50;
     m_motorConfig.Slot0 = m_slot0Configs;
@@ -110,7 +114,10 @@ public class IntakeIOCTRE implements IntakeIO {
       m_deploymentMotor.stopMotor();
     } else {
       m_deploymentMotor.setControl(
-          m_request.withPosition(angle).withAcceleration(acceleration).withVelocity(velocity));
+          m_deploymentRequest
+              .withPosition(angle)
+              .withAcceleration(acceleration)
+              .withVelocity(velocity));
     }
   }
 

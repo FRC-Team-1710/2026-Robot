@@ -33,7 +33,7 @@ public class FieldConstants {
   public static final Distance kStartingLineDistance = Inches.of(158.6);
 
   public static final Translation3d kHubCenterBlue =
-      new Translation3d(Inches.of(182.11125), kFieldWidth.div(2), Inches.of(75.0));
+      new Translation3d(Inches.of(182.112411), kFieldWidth.div(2), Inches.of(75.0));
   public static final Translation3d kHubCenterRed =
       new Translation3d(Inches.of(469.11125), kFieldWidth.div(2), Inches.of(75.0));
 

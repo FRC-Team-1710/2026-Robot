@@ -24,6 +24,7 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
@@ -160,6 +161,10 @@ public class RobotContainer {
       fuelSim.start();
 
       fuelSim.enableAirResistance();
+
+      fuelSim.shouldShoot = () -> driver.rightTrigger().getAsBoolean();
+
+      shooter.setFuelSim(fuelSim);
     }
 
     autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
@@ -177,7 +182,10 @@ public class RobotContainer {
     driver
         .rightTrigger()
         .and(driver.leftTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.Shoot));
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Shoot)
+                .alongWith(superstructure.setAddableStateCommand(AddableStates.Jostle)));
 
     driver
         .leftTrigger()
@@ -195,6 +203,23 @@ public class RobotContainer {
         .and(driver.rightTrigger().negate())
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
 
+    driver
+        .leftTrigger()
+        .negate()
+        .and(driver.rightTrigger().negate())
+        .and(superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateUsesIntake)
+        .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+
     mech.rightBumper()
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
@@ -204,13 +229,6 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
                 .ignoringDisable(true));
-
-    driver.leftTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
-    driver.povLeft().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
-    driver.povRight().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Jostle)));
-    driver.povRight().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
-    driver.rightTrigger().onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Intaking)));
-    driver.rightTrigger().onFalse(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
   }
 
   @NotLogged

@@ -156,4 +156,8 @@ public class MathUtils {
 
     return null;
   }
+
+  public static boolean inRange(double value, double min, double max) {
+    return value >= min && value <= max;
+  }
 }
