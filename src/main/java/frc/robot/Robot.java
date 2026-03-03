@@ -108,8 +108,6 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     MatchState.updateAutonomousWinner();
-
-    // LogEverything.logEverythingPossible();
   }
 
   @Override
