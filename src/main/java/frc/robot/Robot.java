@@ -31,7 +31,6 @@ import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
-import frc.robot.utils.LogEverything;
 
 @Logged
 public class Robot extends DynamicTimedRobot {
@@ -110,7 +109,7 @@ public class Robot extends DynamicTimedRobot {
 
     MatchState.updateAutonomousWinner();
 
-    LogEverything.logEverythingPossible();
+    // LogEverything.logEverythingPossible();
   }
 
   @Override

@@ -85,6 +85,23 @@ public class Superstructure {
     Robot.telemetry().log("MatchState/IsActive", MatchState.isActive());
   }
 
+  public boolean currentStateUsesIntake() {
+    return switch (currentState) {
+      case Score -> true;
+      case ScoreWhileIntaking -> true;
+      case ScoreWithIntakeUp -> true;
+      case ScoreWhileIntakingAuto -> true;
+      case ScoreWithIntakeUpAuto -> true;
+      case Intake -> true;
+      case IntakeAuto -> true;
+      default -> false;
+    };
+  }
+
+  public boolean currentStateDoesntUseIntake() {
+    return !currentStateUsesIntake();
+  }
+
   public void applyRumble() {
     var timeUntilRumble = MatchState.timeTillActive().plus(MatchState.timeTillInactive());
     if (!DriverStation.isAutonomous() && MatchState.autonomousWinnerIsRed.isPresent()) {
@@ -175,8 +192,8 @@ public class Superstructure {
   }
 
   private void score() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // drivetrain.setRotationTarget(getRotationForScore());
+    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Jostle);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -191,8 +208,8 @@ public class Superstructure {
   }
 
   private void scoreWithIntakeUp() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // drivetrain.setRotationTarget(getRotationForScore());
+    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
@@ -217,8 +234,8 @@ public class Superstructure {
   }
 
   private void scoreWhileIntaking() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // drivetrain.setRotationTarget(getRotationForScore());
+    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
