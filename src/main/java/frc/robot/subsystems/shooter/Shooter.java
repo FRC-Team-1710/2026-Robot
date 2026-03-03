@@ -3,22 +3,26 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.List;
 
 @Logged
 public class Shooter {
@@ -41,17 +45,24 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private boolean m_didIntake;
 
-  @NotLogged private Timer m_FPSTimer;
-
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @NotLogged private ArrayList<Double> m_FPSLists;
-
   @Logged(importance = Importance.CRITICAL)
-  private int m_fuelCount;
+  private final List<ArrayDeque<Double>> timestampQueues = new ArrayList<>(2);
 
   @NotLogged private Debouncer m_jamDetect;
+
+  @Logged(importance = Importance.INFO)
+  private Boolean[] fuelDetection = new Boolean[2];
+
+  /*
+   * This Matrix is derived from values of the beam breakers for rising and falling detection.
+   *
+   * [ currentLeft, previousLeft ]
+   * [ currentRight, previousRight]
+   */
+  @NotLogged private Matrix<N2, N2> risingDetection;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -64,13 +75,12 @@ public class Shooter {
     this.m_isGoingTowardsAllianceZone = false;
     this.m_didIntake = false;
 
-    this.m_fuelCount = 0;
-
-    this.m_FPSLists = new ArrayList<Double>();
-    this.m_FPSTimer = new Timer();
-    this.m_FPSTimer.start();
+    timestampQueues.add(new ArrayDeque<>()); // left
+    timestampQueues.add(new ArrayDeque<>()); // right
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
+
+    this.risingDetection = MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 0, 0, 0);
   }
 
   public void periodic() {
@@ -79,6 +89,7 @@ public class Shooter {
       case SHOOT:
         this.m_velocity = RotationsPerSecond.of(ShooterMath.getInterpolatedRPS());
         this.m_hoodAngle = Degrees.of(ShooterMath.getInterpolatedAngle());
+        calculateFPS();
         break;
 
       default:
@@ -86,33 +97,6 @@ public class Shooter {
         this.m_hoodAngle = this.m_currentState.m_hoodAngle;
         break;
     }
-
-    // Fuel Tracking
-    double totalTime = 0;
-    for (int i = 0; i < this.m_FPSLists.size(); i++) {
-      totalTime += this.m_FPSLists.get(i);
-    }
-
-    // Ensure the stored FPS time window covers at most ~1 second by removing the
-    // oldest entries until the summed durations are <= 1.0.
-    while (totalTime > 1.0 && !this.m_FPSLists.isEmpty()) {
-      // remove(0) removes the oldest recorded interval; subtract it from the total
-      totalTime -= this.m_FPSLists.remove(0);
-    }
-
-    if (this.m_io.hasBreakerBroke() || this.m_io.hasBreakerFollowerBroke()) {
-      if (this.m_FPSTimer.get() < 1) {
-        this.m_FPSLists.add(this.m_FPSTimer.get());
-      }
-      this.m_FPSTimer.restart();
-
-      this.m_fuelCount++;
-    }
-
-    this.m_io.setTargetVelocity(this.m_velocity);
-    this.m_io.setHoodAngle(this.m_hoodAngle);
-
-    this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
   @NotLogged
@@ -189,28 +173,62 @@ public class Shooter {
     return this.m_currentState;
   }
 
+  public void calculateFPS() {
+    /* Fuel per second Handling */
+
+    // Pruning the list
+    double currentTime = System.currentTimeMillis() / 1000.0;
+    for (ArrayDeque<Double> queue : timestampQueues) {
+      for (double fuel : queue) {
+        if (fuel < currentTime - 1) {
+          queue.remove(fuel);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Update rising detection matrix
+    risingDetection.set(0, 0, m_io.hasBreakerBroke() ? 1 : 0);
+    risingDetection.set(1, 0, m_io.hasBreakerFollowerBroke() ? 1 : 0);
+    for (int i = 0; i < risingDetection.getNumCols(); i++) {
+      fuelDetection[i] = (risingDetection.get(0, 0) > risingDetection.get(i, 1));
+      if (fuelDetection[i]) {
+        if ((currentTime - timestampQueues.get(i).getLast()) < 1 / 24) {
+          continue;
+        }
+        timestampQueues.get(i).add(currentTime);
+      }
+    }
+
+    // Calculate the FPS
+    this.m_FPS =
+        (timestampQueues.get(0).size() + timestampQueues.get(1).size())
+            / (Math.max(timestampQueues.get(0).peekLast(), timestampQueues.get(1).peekLast())
+                - Math.min(timestampQueues.get(0).peekFirst(), timestampQueues.get(1).peekFirst()));
+
+    // Update matrix (Shift from left column to right column; reset first column)
+    risingDetection.set(0, 1, risingDetection.get(0, 0));
+    risingDetection.set(1, 1, risingDetection.get(1, 0));
+
+    risingDetection.setColumn(0, MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0));
+  }
+
   @NotLogged
   public int getBallCount() {
-    return this.m_fuelCount;
+    return this.timestampQueues.get(0).size() + this.timestampQueues.get(1).size();
   }
 
   @NotLogged
   public void resetBallCount() {
-    this.m_fuelCount = 0;
+    this.timestampQueues.get(0).clear();
+    this.timestampQueues.get(1).clear();
+    this.m_FPS = 0.0;
   }
 
-  @NotLogged
+  @Logged(importance = Importance.INFO)
   public double getFPS() {
-    double totalTime = 0;
-    for (int i = 0; i < this.m_FPSLists.size(); i++) {
-      totalTime += this.m_FPSLists.get(i);
-    }
-
-    if (this.m_FPSLists.isEmpty()) {
-      return 0.0;
-    }
-
-    return totalTime / this.m_FPSLists.size();
+    return this.m_FPS;
   }
 
   @Logged(importance = Importance.INFO)
