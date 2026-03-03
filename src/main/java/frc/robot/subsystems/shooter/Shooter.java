@@ -89,7 +89,6 @@ public class Shooter {
       case SHOOT:
         this.m_velocity = RotationsPerSecond.of(ShooterMath.getInterpolatedRPS());
         this.m_hoodAngle = Degrees.of(ShooterMath.getInterpolatedAngle());
-        calculateFPS();
         break;
 
       default:
@@ -97,6 +96,9 @@ public class Shooter {
         this.m_hoodAngle = this.m_currentState.m_hoodAngle;
         break;
     }
+
+    // Always run FPS tracking regardless of state so pruning stays current
+    calculateFPS();
   }
 
   @NotLogged
@@ -176,42 +178,62 @@ public class Shooter {
   public void calculateFPS() {
     /* Fuel per second Handling */
 
-    // Pruning the list
     double currentTime = System.currentTimeMillis() / 1000.0;
+
+    // Prune timestamps older than 1 second using an iterator (safe removal while iterating)
     for (ArrayDeque<Double> queue : timestampQueues) {
-      for (double fuel : queue) {
-        if (fuel < currentTime - 1) {
-          queue.remove(fuel);
-        } else {
-          break;
-        }
+      while (!queue.isEmpty() && queue.peekFirst() < currentTime - 1.0) {
+        queue.removeFirst();
       }
     }
 
-    // Update rising detection matrix
-    risingDetection.set(0, 0, m_io.hasBreakerBroke() ? 1 : 0);
-    risingDetection.set(1, 0, m_io.hasBreakerFollowerBroke() ? 1 : 0);
-    for (int i = 0; i < risingDetection.getNumCols(); i++) {
-      fuelDetection[i] = (risingDetection.get(0, 0) > risingDetection.get(i, 1));
-      if (fuelDetection[i]) {
-        if ((currentTime - timestampQueues.get(i).getLast()) < 1 / 24) {
-          continue;
-        }
-        timestampQueues.get(i).add(currentTime);
-      }
-    }
-
-    // Calculate the FPS
-    this.m_FPS =
-        (timestampQueues.get(0).size() + timestampQueues.get(1).size())
-            / (Math.max(timestampQueues.get(0).peekLast(), timestampQueues.get(1).peekLast())
-                - Math.min(timestampQueues.get(0).peekFirst(), timestampQueues.get(1).peekFirst()));
-
-    // Update matrix (Shift from left column to right column; reset first column)
+    // Shift current column → previous column in rising detection matrix
     risingDetection.set(0, 1, risingDetection.get(0, 0));
     risingDetection.set(1, 1, risingDetection.get(1, 0));
 
-    risingDetection.setColumn(0, MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0));
+    // Update current column with fresh sensor readings
+    risingDetection.set(0, 0, m_io.hasBreakerBroke() ? 1 : 0);
+    risingDetection.set(1, 0, m_io.hasBreakerFollowerBroke() ? 1 : 0);
+
+    // Rising edge: current=1, previous=0 → use per-row index for each side
+    for (int i = 0; i < 2; i++) {
+      fuelDetection[i] = (risingDetection.get(i, 0) > risingDetection.get(i, 1));
+      if (fuelDetection[i]) {
+        ArrayDeque<Double> queue = timestampQueues.get(i);
+        // Debounce: ignore duplicate triggers within a physically impossible interval (< 1/24 s)
+        if (!queue.isEmpty() && (currentTime - queue.peekLast()) < (1.0 / 24.0)) {
+          continue;
+        }
+        queue.addLast(currentTime);
+      }
+    }
+
+    // Calculate combined FPS over the 1-second window
+    int totalEvents = timestampQueues.get(0).size() + timestampQueues.get(1).size();
+    if (totalEvents < 2) {
+      // Not enough data points — keep last valid FPS or return 0
+      if (totalEvents == 0) this.m_FPS = 0.0;
+      return;
+    }
+
+    // Span = from earliest event across both queues to latest
+    double earliest =
+        Math.min(
+            timestampQueues.get(0).isEmpty()
+                ? Double.MAX_VALUE
+                : timestampQueues.get(0).peekFirst(),
+            timestampQueues.get(1).isEmpty()
+                ? Double.MAX_VALUE
+                : timestampQueues.get(1).peekFirst());
+    double latest =
+        Math.max(
+            timestampQueues.get(0).isEmpty() ? Double.MIN_VALUE : timestampQueues.get(0).peekLast(),
+            timestampQueues.get(1).isEmpty()
+                ? Double.MIN_VALUE
+                : timestampQueues.get(1).peekLast());
+
+    double span = latest - earliest;
+    this.m_FPS = (span > 0) ? (totalEvents / span) : 0.0;
   }
 
   @NotLogged
