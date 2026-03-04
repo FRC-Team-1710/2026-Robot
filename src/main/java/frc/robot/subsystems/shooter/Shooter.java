@@ -157,6 +157,9 @@ public class Shooter {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
+    TRENCH(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
+    CORNER(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
+    TOWER(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
     PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(65), Degrees.of(0));
 
     private final Time m_subsystemPeriodicFrequency;
