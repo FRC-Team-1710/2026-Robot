@@ -56,11 +56,12 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private Boolean[] fuelDetection = new Boolean[2];
 
-  /*
+  /**
    * This Matrix is derived from values of the beam breakers for rising and falling detection.
    *
-   * [ currentLeft, previousLeft ]
-   * [ currentRight, previousRight]
+   * <p>Structure: <code>[currentLeft , previousLeft] [currentRight, previousRight]</code>
+   *
+   * <p>Stored as ints: 1 = beam broken, 0 = beam clear.
    */
   @NotLogged private Matrix<N2, N2> risingDetection;
 
@@ -175,6 +176,8 @@ public class Shooter {
     return this.m_currentState;
   }
 
+  /** Calculates the fuel per second (FPS) based on the timestamps of fuel detection events. */
+  @Logged(importance = Importance.INFO)
   public void calculateFPS() {
     /* Fuel per second Handling */
 
