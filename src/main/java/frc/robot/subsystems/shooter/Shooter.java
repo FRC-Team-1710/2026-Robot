@@ -132,10 +132,10 @@ public class Shooter {
     prevLeftBroken = left;
     prevRightBroken = right;
 
-    // this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
-    // this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
-    // this.m_io.setRightTargetVelocity(this.m_rightTargetVelocity);
-    // this.m_io.setRightHoodTarget(this.m_rightHoodTarget);
+    this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
+    this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
+    this.m_io.setRightTargetVelocity(this.m_rightTargetVelocity);
+    this.m_io.setRightHoodTarget(this.m_rightHoodTarget);
 
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
