@@ -199,7 +199,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
   @NotLogged
   public Angle getRightHoodPosition() {
-    return this.m_leftHood.getPosition().getValue();
+    return this.m_rightHood.getPosition().getValue();
   }
 
   @NotLogged
