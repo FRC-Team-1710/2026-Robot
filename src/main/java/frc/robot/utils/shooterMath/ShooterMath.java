@@ -25,7 +25,8 @@
 // public class ShooterMath {
 //   // ================== Shooter Math Constants ========================
 
-//   /* See Desmos for the shooter math calculations: https://www.desmos.com/calculator/sgkhoo58x4 */
+//   /* See Desmos for the shooter math calculations: https://www.desmos.com/calculator/sgkhoo58x4
+// */
 //   // Velocity Function Constants for the formula: (sqrt((kA*x^2)/(kB*x + kC)) + kD)
 //   private static final double kA = 2.68496;
 //   private static final double kB = 0.11359;
@@ -123,7 +124,8 @@
 //    */
 //   public static Velocity3d findShooterVelocity3d() {
 //     // Velocity3d that uses the distance and rotation to find the shooter velocity
-//     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
+//     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE :
+// kHUB_CENTER_RED;
 //     Robot.telemetry()
 //         .log(
 //             "shooterDistanceToHubMeters",
@@ -148,7 +150,8 @@
 //   }
 
 //   /**
-//    * Calculates the shoot state (velocity and angle) based on the horizontal distance to the target.
+//    * Calculates the shoot state (velocity and angle) based on the horizontal distance to the
+// target.
 //    *
 //    * @param shootVelocity The desired shooter velocity as a {@link Velocity3d} object
 //    * @return {@link ShootState} containing desired flywheel RPM and angle
@@ -160,7 +163,8 @@
 //   }
 
 //   /**
-//    * Calculates the shoot state (velocity and angle) based on the robot's current pose and alliance
+//    * Calculates the shoot state (velocity and angle) based on the robot's current pose and
+// alliance
 //    * color.
 //    */
 //   public static void calculate() {
@@ -187,7 +191,8 @@
 //   }
 
 //   /**
-//    * Returns the current desired shooter RPM calculated from the previously inputted robot pose and
+//    * Returns the current desired shooter RPM calculated from the previously inputted robot pose
+// and
 //    * velocity.
 //    *
 //    * @return {@link AngularVelocity} representing the desired shooter RPM
@@ -241,7 +246,8 @@
 //    */
 //   public static Velocity3d findShooterVelocity3d(Pose3d offsetPose) {
 //     // Velocity3d that uses the distance and rotation to find the shooter velocity
-//     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE : kHUB_CENTER_RED;
+//     Translation2d hubPosition = !m_RedAlliance.getAsBoolean() ? kHUB_CENTER_BLUE :
+// kHUB_CENTER_RED;
 //     Rotation2d hubAngle = m_robotPose.toPose2d().getTranslation().minus(hubPosition).getAngle();
 //     return new Velocity3d(
 //         findShooterVelocity(offsetPose),
