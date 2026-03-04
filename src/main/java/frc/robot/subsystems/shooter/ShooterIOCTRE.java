@@ -102,9 +102,9 @@ public class ShooterIOCTRE implements ShooterIO {
     hoodConfig.Feedback.SensorToMechanismRatio = 26.666666;
 
     hoodConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.HOOD_STATOR_CURRENT_LIMIT;
-    hoodConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.HOOD_SUPPLY_CURRENT_LIMIT;
+    hoodConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.HOOD_SUPPLY_CURRENT_LIMIT;
     hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_leftHood, hoodConfig, 5);
     TalonFXUtil.applyConfigWithRetries(this.m_rightHood, hoodConfig, 5);
