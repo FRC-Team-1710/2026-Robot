@@ -49,7 +49,7 @@ public class Shooter {
   private double m_FPS;
 
   @Logged(importance = Importance.CRITICAL)
-  private final List<ArrayDeque<Double>> timestampQueues = new ArrayList<>(2);
+  private final List<ArrayDeque<Long>> timestampQueues = new ArrayList<>(2);
 
   @NotLogged private Debouncer m_jamDetect;
 
@@ -75,12 +75,12 @@ public class Shooter {
     this.m_isGoingTowardsAllianceZone = false;
     this.m_didIntake = false;
 
+    this.risingDetection = MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 0, 0, 0);
+
     timestampQueues.add(new ArrayDeque<>()); // left
     timestampQueues.add(new ArrayDeque<>()); // right
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
-
-    this.risingDetection = MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 0, 0, 0);
   }
 
   public void periodic() {
@@ -178,11 +178,11 @@ public class Shooter {
   public void calculateFPS() {
     /* Fuel per second Handling */
 
-    double currentTime = System.currentTimeMillis() / 1000.0;
+    long currentTime = System.currentTimeMillis();
 
     // Prune timestamps older than 1 second using an iterator (safe removal while iterating)
-    for (ArrayDeque<Double> queue : timestampQueues) {
-      while (!queue.isEmpty() && queue.peekFirst() < currentTime - 1.0) {
+    for (ArrayDeque<Long> queue : timestampQueues) {
+      while (!queue.isEmpty() && queue.peekFirst() < currentTime - 1000) {
         queue.removeFirst();
       }
     }
@@ -199,9 +199,9 @@ public class Shooter {
     for (int i = 0; i < 2; i++) {
       fuelDetection[i] = (risingDetection.get(i, 0) > risingDetection.get(i, 1));
       if (fuelDetection[i]) {
-        ArrayDeque<Double> queue = timestampQueues.get(i);
+        ArrayDeque<Long> queue = timestampQueues.get(i);
         // Debounce: ignore duplicate triggers within a physically impossible interval (< 1/24 s)
-        if (!queue.isEmpty() && (currentTime - queue.peekLast()) < (1.0 / 24.0)) {
+        if (!queue.isEmpty() && (currentTime - queue.peekLast()) < (1000.0 / 24.0)) {
           continue;
         }
         queue.addLast(currentTime);
@@ -233,7 +233,7 @@ public class Shooter {
                 : timestampQueues.get(1).peekLast());
 
     double span = latest - earliest;
-    this.m_FPS = (span > 0) ? (totalEvents / span) : 0.0;
+    this.m_FPS = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
   }
 
   @NotLogged
