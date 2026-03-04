@@ -239,11 +239,13 @@ public class Shooter {
     this.m_FPS = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
   }
 
+  /** Returns the current ball count based on the timestamps of fuel detection events. */
   @NotLogged
   public int getBallCount() {
     return this.timestampQueues.get(0).size() + this.timestampQueues.get(1).size();
   }
 
+  /** Resets the ball count and FPS to zero. */
   @NotLogged
   public void resetBallCount() {
     this.timestampQueues.get(0).clear();
@@ -251,6 +253,7 @@ public class Shooter {
     this.m_FPS = 0.0;
   }
 
+  /** Returns the current fuel per second (FPS) based on the timestamps of fuel detection events. */
   @Logged(importance = Importance.INFO)
   public double getFPS() {
     return this.m_FPS;
