@@ -13,7 +13,7 @@ public class JamDetectionConstants {
     /** 750rpm */
     public static final AngularVelocity kJamSpeedThreshold = RotationsPerSecond.of(12.5);
 
-    public static final Current kJamCurrent = Amps.of(10000000); // TODO: tune
+    public static final Current kJamCurrent = Amps.of(10000000);
 
     /** Jam trip time */
     public static final Time kJamMinimumTime = Seconds.of(0.5);

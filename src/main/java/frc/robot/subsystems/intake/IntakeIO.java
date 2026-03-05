@@ -15,7 +15,11 @@ import edu.wpi.first.units.measure.Current;
 
 @Logged
 public interface IntakeIO {
-  public default void setAngle(Angle angle) {}
+  public default void setAngle(Angle angle, double velocity, double acceleration) {}
+
+  public default boolean getSetpointReferenceVelocityIsZero() {
+    return false;
+  }
 
   /**
    * Sets the intake motor parameters.
@@ -25,8 +29,7 @@ public interface IntakeIO {
    * @param deploymentAcceleration The desired deployment acceleration, in units of rotations per
    *     second squared.
    */
-  public default void setIntakeMotor(
-      double speed, double deploymentVelocity, double deploymentAcceleration) {}
+  public default void setIntakeMotor(double speed) {}
 
   public default void update() {}
 
