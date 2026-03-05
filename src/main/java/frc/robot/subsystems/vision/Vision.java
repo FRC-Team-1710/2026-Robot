@@ -95,7 +95,6 @@ public class Vision implements Subsystem {
    * Runs every scheduler loop. 1. Fetch fresh vision data (unless replaying logs) 2. Update
    * replay/log values 3. Process and inject pose measurements into drivetrain
    */
-  /** Runs periodic vision processing and pose estimation. */
   public void periodic() {
     if (!Utils.isReplay()) {
       fetchInputs();

@@ -125,19 +125,19 @@ public class Intake {
               m_stuckUndoTime.calculate(false);
               m_wasStuck = false;
               m_io.setAngle(
-                  m_currentState.m_setpoint,
+                  m_currentState.setpoint,
                   m_currentState.m_deploymentVelocity,
                   m_currentState.m_deploymentAcceleration);
             } else {
               m_io.setAngle(
-                  IntakeStates.Down.m_setpoint,
+                  IntakeStates.Down.setpoint,
                   IntakeStates.Down.m_deploymentVelocity,
                   IntakeStates.Down.m_deploymentAcceleration);
             }
           } else {
             m_stuckUndoTime.calculate(false);
             m_io.setAngle(
-                m_currentState.m_setpoint,
+                m_currentState.setpoint,
                 m_currentState.m_deploymentVelocity,
                 m_currentState.m_deploymentAcceleration);
           }
@@ -146,7 +146,7 @@ public class Intake {
           m_stuckUndoTime.calculate(false);
           m_wasStuck = false;
           m_io.setAngle(
-              m_currentState.m_setpoint,
+              m_currentState.setpoint,
               m_currentState.m_deploymentVelocity,
               m_currentState.m_deploymentAcceleration);
         }
@@ -161,7 +161,7 @@ public class Intake {
           m_wasUp = !m_wasUp;
         }
         m_io.setAngle(
-            m_wasUp ? m_currentState.m_setpoint : m_currentState.m_alternate,
+            m_wasUp ? m_currentState.setpoint : m_currentState.m_alternate,
             m_currentState.m_deploymentVelocity,
             m_currentState.m_deploymentAcceleration);
         break;
@@ -171,7 +171,7 @@ public class Intake {
         m_stuckUndoTime.calculate(false);
         m_wasStuck = false;
         m_io.setAngle(
-            m_currentState.m_setpoint,
+            m_currentState.setpoint,
             m_currentState.m_deploymentVelocity,
             m_currentState.m_deploymentAcceleration);
         m_wasUp = false;
@@ -216,7 +216,7 @@ public class Intake {
     Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.5);
 
     private final Time m_subsystemPeriodicFrequency;
-    final Angle m_setpoint;
+    final Angle setpoint;
     private final Angle m_alternate;
     private final double m_rollerSpeed;
     private final double m_deploymentVelocity;
@@ -230,7 +230,7 @@ public class Intake {
         double deploymentVelocity,
         double deploymentAcceleration) {
       this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.m_setpoint = angle;
+      this.setpoint = angle;
       this.m_alternate = alternate;
       this.m_rollerSpeed = rollerSpeed;
       this.m_deploymentVelocity = deploymentVelocity;

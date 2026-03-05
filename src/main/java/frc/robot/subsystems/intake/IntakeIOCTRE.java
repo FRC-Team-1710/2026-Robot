@@ -110,7 +110,7 @@ public class IntakeIOCTRE implements IntakeIO {
   public void setAngle(Angle angle, double velocity, double acceleration) {
     m_angleSetpoint = angle;
     if (m_deploymentMotor.getPosition().getValue().in(Rotations) < 0.1
-        && angle.isEquivalent(IntakeStates.Down.m_setpoint)) {
+        && angle.isEquivalent(IntakeStates.Down.setpoint)) {
       m_deploymentMotor.stopMotor();
     } else {
       m_deploymentMotor.setControl(
