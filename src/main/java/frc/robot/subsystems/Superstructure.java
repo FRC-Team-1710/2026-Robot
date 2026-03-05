@@ -22,8 +22,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
-import frc.robot.utils.FuelSim;
-import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMath2;
 
 @Logged
 public class Superstructure {
@@ -43,6 +42,9 @@ public class Superstructure {
 
   @Logged(importance = Importance.INFO)
   private boolean didIntake = false;
+
+  @Logged(importance = Importance.CRITICAL)
+  private AddableStates addableState = AddableStates.Jostle;
 
   public Superstructure(
       CommandXboxController driver,
@@ -83,6 +85,23 @@ public class Superstructure {
     Robot.telemetry().log("MatchState/IsActive", MatchState.isActive());
   }
 
+  public boolean currentStateUsesIntake() {
+    return switch (currentState) {
+      case Score -> true;
+      case ScoreWhileIntaking -> true;
+      case ScoreWithIntakeUp -> true;
+      case ScoreWhileIntakingAuto -> true;
+      case ScoreWithIntakeUpAuto -> true;
+      case Intake -> true;
+      case IntakeAuto -> true;
+      default -> false;
+    };
+  }
+
+  public boolean currentStateDoesntUseIntake() {
+    return !currentStateUsesIntake();
+  }
+
   public void applyRumble() {
     var timeUntilRumble = MatchState.timeTillActive().plus(MatchState.timeTillInactive());
     if (!DriverStation.isAutonomous() && MatchState.autonomousWinnerIsRed.isPresent()) {
@@ -101,35 +120,26 @@ public class Superstructure {
    */
   @NotLogged
   private CurrentStates handleStateTransitions() {
-    switch (wantedState) {
-      case Default:
-        return CurrentStates.Idle;
-      case Shoot:
-        return drivetrain.inAllianceZone() ? CurrentStates.Score : CurrentStates.Shoot;
-      case Intake:
-        return CurrentStates.Intake;
-      case IntakeAndShoot:
-        return drivetrain.inAllianceZone()
-            ? CurrentStates.ScoreWhileIntaking
-            : CurrentStates.ShootWhileIntaking;
-      case Climb:
-        return CurrentStates.Climb;
-      case DefaultAuto:
-        return CurrentStates.IdleAuto;
-      case ShootAuto:
-        return drivetrain.inAllianceZone() ? CurrentStates.ScoreAuto : CurrentStates.ShootAuto;
-      case IntakeAuto:
-        return CurrentStates.IntakeAuto;
-      case IntakeAndShootAuto:
-        return drivetrain.inAllianceZone()
-            ? CurrentStates.ScoreWhileIntakingAuto
-            : CurrentStates.ShootWhileIntakingAuto;
-      case ClimbAuto:
-        return CurrentStates.ClimbAuto;
-      default:
-        DriverStation.reportError("Switch from WantedState to CurrentState failed!", false);
-        return CurrentStates.Idle;
-    }
+    return switch (wantedState) {
+      case Default -> CurrentStates.Idle;
+      case Shoot ->
+          switch (addableState) {
+            case Jostle -> CurrentStates.Score;
+            case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
+          };
+      case Intake -> CurrentStates.Intake;
+      case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
+      case Climb -> CurrentStates.Climb;
+      case DefaultAuto -> CurrentStates.IdleAuto;
+      case ShootAuto ->
+          switch (addableState) {
+            case Jostle -> CurrentStates.ScoreAuto;
+            case IntakeUp -> CurrentStates.ScoreWithIntakeUpAuto;
+          };
+      case IntakeAuto -> CurrentStates.IntakeAuto;
+      case IntakeAndShootAuto -> CurrentStates.ScoreWhileIntakingAuto;
+      case ClimbAuto -> CurrentStates.ClimbAuto;
+    };
   }
 
   /** Applies the current states to the subsystems */
@@ -138,11 +148,11 @@ public class Superstructure {
       case Idle:
         idle();
         break;
-      case Shoot:
-        shoot();
-        break;
       case Score:
         score();
+        break;
+      case ScoreWithIntakeUp:
+        scoreWithIntakeUp();
         break;
       case Intake:
         intake();
@@ -150,20 +160,17 @@ public class Superstructure {
       case ScoreWhileIntaking:
         scoreWhileIntaking();
         break;
-      case ShootWhileIntaking:
-        shootWhileIntaking();
-        break;
       case Climb:
         climb();
         break;
       case IdleAuto:
         idleAuto();
         break;
-      case ShootAuto:
-        shootAuto();
-        break;
       case ScoreAuto:
         scoreAuto();
+        break;
+      case ScoreWithIntakeUpAuto:
+        scoreWithIntakeUpAuto();
         break;
       case IntakeAuto:
         intakeAuto();
@@ -171,45 +178,47 @@ public class Superstructure {
       case ScoreWhileIntakingAuto:
         scoreWhileIntakingAuto();
         break;
-      case ShootWhileIntakingAuto:
-        shootWhileIntakingAuto();
-        break;
       case ClimbAuto:
         climbAuto();
-        break;
-      default:
         break;
     }
   }
 
   private void idle() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
   }
 
-  private void shoot() {
-    drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(shooter.getFPS() < 2 ? IntakeStates.Up : IntakeStates.Down);
+  private void score() {
+    // drivetrain.setRotationTarget(getRotationForScore());
+    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    intake.setState(IntakeStates.Jostle);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
 
-  private void score() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+  private void scoreWithIntakeUp() {
+    // drivetrain.setRotationTarget(getRotationForScore());
+    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -225,60 +234,58 @@ public class Superstructure {
   }
 
   private void scoreWhileIntaking() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // drivetrain.setRotationTarget(getRotationForScore());
+    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-
-    didIntake = false;
-  }
-
-  private void shootWhileIntaking() {
-    drivetrain.setRotationTarget(Alliance.redAlliance ? Rotation2d.kZero : Rotation2d.k180deg);
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Intaking);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
 
   private void climb() {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
   }
 
   private void idleAuto() {
-    intake.setState(IntakeStates.Up);
     feeder.setState(FEEDER_STATE.STOP);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
   }
 
-  private void shootAuto() {
-    intake.setState(IntakeStates.Up);
+  private void scoreAuto() {
+    intake.setState(IntakeStates.Jostle);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
 
-  private void scoreAuto() {
+  private void scoreWithIntakeUpAuto() {
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -295,41 +302,50 @@ public class Superstructure {
   private void scoreWhileIntakingAuto() {
     intake.setState(IntakeStates.Intaking);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-
-    didIntake = false;
-  }
-
-  private void shootWhileIntakingAuto() {
-    intake.setState(IntakeStates.Intaking);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    // TODO: Add auto shoot here
-    indexer.setState(allAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(allAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
 
   private void climbAuto() {
-    intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
   }
 
-  @Logged(importance = Importance.CRITICAL)
+  @Logged(importance = Importance.INFO)
   public boolean allAtTarget() {
-    return shooter.isAtTargetVelocity()
-        && shooter.isHoodAtTargetAngle()
-        && Math.abs(drivetrain.getPose().getRotation().minus(getRotationForScore()).getDegrees())
-            < 4;
+    return leftAtTarget() && rightAtTarget();
+  }
+
+  @NotLogged
+  public boolean anyAtTarget() {
+    return leftAtTarget() || rightAtTarget();
+  }
+
+  @Logged(importance = Importance.CRITICAL)
+  public boolean leftAtTarget() {
+    return shooter.isAtLeftTargetVelocity()
+        && shooter.isHoodAtLeftTargetAngle()
+        && ShooterMath2.currentSolution.shooterLeft().inTolerance(drivetrain.getRotation());
+  }
+
+  @Logged(importance = Importance.CRITICAL)
+  public boolean rightAtTarget() {
+    return shooter.isAtRightTargetVelocity()
+        && shooter.isHoodAtRightTargetAngle()
+        && ShooterMath2.currentSolution.shooterRight().inTolerance(drivetrain.getRotation());
   }
 
   @NotLogged
   private Rotation2d getRotationForScore() {
-    return ShooterMath.getRobotRotation().plus(Rotation2d.k180deg);
+    return ShooterMath2.currentSolution.robotHeading().plus(Rotation2d.k180deg);
   }
 
   /** The wanted states of superstructure */
@@ -350,19 +366,22 @@ public class Superstructure {
   /** The current states of superstructure */
   public enum CurrentStates {
     Idle(),
-    Shoot(),
     Score(),
+    ScoreWithIntakeUp(),
     Intake(),
-    ShootWhileIntaking(),
     ScoreWhileIntaking(),
     Climb(),
     IdleAuto(),
-    ShootAuto(),
     ScoreAuto(),
+    ScoreWithIntakeUpAuto(),
     IntakeAuto(),
-    ShootWhileIntakingAuto(),
     ScoreWhileIntakingAuto(),
     ClimbAuto(),
+  }
+
+  public enum AddableStates {
+    Jostle(),
+    IntakeUp(),
   }
 
   /**
@@ -373,6 +392,13 @@ public class Superstructure {
   }
 
   /**
+   * @param state the addable state to set
+   */
+  public void setAddableState(AddableStates state) {
+    addableState = state;
+  }
+
+  /**
    * @param state the wanted state to set
    * @return a command that sets the wanted state
    */
@@ -380,12 +406,16 @@ public class Superstructure {
     return Commands.runOnce(() -> setWantedState(state)).ignoringDisable(true);
   }
 
+  /**
+   * @param state the addable state to set
+   * @return a command that sets the addable state
+   */
+  public Command setAddableStateCommand(AddableStates state) {
+    return Commands.runOnce(() -> setAddableState(state)).ignoringDisable(true);
+  }
+
   @NotLogged
   public CurrentStates getCurrentState() {
     return currentState;
-  }
-
-  public void setFuelSim(FuelSim fuelSim) {
-    shooter.setFuelSim(fuelSim);
   }
 }

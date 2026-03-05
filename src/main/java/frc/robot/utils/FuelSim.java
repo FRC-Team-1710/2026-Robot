@@ -25,6 +25,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class FuelSim {
+  public BooleanSupplier shouldShoot;
+
   protected static final double PERIOD = 0.02; // sec
   protected static final Translation3d GRAVITY = new Translation3d(0, 0, -9.81); // m/s^2
   // Room temperature dry air density: https://en.wikipedia.org/wiki/Density_of_air#Dry_air
