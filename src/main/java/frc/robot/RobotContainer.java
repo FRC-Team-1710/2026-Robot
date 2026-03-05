@@ -24,6 +24,7 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
@@ -35,6 +36,7 @@ import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.indexer.IndexerIOSIM;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
@@ -76,7 +78,7 @@ public class RobotContainer {
   private final Feeder feeder;
 
   // Should add logging soon
-  @NotLogged private Vision[] cameras;
+  @NotLogged private final Vision[] cameras;
 
   @Logged(importance = Importance.CRITICAL)
   private final Superstructure superstructure;
@@ -114,6 +116,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras = new Vision[0];
         break;
 
       default:
@@ -122,6 +126,8 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+
+        cameras = new Vision[0];
         break;
     }
 
@@ -147,18 +153,22 @@ public class RobotContainer {
           width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
           -length / 2,
           length / 2,
-          () -> superstructure.getCurrentState() == CurrentStates.Intake);
+          () ->
+              superstructure.getCurrentState() == CurrentStates.Intake
+                  || superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
 
       fuelSim.start();
 
       fuelSim.enableAirResistance();
+
+      fuelSim.shouldShoot = () -> driver.rightTrigger().getAsBoolean();
+
+      shooter.setFuelSim(fuelSim);
     }
 
-    autoChooser = new AutosChooser(superstructure, drivetrain);
-
-    superstructure.setFuelSim(fuelSim);
+    autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
 
     configureBindings();
   }
@@ -173,7 +183,10 @@ public class RobotContainer {
     driver
         .rightTrigger()
         .and(driver.leftTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.Shoot));
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Shoot)
+                .alongWith(superstructure.setAddableStateCommand(AddableStates.Jostle)));
 
     driver
         .leftTrigger()
@@ -239,6 +252,23 @@ public class RobotContainer {
                   shooter.override(false, SHOOTER_STATE.IDLE);
                 }));
 
+    driver
+        .leftTrigger()
+        .negate()
+        .and(driver.rightTrigger().negate())
+        .and(superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateUsesIntake)
+        .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+
     mech.rightBumper()
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
@@ -252,7 +282,7 @@ public class RobotContainer {
 
   @NotLogged
   public Command getAutonomousCommand() {
-    return autoChooser.selectAuto(drivetrain);
+    return autoChooser.selectAuto(drivetrain, shooter);
   }
 
   public SubsystemInfo[] getAllSubsystems() {
