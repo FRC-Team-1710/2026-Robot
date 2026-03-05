@@ -256,8 +256,8 @@ public class Shooter {
     risingDetection.set(1, 1, risingDetection.get(1, 0));
 
     // Update current column with fresh sensor readings
-    risingDetection.set(0, 0, m_io.hasBreakerBroke() ? 1 : 0);
-    risingDetection.set(1, 0, m_io.hasBreakerFollowerBroke() ? 1 : 0);
+    risingDetection.set(0, 0, m_io.hasBreakerLeftBroke() ? 1 : 0);
+    risingDetection.set(1, 0, m_io.hasBreakerRightBroke() ? 1 : 0);
 
     // Rising edge: current=1, previous=0 → use per-row index for each side
     for (int i = 0; i < 2; i++) {
