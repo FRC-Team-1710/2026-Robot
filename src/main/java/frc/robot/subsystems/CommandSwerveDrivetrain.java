@@ -54,18 +54,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Logged(importance = Importance.DEBUG)
   private double m_lastSimTime;
 
-  @NotLogged private LinearVelocity MaxSpeed = TunerConstants.kSpeedAt12Volts;
+  @NotLogged private LinearVelocity m_maxSpeed = TunerConstants.kSpeedAt12Volts;
 
-  @NotLogged private AngularVelocity MaxAngularRate = TunerConstants.kMaxAngularRate;
+  @NotLogged private AngularVelocity m_maxAngularRate = TunerConstants.kMaxAngularRate;
 
   @Logged(importance = Importance.CRITICAL)
   public final CustomFieldCentric fieldCentric;
 
   @Logged(importance = Importance.INFO)
-  private DriveStates currentState = DriveStates.DRIVER_CONTROLLED;
+  private DriveStates m_currentState = DriveStates.DRIVER_CONTROLLED;
 
   /** Controller inputs for default teleop */
-  @NotLogged private CommandXboxController inputController;
+  @NotLogged private CommandXboxController m_inputController;
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   @NotLogged private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -78,7 +78,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /* Override default swerve request for a higher priority one (used in auto) */
   @Logged(importance = Importance.CRITICAL)
-  private boolean autonomousRequestOverride = false;
+  private boolean m_autonomousRequestOverride = false;
 
   // SysId routines
 
@@ -243,18 +243,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return Commands.run(() -> this.applyRequest(requestSupplier.get()));
   }
 
+  /** Applies the given swerve request, respecting autonomous override. */
   public void applyRequest(SwerveRequest request) {
-    if (!DriverStation.isAutonomous() || !autonomousRequestOverride) {
+    if (!DriverStation.isAutonomous() || !m_autonomousRequestOverride) {
       this.setControl(request);
     }
   }
 
+  /** Applies a high-priority swerve request during autonomous. */
   public void applyPriorityRequestAuto(SwerveRequest request) {
-    if (DriverStation.isAutonomous() && autonomousRequestOverride) {
+    if (DriverStation.isAutonomous() && m_autonomousRequestOverride) {
       this.setControl(request);
     }
   }
 
+  /** Runs periodic drivetrain logic including operator perspective and drive control. */
   public void periodic() {
     /*
      * Periodically try to apply the operator perspective.
@@ -272,39 +275,42 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     Vector<N2> scaledTranslationInputs =
-        rescaleTranslation(inputController.getLeftY(), inputController.getLeftX());
+        rescaleTranslation(m_inputController.getLeftY(), m_inputController.getLeftX());
 
     if (!DriverStation.isAutonomous()) {
       setControl(
           fieldCentric
-              .withVelocityX(MaxSpeed.times(-scaledTranslationInputs.get(0, 0)))
-              .withVelocityY(MaxSpeed.times(-scaledTranslationInputs.get(1, 0)))
+              .withVelocityX(m_maxSpeed.times(-scaledTranslationInputs.get(0, 0)))
+              .withVelocityY(m_maxSpeed.times(-scaledTranslationInputs.get(1, 0)))
               .withRotationalRate(
-                  MaxAngularRate.times(
+                  m_maxAngularRate.times(
                       -rescaleRotation(
-                          inputController.getRightX()
+                          m_inputController.getRightX()
                           // + (inputController.povLeft().getAsBoolean()
                           //     ? 1
                           //     : (inputController.povRight().getAsBoolean() ? -1 : 0))
                           )))
-              .withDriveState(currentState));
+              .withDriveState(m_currentState));
     }
 
     ShooterMath2.calculate(getPose(), getFieldSpeeds());
   }
 
+  /** Rescales the translation input vector with deadband and power curve. */
   public Vector<N2> rescaleTranslation(double x, double y) {
     Vector<N2> scaledJoyStick = VecBuilder.fill(x, y);
     scaledJoyStick = MathUtil.applyDeadband(scaledJoyStick, 0.075);
     return MathUtil.copyDirectionPow(scaledJoyStick, 2);
   }
 
+  /** Rescales the rotation input with deadband. */
   public double rescaleRotation(double rotation) {
     return Math.copySign(MathUtil.applyDeadband(Math.abs(rotation), 0.075), rotation);
   }
 
+  /** Sets whether autonomous requests should override normal control. */
   public void setAutonomousRequestOverride(boolean override) {
-    this.autonomousRequestOverride = override;
+    this.m_autonomousRequestOverride = override;
   }
 
   private void startSimThread() {
@@ -432,7 +438,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /** Set the {@link DriveStates#DRIVER_CONTROLLED} and assists controller */
   public void setController(CommandXboxController controller) {
-    this.inputController = controller;
+    this.m_inputController = controller;
   }
 
   /** Set the {@link DriveStates#ROTATION_LOCK} target */
@@ -440,8 +446,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     fieldCentric.withTargetRotation(target);
   }
 
+  /** Sets the current drive state. */
   public void setState(DriveStates state) {
-    this.currentState = state;
+    this.m_currentState = state;
   }
 
   public enum DriveStates {
