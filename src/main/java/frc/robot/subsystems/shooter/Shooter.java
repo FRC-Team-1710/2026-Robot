@@ -58,13 +58,11 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @Logged(importance = Importance.CRITICAL)
-  private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
+  @NotLogged private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
 
   @NotLogged private Debouncer m_jamDetect;
 
-  @Logged(importance = Importance.INFO)
-  private Boolean[] m_fuelDetection = new Boolean[] {false, false};
+  @NotLogged private Boolean[] m_fuelDetection = new Boolean[] {false, false};
 
   @Logged(importance = Importance.INFO)
   private int m_ballCount;
@@ -251,7 +249,7 @@ public class Shooter {
   }
 
   /** Calculates the fuel per second (FPS) based on the timestamps of fuel detection events. */
-  @Logged(importance = Importance.INFO)
+  @NotLogged
   public void calculateFPS() {
     /* Fuel per second Handling */
 
