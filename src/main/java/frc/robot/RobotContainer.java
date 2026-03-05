@@ -209,48 +209,42 @@ public class RobotContainer {
         .onTrue(
             superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(
-                    Commands.run(
-                        () -> {
-                          shooter.override(true, SHOOTER_STATE.TRENCH);
-                        })))
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TRENCH))));
+
+    driver
+        .x()
         .onFalse(
-            Commands.runOnce(
-                () -> {
-                  shooter.override(false, SHOOTER_STATE.IDLE);
-                }));
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
 
     driver
         .a()
         .onTrue(
             superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(
-                    Commands.run(
-                        () -> {
-                          shooter.override(true, SHOOTER_STATE.CORNER);
-                        })))
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.CORNER))));
+
+    driver
+        .a()
         .onFalse(
-            Commands.runOnce(
-                () -> {
-                  shooter.override(false, SHOOTER_STATE.IDLE);
-                }));
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
 
     driver
         .b()
         .onTrue(
             superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(
-                    Commands.run(
-                        () -> {
-                          shooter.override(true, SHOOTER_STATE.TOWER);
-                        })))
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TOWER))));
+
+    driver
+        .b()
         .onFalse(
-            Commands.runOnce(
-                () -> {
-                  shooter.override(false, SHOOTER_STATE.IDLE);
-                }));
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
 
     driver
         .leftTrigger()
@@ -263,6 +257,11 @@ public class RobotContainer {
         .povRight()
         .and(superstructure::currentStateUsesIntake)
         .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateUsesIntake)
+        .onFalse(superstructure.setAddableStateCommand(AddableStates.Jostle));
 
     driver
         .povRight()
