@@ -90,24 +90,16 @@ public class Shooter {
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
 
-    SmartDashboard.putNumber("Flywheel Scalar", 2);
+    SmartDashboard.putNumber("whynowork", 0);
   }
 
   public void periodic() {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_leftTargetVelocity =
-            ShooterMath2.currentSolution
-                .shooterLeft()
-                .flywheelOmega()
-                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
+        this.m_leftTargetVelocity = ShooterMath2.currentSolution.shooterLeft().flywheelOmega();
         this.m_leftHoodTarget = ShooterMath2.currentSolution.shooterLeft().hoodAngle();
-        this.m_rightTargetVelocity =
-            ShooterMath2.currentSolution
-                .shooterRight()
-                .flywheelOmega()
-                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
+        this.m_rightTargetVelocity = ShooterMath2.currentSolution.shooterRight().flywheelOmega();
         this.m_rightHoodTarget = ShooterMath2.currentSolution.shooterRight().hoodAngle();
         break;
 

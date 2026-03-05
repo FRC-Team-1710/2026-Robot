@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
@@ -21,6 +22,15 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.MathUtils;
 
 public final class ShooterMath2 {
+  /**
+   * Preferred minimum arrival angle (radians). 0° = Disabled, 30° = Only activates at long range,
+   * 45° = Ball enters at roughly 45° into the funnel, 60° = Noticeably higher flywheel demand at
+   * mid-range, 70° = May be unreachable from far positions
+   */
+  private static double PREFERRED_MIN_ARRIVAL_ANGLE_RAD = Math.toRadians(45.0);
+
+  /** Efficiency of speed transfer from flywheel to ball. */
+  private static final double SPEED_TRANSFER_EFFICIENCY = 0.5; // 1.0 = No slip
 
   /** Ball diameter: 5.91 in → meters. */
   private static final double BALL_DIAMETER_M = 5.91 * 0.0254;
@@ -45,7 +55,8 @@ public final class ShooterMath2 {
       BOTTOM_WHEEL_RADIUS_M + (BALL_DIAMETER_M - COMPRESSION_M) / 2.0;
 
   /** Ball exit speed per unit flywheel. */
-  public static final double SPEED_PER_OMEGA = (BOTTOM_WHEEL_RADIUS_M + TOP_WHEEL_RADIUS_M) / 2.0;
+  private static final double SPEED_PER_OMEGA =
+      SPEED_TRANSFER_EFFICIENCY * (BOTTOM_WHEEL_RADIUS_M + TOP_WHEEL_RADIUS_M) / 2.0;
 
   /** Minimum mechanical hood angle (radians) — steepest shot. */
   private static final double MIN_HOOD_ANGLE_RAD = Math.toRadians(ShooterConstants.HOOD_MIN);
@@ -190,6 +201,8 @@ public final class ShooterMath2 {
    * @param fieldSpeeds Chassis speeds in the field frame.
    */
   public static void calculate(Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
+    PREFERRED_MIN_ARRIVAL_ANGLE_RAD = Math.toRadians(SmartDashboard.getNumber("whynowork", 0));
+
     TARGET_CENTER =
         Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue;
     TARGET_VERTICES =
@@ -414,14 +427,23 @@ public final class ShooterMath2 {
       // Arrival angle constraint
       double dNear = edgeDistance(-cP, -sP);
       effMax = MAX_HOOD_ANGLE_RAD;
+
+      // Geometric near-edge constraint
       if (dNear > 1e-4) {
-        double laMin = Math.atan(BALL_RADIUS_M / dNear + 2.0 * dz / D);
-        effMax = Math.min(MAX_HOOD_ANGLE_RAD, Math.PI / 2.0 - laMin);
-        if (effMax < MIN_HOOD_ANGLE_RAD) {
-          effMax = MIN_HOOD_ANGLE_RAD;
-          hCl = true;
-          arrCl = true;
-        }
+        double laMinGeo = Math.atan(BALL_RADIUS_M / dNear + 2.0 * dz / D);
+        effMax = Math.min(effMax, Math.PI / 2.0 - laMinGeo);
+      }
+
+      // Preferred minimum arrival angle
+      if (PREFERRED_MIN_ARRIVAL_ANGLE_RAD > 1e-6) {
+        double laMinPref = Math.atan(Math.tan(PREFERRED_MIN_ARRIVAL_ANGLE_RAD) + 2.0 * dz / D);
+        effMax = Math.min(effMax, Math.PI / 2.0 - laMinPref);
+      }
+
+      if (effMax < MIN_HOOD_ANGLE_RAD) {
+        effMax = MIN_HOOD_ANGLE_RAD;
+        hCl = true;
+        arrCl = true;
       }
 
       double optHood = Math.PI / 2.0 - (Math.atan2(dz + Math.sqrt(dz * dz + D * D), D));

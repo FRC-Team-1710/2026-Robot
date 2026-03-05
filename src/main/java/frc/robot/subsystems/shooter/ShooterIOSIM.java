@@ -43,7 +43,7 @@ public class ShooterIOSIM implements ShooterIO {
 
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
 
-    SmartDashboard.putNumber("ShooterMult", 0.205);
+    SmartDashboard.putNumber("ShooterMult", 0.105);
   }
 
   public void update(double dtSeconds) {
