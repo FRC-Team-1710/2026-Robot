@@ -55,20 +55,26 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @NotLogged private ArrayDeque<Double> fpsDeque;
+  @NotLogged private ArrayDeque<Double> m_fpsDeque;
 
   @Logged(importance = Importance.DEBUG)
-  private double fpsRunningSum = 0.0;
+  private double m_fpsRunningSum = 0.0;
 
   @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
 
   @NotLogged private Debouncer m_jamDetect;
 
-  @NotLogged private boolean prevLeftBroken = false;
+  @NotLogged private boolean m_prevLeftBroken = false;
 
-  @NotLogged private boolean prevRightBroken = false;
+  @NotLogged private boolean m_prevRightBroken = false;
 
+  /**
+   * Constructs a new Shooter.
+   *
+   * @param io the shooter IO implementation
+   * @param consumer the times consumer for dynamic scheduling
+   */
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
@@ -84,7 +90,7 @@ public class Shooter {
 
     this.m_fuelCount = 0;
 
-    this.fpsDeque = new ArrayDeque<Double>();
+    this.m_fpsDeque = new ArrayDeque<Double>();
     this.m_FPSTimer = new Timer();
     this.m_FPSTimer.start();
 
@@ -93,6 +99,7 @@ public class Shooter {
     SmartDashboard.putNumber("Flywheel Scalar", 2);
   }
 
+  /** Runs periodic shooter logic including target tracking and fuel counting. */
   public void periodic() {
 
     switch (this.m_currentState) {
@@ -123,14 +130,14 @@ public class Shooter {
     boolean left = m_io.hasBreakerLeftBroke();
     boolean right = m_io.hasBreakerRightBroke();
 
-    if ((left && !prevLeftBroken) || (right && !prevRightBroken)) {
+    if ((left && !m_prevLeftBroken) || (right && !m_prevRightBroken)) {
       double elapsed = m_FPSTimer.get();
       if (elapsed < 1.0) addInterval(elapsed); // see deque suggestion below
       m_FPSTimer.restart();
       m_fuelCount++;
     }
-    prevLeftBroken = left;
-    prevRightBroken = right;
+    m_prevLeftBroken = left;
+    m_prevRightBroken = right;
 
     this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
     this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
@@ -140,6 +147,7 @@ public class Shooter {
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
   }
 
+  /** Returns whether the left flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtLeftTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
@@ -147,6 +155,7 @@ public class Shooter {
         : true;
   }
 
+  /** Returns whether the left hood is at its target angle. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtLeftTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
@@ -154,6 +163,7 @@ public class Shooter {
         : true;
   }
 
+  /** Returns whether the right flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtRightTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
@@ -161,6 +171,7 @@ public class Shooter {
         : true;
   }
 
+  /** Returns whether the right hood is at its target angle. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtRightTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
@@ -168,50 +179,68 @@ public class Shooter {
         : true;
   }
 
+  /** Returns the left target hood angle. */
   @NotLogged
   public Angle getLeftTargetHood() {
     return this.m_leftHoodTarget;
   }
 
+  /** Returns the right target hood angle. */
   @NotLogged
   public Angle getRightTargetHood() {
     return this.m_rightHoodTarget;
   }
 
+  /** Returns the left hood position. */
   @NotLogged
   public Angle getLeftHoodPosition() {
     return this.m_io.getLeftHoodPosition();
   }
 
+  /** Returns the right hood position. */
   @NotLogged
   public Angle getRightHoodPosition() {
     return this.m_io.getRightHoodPosition();
   }
 
+  /** Returns the left target velocity. */
   @NotLogged
   public AngularVelocity getLeftTargetVelocity() {
     return this.m_leftTargetVelocity;
   }
 
+  /** Returns the right target velocity. */
   @NotLogged
   public AngularVelocity getRightTargetVelocity() {
     return this.m_rightTargetVelocity;
   }
 
+  /** Returns the left flywheel velocity. */
   @NotLogged
   public AngularVelocity getLeftVelocity() {
     return this.m_io.getLeftVelocity();
   }
 
+  /** Returns the right flywheel velocity. */
   @NotLogged
   public AngularVelocity getRightVelocity() {
     return this.m_io.getRightVelocity();
   }
 
+  /**
+   * Sets whether the robot is going towards the alliance zone.
+   *
+   * @param isGoingTowardsAllianceZone true if heading towards alliance zone
+   */
   public void setGoingTowardsAllianceZone(boolean isGoingTowardsAllianceZone) {
     this.m_isGoingTowardsAllianceZone = isGoingTowardsAllianceZone;
   }
 
+  /**
+   * Sets whether the robot has intaked.
+   *
+   * @param didIntake true if intake has occurred
+   */
   public void setDidIntake(boolean didIntake) {
     this.m_didIntake = didIntake;
   }
@@ -233,6 +262,11 @@ public class Shooter {
     }
   }
 
+  /**
+   * Sets the current shooter state.
+   *
+   * @param pState the shooter state to set
+   */
   public void setState(SHOOTER_STATE pState) {
     if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
@@ -245,61 +279,73 @@ public class Shooter {
     // }
   }
 
+  /** Returns the current shooter state. */
   @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;
   }
 
+  /** Returns the fuel count. */
   @NotLogged
   public int getBallCount() {
     return this.m_fuelCount;
   }
 
+  /** Resets the fuel count to zero. */
   @NotLogged
   public void resetBallCount() {
     this.m_fuelCount = 0;
   }
 
   void addInterval(double interval) {
-    fpsDeque.addLast(interval);
-    fpsRunningSum += interval;
-    while (fpsRunningSum > 1.0 && !fpsDeque.isEmpty()) {
-      fpsRunningSum -= fpsDeque.removeFirst();
+    m_fpsDeque.addLast(interval);
+    m_fpsRunningSum += interval;
+    while (m_fpsRunningSum > 1.0 && !m_fpsDeque.isEmpty()) {
+      m_fpsRunningSum -= m_fpsDeque.removeFirst();
     }
   }
 
+  /** Returns the fuel per second rate. */
   @NotLogged
   public double getFPS() {
     if (Mode.currentMode == CurrentMode.SIMULATION) {
       return 0.3;
     }
 
-    if (this.fpsDeque.isEmpty() || this.fpsRunningSum <= 0.0) {
+    if (this.m_fpsDeque.isEmpty() || this.m_fpsRunningSum <= 0.0) {
       return 0.0;
     }
 
     // FPS = number of events / total time window (events per second)
-    double fps = this.fpsDeque.size() / this.fpsRunningSum;
+    double fps = this.m_fpsDeque.size() / this.m_fpsRunningSum;
     this.m_FPS = fps;
     return fps;
   }
 
+  /** Returns whether the shooter is jammed. */
   @Logged(importance = Importance.INFO)
   public boolean isJammed() {
     return this.m_jamDetect.calculate(
         !this.m_io.hasBreakerLeftBroke() && !this.m_io.hasBreakerRightBroke());
   }
 
+  /** Returns whether the left beam breaker has been broken. */
   @Logged(importance = Importance.INFO)
   public boolean hasBreakerLeftBroke() {
     return this.m_io.hasBreakerLeftBroke();
   }
 
+  /** Returns whether the right beam breaker has been broken. */
   @Logged(importance = Importance.INFO)
   public boolean hasBreakerRightBroke() {
     return this.m_io.hasBreakerRightBroke();
   }
 
+  /**
+   * Sets the fuel simulation reference.
+   *
+   * @param fuelSim the fuel simulation instance
+   */
   public void setFuelSim(FuelSim fuelSim) {
     this.m_io.setFuelSim(fuelSim);
   }

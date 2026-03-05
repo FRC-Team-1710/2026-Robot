@@ -19,7 +19,7 @@ import frc.robot.utils.TalonFXUtil;
 /** Creates a new IndexIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
   @Logged(importance = Logged.Importance.CRITICAL)
-  private final TalonFX m_IndexerMotor;
+  private final TalonFX m_indexerMotor;
 
   @NotLogged TalonFXConfiguration motorConfig;
 
@@ -29,19 +29,19 @@ public class IndexerIOCTRE implements IndexerIO {
   private final DutyCycleOut m_indexerPercentOutput = new DutyCycleOut(0).withEnableFOC(true);
 
   public IndexerIOCTRE() {
-    this.m_IndexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
+    this.m_indexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    m_IndexerMotor.getConfigurator().apply(motorConfig);
+    m_indexerMotor.getConfigurator().apply(motorConfig);
 
-    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_IndexerMotor);
+    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_indexerMotor);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_indexerSignals);
 
-    m_IndexerMotor.optimizeBusUtilization();
+    m_indexerMotor.optimizeBusUtilization();
   }
 
   public void update() {
@@ -49,6 +49,6 @@ public class IndexerIOCTRE implements IndexerIO {
   }
 
   public void setIndexMotor(double speed) {
-    m_IndexerMotor.setControl(m_indexerPercentOutput.withOutput(speed));
+    m_indexerMotor.setControl(m_indexerPercentOutput.withOutput(speed));
   }
 }

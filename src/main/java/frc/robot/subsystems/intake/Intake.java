@@ -74,6 +74,7 @@ public class Intake {
     this.m_currentState = IntakeStates.Up;
   }
 
+  /** Runs periodic intake logic including jam and stuck detection. */
   public void periodic() {
     // This method will be called once per scheduler run
     m_io.update();
@@ -89,19 +90,19 @@ public class Intake {
               m_jamTime.calculate(false);
               m_jamUndoTime.calculate(false);
               m_wasJammed = false;
-              m_io.setIntakeMotor(m_currentState.rollerSpeed);
+              m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
             } else {
-              m_io.setIntakeMotor(IntakeStates.Jammed.rollerSpeed);
+              m_io.setIntakeMotor(IntakeStates.Jammed.m_rollerSpeed);
             }
           } else {
             m_jamUndoTime.calculate(false);
-            m_io.setIntakeMotor(m_currentState.rollerSpeed);
+            m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
           }
         } else {
           m_jamTime.calculate(false);
           m_jamUndoTime.calculate(false);
           m_wasJammed = false;
-          m_io.setIntakeMotor(m_currentState.rollerSpeed);
+          m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
         }
         break;
       default:
@@ -109,7 +110,7 @@ public class Intake {
         m_minimumJamTime.calculate(false);
         m_jamUndoTime.calculate(false);
         m_wasJammed = false;
-        m_io.setIntakeMotor(m_currentState.rollerSpeed);
+        m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
         break;
     }
 
@@ -124,30 +125,30 @@ public class Intake {
               m_stuckUndoTime.calculate(false);
               m_wasStuck = false;
               m_io.setAngle(
-                  m_currentState.setpoint,
-                  m_currentState.deploymentVelocity,
-                  m_currentState.deploymentAcceleration);
+                  m_currentState.m_setpoint,
+                  m_currentState.m_deploymentVelocity,
+                  m_currentState.m_deploymentAcceleration);
             } else {
               m_io.setAngle(
-                  IntakeStates.Down.setpoint,
-                  IntakeStates.Down.deploymentVelocity,
-                  IntakeStates.Down.deploymentAcceleration);
+                  IntakeStates.Down.m_setpoint,
+                  IntakeStates.Down.m_deploymentVelocity,
+                  IntakeStates.Down.m_deploymentAcceleration);
             }
           } else {
             m_stuckUndoTime.calculate(false);
             m_io.setAngle(
-                m_currentState.setpoint,
-                m_currentState.deploymentVelocity,
-                m_currentState.deploymentAcceleration);
+                m_currentState.m_setpoint,
+                m_currentState.m_deploymentVelocity,
+                m_currentState.m_deploymentAcceleration);
           }
         } else {
           m_stuckTime.calculate(false);
           m_stuckUndoTime.calculate(false);
           m_wasStuck = false;
           m_io.setAngle(
-              m_currentState.setpoint,
-              m_currentState.deploymentVelocity,
-              m_currentState.deploymentAcceleration);
+              m_currentState.m_setpoint,
+              m_currentState.m_deploymentVelocity,
+              m_currentState.m_deploymentAcceleration);
         }
         m_wasUp = false;
         break;
@@ -160,9 +161,9 @@ public class Intake {
           m_wasUp = !m_wasUp;
         }
         m_io.setAngle(
-            m_wasUp ? m_currentState.setpoint : m_currentState.alternate,
-            m_currentState.deploymentVelocity,
-            m_currentState.deploymentAcceleration);
+            m_wasUp ? m_currentState.m_setpoint : m_currentState.m_alternate,
+            m_currentState.m_deploymentVelocity,
+            m_currentState.m_deploymentAcceleration);
         break;
       default:
         m_stuckTime.calculate(false);
@@ -170,14 +171,15 @@ public class Intake {
         m_stuckUndoTime.calculate(false);
         m_wasStuck = false;
         m_io.setAngle(
-            m_currentState.setpoint,
-            m_currentState.deploymentVelocity,
-            m_currentState.deploymentAcceleration);
+            m_currentState.m_setpoint,
+            m_currentState.m_deploymentVelocity,
+            m_currentState.m_deploymentAcceleration);
         m_wasUp = false;
         break;
     }
   }
 
+  /** Returns whether the intake rollers are jammed. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isJammed() {
     return m_io.getRollerCurrent().in(Amps)
@@ -186,15 +188,22 @@ public class Intake {
             <= JamDetectionConstants.IntakeRollers.kJamSpeedThreshold.in(RotationsPerSecond);
   }
 
+  /** Returns whether the deployment motor is stuck. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isStuck() {
     return m_io.getDeploymentCurrent().in(Amps)
         >= JamDetectionConstants.DeploymentMotor.kStuckCurrent.in(Amps);
   }
 
+  /**
+   * Sets the current intake state.
+   *
+   * @param state the intake state to set
+   */
   public void setState(IntakeStates state) {
-    if (!m_currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Intake, state.subsystemPeriodicFrequency);
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        state.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Intake, state.m_subsystemPeriodicFrequency);
     }
     m_currentState = state;
   }
@@ -206,12 +215,12 @@ public class Intake {
     Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),
     Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.5);
 
-    private final Time subsystemPeriodicFrequency;
-    final Angle setpoint;
-    private final Angle alternate;
-    private final double rollerSpeed;
-    private final double deploymentVelocity;
-    private final double deploymentAcceleration;
+    private final Time m_subsystemPeriodicFrequency;
+    final Angle m_setpoint;
+    private final Angle m_alternate;
+    private final double m_rollerSpeed;
+    private final double m_deploymentVelocity;
+    private final double m_deploymentAcceleration;
 
     IntakeStates(
         Time subsystemPeriodicFrequency,
@@ -220,12 +229,12 @@ public class Intake {
         double rollerSpeed,
         double deploymentVelocity,
         double deploymentAcceleration) {
-      this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.setpoint = angle;
-      this.alternate = alternate;
-      this.rollerSpeed = rollerSpeed;
-      this.deploymentVelocity = deploymentVelocity;
-      this.deploymentAcceleration = deploymentAcceleration;
+      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
+      this.m_setpoint = angle;
+      this.m_alternate = alternate;
+      this.m_rollerSpeed = rollerSpeed;
+      this.m_deploymentVelocity = deploymentVelocity;
+      this.m_deploymentAcceleration = deploymentAcceleration;
     }
 
     IntakeStates(
