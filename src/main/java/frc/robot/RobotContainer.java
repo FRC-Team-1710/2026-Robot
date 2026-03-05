@@ -39,6 +39,7 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
@@ -189,6 +190,54 @@ public class RobotContainer {
         .negate()
         .and(driver.rightTrigger().negate())
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
+
+    driver
+        .x()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          shooter.override(true, SHOOTER_STATE.TRENCH);
+                        })))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  shooter.override(false, SHOOTER_STATE.IDLE);
+                }));
+
+    driver
+        .a()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          shooter.override(true, SHOOTER_STATE.CORNER);
+                        })))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  shooter.override(false, SHOOTER_STATE.IDLE);
+                }));
+
+    driver
+        .b()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          shooter.override(true, SHOOTER_STATE.TOWER);
+                        })))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  shooter.override(false, SHOOTER_STATE.IDLE);
+                }));
 
     mech.rightBumper()
         .onTrue(

@@ -53,6 +53,9 @@ public class Shooter {
 
   @NotLogged private Debouncer m_jamDetect;
 
+  @Logged(importance = Importance.INFO)
+  private boolean m_shouldOverride;
+
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
@@ -71,6 +74,8 @@ public class Shooter {
     this.m_FPSTimer.start();
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
+
+    this.m_shouldOverride = false;
   }
 
   public void periodic() {
@@ -157,10 +162,9 @@ public class Shooter {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    TRENCH(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
-    CORNER(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
-    TOWER(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
-    PRESET_SCORE(Milliseconds.of(60), RotationsPerSecond.of(65), Degrees.of(0));
+    TRENCH(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
+    CORNER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
+    TOWER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)); // TODO: tune presets
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -174,6 +178,7 @@ public class Shooter {
   }
 
   public void setState(SHOOTER_STATE pState) {
+    if (this.m_shouldOverride) return;
     if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
@@ -183,6 +188,15 @@ public class Shooter {
     // } else {
     this.m_currentState = pState;
     // }
+  }
+
+  public void override(boolean pShouldOverride, SHOOTER_STATE pState) {
+    this.m_shouldOverride = pShouldOverride;
+    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        pState.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
+    }
+    this.m_currentState = pState;
   }
 
   @NotLogged

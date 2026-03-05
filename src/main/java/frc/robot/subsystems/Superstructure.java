@@ -345,6 +345,7 @@ public class Superstructure {
     IntakeAuto(),
     IntakeAndShootAuto(),
     ClimbAuto(),
+    Override(),
   }
 
   /** The current states of superstructure */
@@ -363,6 +364,7 @@ public class Superstructure {
     ShootWhileIntakingAuto(),
     ScoreWhileIntakingAuto(),
     ClimbAuto(),
+    Override(),
   }
 
   /**
