@@ -26,8 +26,15 @@ public interface IntakeIO {
    * Command the deployment/arm to the requested angle setpoint.
    *
    * @param angle desired arm angle
+   * @param velocity desired
+   * @param acceleration desired
    */
-  public default void setAngle(Angle angle) {}
+  public default void setAngle(Angle angle, double velocity, double acceleration) {}
+
+  /** Returns the closed loop reference slope == 0 */
+  public default boolean getSetpointReferenceVelocityIsZero() {
+    return false;
+  }
 
   /**
    * Sets the intake motor parameters.
@@ -38,8 +45,7 @@ public interface IntakeIO {
    * @param deploymentAcceleration The desired maximum deployment acceleration, in units of
    *     rotations per second squared.
    */
-  public default void setIntakeMotor(
-      double speed, double deploymentVelocity, double deploymentAcceleration) {}
+  public default void setIntakeMotor(double speed) {}
 
   /**
    * Called periodically to allow the IO implementation to refresh status signals, update internal

@@ -7,6 +7,7 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -42,6 +43,10 @@ public class Intake {
   /** IO implementation used to read sensors and command motors (hardware or simulation). */
   @Logged(importance = Importance.CRITICAL)
   private final IntakeIO m_io;
+
+  /** Boolean representing if the intake was up durring josteling. */
+  @Logged(importance = Importance.CRITICAL)
+  private boolean m_wasUp = false;
 
   /** Callback used to request changes to the subsystem periodic frequency. */
   @NotLogged private final TimesConsumer m_timesConsumer;
@@ -112,31 +117,19 @@ public class Intake {
               m_jamTime.calculate(false);
               m_jamUndoTime.calculate(false);
               m_wasJammed = false;
-              m_io.setIntakeMotor(
-                  m_currentState.rollerSpeed,
-                  m_currentState.deploymentVelocity,
-                  m_currentState.deploymentAcceleration);
+              m_io.setIntakeMotor(m_currentState.rollerSpeed);
             } else {
-              m_io.setIntakeMotor(
-                  IntakeStates.Jammed.rollerSpeed,
-                  IntakeStates.Jammed.deploymentVelocity,
-                  IntakeStates.Jammed.deploymentAcceleration);
+              m_io.setIntakeMotor(IntakeStates.Jammed.rollerSpeed);
             }
           } else {
             m_jamUndoTime.calculate(false);
-            m_io.setIntakeMotor(
-                m_currentState.rollerSpeed,
-                m_currentState.deploymentVelocity,
-                m_currentState.deploymentAcceleration);
+            m_io.setIntakeMotor(m_currentState.rollerSpeed);
           }
         } else {
           m_jamTime.calculate(false);
           m_jamUndoTime.calculate(false);
           m_wasJammed = false;
-          m_io.setIntakeMotor(
-              m_currentState.rollerSpeed,
-              m_currentState.deploymentVelocity,
-              m_currentState.deploymentAcceleration);
+          m_io.setIntakeMotor(m_currentState.rollerSpeed);
         }
         break;
       default:
@@ -144,10 +137,7 @@ public class Intake {
         m_minimumJamTime.calculate(false);
         m_jamUndoTime.calculate(false);
         m_wasJammed = false;
-        m_io.setIntakeMotor(
-            m_currentState.rollerSpeed,
-            m_currentState.deploymentVelocity,
-            m_currentState.deploymentAcceleration);
+        m_io.setIntakeMotor(m_currentState.rollerSpeed);
         break;
     }
 
@@ -161,27 +151,57 @@ public class Intake {
               m_stuckTime.calculate(false);
               m_stuckUndoTime.calculate(false);
               m_wasStuck = false;
-              m_io.setAngle(m_currentState.setpoint);
+              m_io.setAngle(
+                  m_currentState.setpoint,
+                  m_currentState.deploymentVelocity,
+                  m_currentState.deploymentAcceleration);
             } else {
-              m_io.setAngle(IntakeStates.Down.setpoint);
+              m_io.setAngle(
+                  IntakeStates.Down.setpoint,
+                  IntakeStates.Down.deploymentVelocity,
+                  IntakeStates.Down.deploymentAcceleration);
             }
           } else {
             m_stuckUndoTime.calculate(false);
-            m_io.setAngle(m_currentState.setpoint);
+            m_io.setAngle(
+                m_currentState.setpoint,
+                m_currentState.deploymentVelocity,
+                m_currentState.deploymentAcceleration);
           }
         } else {
           m_stuckTime.calculate(false);
           m_stuckUndoTime.calculate(false);
           m_wasStuck = false;
-          m_io.setAngle(m_currentState.setpoint);
+          m_io.setAngle(
+              m_currentState.setpoint,
+              m_currentState.deploymentVelocity,
+              m_currentState.deploymentAcceleration);
         }
+        m_wasUp = false;
+        break;
+      case Jostle:
+        m_stuckTime.calculate(false);
+        m_minimumStuckTime.calculate(false);
+        m_stuckUndoTime.calculate(false);
+        m_wasStuck = false;
+        if (m_io.getSetpointReferenceVelocityIsZero()) {
+          m_wasUp = !m_wasUp;
+        }
+        m_io.setAngle(
+            m_wasUp ? m_currentState.setpoint : m_currentState.alternate,
+            m_currentState.deploymentVelocity,
+            m_currentState.deploymentAcceleration);
         break;
       default:
         m_stuckTime.calculate(false);
         m_minimumStuckTime.calculate(false);
         m_stuckUndoTime.calculate(false);
         m_wasStuck = false;
-        m_io.setAngle(m_currentState.setpoint);
+        m_io.setAngle(
+            m_currentState.setpoint,
+            m_currentState.deploymentVelocity,
+            m_currentState.deploymentAcceleration);
+        m_wasUp = false;
         break;
     }
   }
@@ -226,14 +246,15 @@ public class Intake {
   }
 
   public enum IntakeStates {
-    // TODO: Tune when we get deployment motor
-    Up(Milliseconds.of(60), Degrees.of(90), 0, 50, 50),
-    Down(Milliseconds.of(60), Degrees.of(-14.5), 0, 100, 100),
-    Jammed(Milliseconds.of(20), Degrees.of(-14.5), -0.3, 100, 100),
-    Intaking(Milliseconds.of(20), Degrees.of(0), 1, 100, 100);
+    Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.5),
+    Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.5),
+    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.15), 1, 1.5, 1),
+    Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),
+    Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.5);
 
     private final Time subsystemPeriodicFrequency;
-    private final Angle setpoint;
+    final Angle setpoint;
+    private final Angle alternate;
     private final double rollerSpeed;
     private final double deploymentVelocity;
     private final double deploymentAcceleration;
@@ -241,14 +262,31 @@ public class Intake {
     IntakeStates(
         Time subsystemPeriodicFrequency,
         Angle angle,
+        Angle alternate,
         double rollerSpeed,
         double deploymentVelocity,
         double deploymentAcceleration) {
       this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
       this.setpoint = angle;
+      this.alternate = alternate;
       this.rollerSpeed = rollerSpeed;
       this.deploymentVelocity = deploymentVelocity;
       this.deploymentAcceleration = deploymentAcceleration;
+    }
+
+    IntakeStates(
+        Time subsystemPeriodicFrequency,
+        Angle angle,
+        double rollerSpeed,
+        double deploymentVelocity,
+        double deploymentAcceleration) {
+      this(
+          subsystemPeriodicFrequency,
+          angle,
+          angle,
+          rollerSpeed,
+          deploymentVelocity,
+          deploymentAcceleration);
     }
   }
 }
