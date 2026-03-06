@@ -361,7 +361,7 @@ public class Superstructure {
 
   @Logged(importance = Importance.CRITICAL)
   public boolean rightAtTargetWithWait() {
-    return leftAtTarget()
+    return rightAtTarget()
         && MatchState.canShoot(ShooterMath2.currentSolution.shooterRight().tof().in(Seconds));
   }
 
