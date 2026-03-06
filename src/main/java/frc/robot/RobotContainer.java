@@ -249,40 +249,52 @@ public class RobotContainer {
     ArrayList<SubsystemInfo> map = new ArrayList<>();
     map.add(
         new SubsystemInfo(
+            Subsystems.Vision,
+            this::cycleVision,
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length))));
+    map.add(
+        new SubsystemInfo(
             Subsystems.Superstructure,
             superstructure::periodic,
             Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 1)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 2)));
     map.add(
         new SubsystemInfo(
             Subsystems.Drive,
             drivetrain::periodic,
             Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 2)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Intake,
-            intake::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 20.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 3)));
     map.add(
         new SubsystemInfo(
             Subsystems.Shooter,
             shooter::periodic,
             Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 40.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Indexer,
-            indexer::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + (60.0 / 4))));
     map.add(
         new SubsystemInfo(
             Subsystems.Feeder,
             feeder::periodic,
             Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 6 + 60.0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + ((60.0 / 4) * 2))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Indexer,
+            indexer::periodic,
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 6 + ((60.0 / 4) * 3))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Intake,
+            intake::periodic,
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Leds,
+            leds::periodic,
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 8)));
     return map.toArray(new SubsystemInfo[0]);
   }
 
