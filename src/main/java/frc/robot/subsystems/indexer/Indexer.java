@@ -28,7 +28,7 @@ public class Indexer {
   @Logged(importance = Logged.Importance.CRITICAL)
   private IndexStates currentState = IndexStates.Idle;
 
-  @NotLogged private boolean m_testing = false;
+  @NotLogged private boolean testing = false;
 
   @NotLogged
   private final Debouncer m_jamTime =
