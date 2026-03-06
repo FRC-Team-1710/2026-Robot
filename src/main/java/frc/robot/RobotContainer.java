@@ -82,7 +82,7 @@ public class RobotContainer {
   private final Feeder m_feeder;
 
   @Logged(importance = Importance.CRITICAL)
-  private final Leds leds;
+  private final Leds m_leds;
 
   // Should add logging soon
   @NotLogged private final Vision[] m_cameras;
@@ -101,12 +101,12 @@ public class RobotContainer {
 
     switch (Mode.currentMode) {
       case REAL:
-        intake = new Intake(new IntakeIOCTRE(), consumer);
-        shooter = new Shooter(new ShooterIOCTRE(), consumer);
-        feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer =
-            new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIOArduino(), shooter);
+        m_intake = new Intake(new IntakeIOCTRE(), consumer);
+        m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        m_feeder = new Feeder(new FeederIOCTRE(), consumer);
+        m_indexer =
+            new Indexer(new IndexerIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIOArduino(), m_shooter);
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -124,28 +124,29 @@ public class RobotContainer {
         break;
 
       case SIMULATION:
-        intake = new Intake(new IntakeIOSIM(), consumer);
-        shooter = new Shooter(new ShooterIOSIM(), consumer);
-        feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer =
-            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIOSim(), shooter);
-        cameras = new Vision[0];
+        m_intake = new Intake(new IntakeIOSIM(), consumer);
+        m_shooter = new Shooter(new ShooterIOSIM(), consumer);
+        m_feeder = new Feeder(new FeederIOSIM(), consumer);
+        m_indexer =
+            new Indexer(new IndexerIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIOSim(), m_shooter);
+        m_cameras = new Vision[0];
         break;
 
       default:
-        intake = new Intake(new IntakeIO() {}, consumer);
-        shooter = new Shooter(new ShooterIO() {}, consumer);
-        feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer =
-            new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIO() {}, shooter);
-        cameras = new Vision[0];
+        m_intake = new Intake(new IntakeIO() {}, consumer);
+        m_shooter = new Shooter(new ShooterIO() {}, consumer);
+        m_feeder = new Feeder(new FeederIO() {}, consumer);
+        m_indexer =
+            new Indexer(new IndexerIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIO() {}, m_shooter);
+        m_cameras = new Vision[0];
         break;
     }
 
-    superstructure =
-        new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder, leds);
+    m_superstructure =
+        new Superstructure(
+            m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder, m_leds);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
@@ -218,49 +219,55 @@ public class RobotContainer {
         .and(m_driver.rightTrigger().negate())
         .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Default));
 
-    driver
+    m_driver
         .x()
         .onTrue(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TRENCH))));
+                .alongWith(
+                    Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TRENCH))));
 
-    driver
+    m_driver
         .x()
         .onFalse(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Default)
-                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+                .alongWith(
+                    Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
 
-    driver
+    m_driver
         .a()
         .onTrue(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.CORNER))));
+                .alongWith(
+                    Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.CORNER))));
 
-    driver
+    m_driver
         .a()
         .onFalse(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Default)
-                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+                .alongWith(
+                    Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
 
-    driver
+    m_driver
         .b()
         .onTrue(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TOWER))));
+                .alongWith(
+                    Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TOWER))));
 
-    driver
+    m_driver
         .b()
         .onFalse(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Default)
-                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+                .alongWith(
+                    Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
 
-    driver
+    m_driver
         .leftTrigger()
         .negate()
         .and(m_driver.rightTrigger().negate())
@@ -274,13 +281,13 @@ public class RobotContainer {
 
     m_driver
         .povRight()
-        .and(superstructure::currentStateUsesIntake)
-        .onFalse(superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .and(m_superstructure::currentStateUsesIntake)
+        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
 
-    driver
+    m_driver
         .povRight()
-        .and(superstructure::currentStateDoesntUseIntake)
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+        .and(m_superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Up)));
 
     m_mech
         .rightBumper()
@@ -325,31 +332,31 @@ public class RobotContainer {
     map.add(
         new SubsystemInfo(
             Subsystems.Shooter,
-            shooter::periodic,
+            m_shooter::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 4 + (60.0 / 4))));
     map.add(
         new SubsystemInfo(
             Subsystems.Feeder,
-            feeder::periodic,
+            m_feeder::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + ((60.0 / 4) * 2))));
     map.add(
         new SubsystemInfo(
             Subsystems.Indexer,
-            indexer::periodic,
+            m_indexer::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 6 + ((60.0 / 4) * 3))));
     map.add(
         new SubsystemInfo(
             Subsystems.Intake,
-            intake::periodic,
+            m_intake::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
     map.add(
         new SubsystemInfo(
             Subsystems.Leds,
-            leds::periodic,
+            m_leds::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 8)));
     return map.toArray(new SubsystemInfo[0]);
