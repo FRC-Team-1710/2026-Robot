@@ -8,11 +8,14 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
@@ -22,6 +25,8 @@ import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 @Logged
 public class Shooter {
@@ -50,24 +55,29 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private boolean m_didIntake;
 
-  @NotLogged private Timer m_FPSTimer;
-
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @NotLogged private ArrayDeque<Double> fpsDeque;
-
-  @Logged(importance = Importance.DEBUG)
-  private double fpsRunningSum = 0.0;
-
-  @Logged(importance = Importance.CRITICAL)
-  private int m_fuelCount;
+  @NotLogged private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
 
   @NotLogged private Debouncer m_jamDetect;
 
-  @NotLogged private boolean prevLeftBroken = false;
+  @NotLogged private Boolean[] m_fuelDetection = new Boolean[] {false, false};
 
-  @NotLogged private boolean prevRightBroken = false;
+  @Logged(importance = Importance.INFO)
+  private int m_ballCount;
+
+  /**
+   * This Matrix is derived from values of the beam breakers for rising and falling detection.
+   *
+   * <p>Structure: <code>[currentLeft , previousLeft] [currentRight, previousRight]</code>
+   *
+   * <p>Stored as ints: 1 = beam broken, 0 = beam clear.
+   */
+  @NotLogged private Matrix<N2, N2> m_risingDetection;
+
+  @Logged(importance = Importance.INFO)
+  private boolean m_shouldOverride;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -82,32 +92,27 @@ public class Shooter {
     this.m_isGoingTowardsAllianceZone = false;
     this.m_didIntake = false;
 
-    this.m_fuelCount = 0;
+    this.m_ballCount = 0;
 
-    this.fpsDeque = new ArrayDeque<Double>();
-    this.m_FPSTimer = new Timer();
-    this.m_FPSTimer.start();
+    this.m_risingDetection = MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 0, 0, 0);
+
+    m_timestampQueues.add(new ArrayDeque<>()); // left
+    m_timestampQueues.add(new ArrayDeque<>()); // right
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
 
-    SmartDashboard.putNumber("Flywheel Scalar", 2);
+    this.m_shouldOverride = false;
+
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
   }
 
   public void periodic() {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_leftTargetVelocity =
-            ShooterMath2.currentSolution
-                .shooterLeft()
-                .flywheelOmega()
-                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
+        this.m_leftTargetVelocity = ShooterMath2.currentSolution.shooterLeft().flywheelOmega();
         this.m_leftHoodTarget = ShooterMath2.currentSolution.shooterLeft().hoodAngle();
-        this.m_rightTargetVelocity =
-            ShooterMath2.currentSolution
-                .shooterRight()
-                .flywheelOmega()
-                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
+        this.m_rightTargetVelocity = ShooterMath2.currentSolution.shooterRight().flywheelOmega();
         this.m_rightHoodTarget = ShooterMath2.currentSolution.shooterRight().hoodAngle();
         break;
 
@@ -119,25 +124,15 @@ public class Shooter {
         break;
     }
 
-    // Fuel Counting
-    boolean left = m_io.hasBreakerLeftBroke();
-    boolean right = m_io.hasBreakerRightBroke();
-
-    if ((left && !prevLeftBroken) || (right && !prevRightBroken)) {
-      double elapsed = m_FPSTimer.get();
-      if (elapsed < 1.0) addInterval(elapsed); // see deque suggestion below
-      m_FPSTimer.restart();
-      m_fuelCount++;
-    }
-    prevLeftBroken = left;
-    prevRightBroken = right;
-
     this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
     this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
     this.m_io.setRightTargetVelocity(this.m_rightTargetVelocity);
     this.m_io.setRightHoodTarget(this.m_rightHoodTarget);
 
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
+
+    // Always run FPS tracking regardless of state so pruning stays current
+    calculateFPS();
   }
 
   @Logged(importance = Importance.CRITICAL)
@@ -220,7 +215,9 @@ public class Shooter {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    PRESET_SCORE(Milliseconds.of(20), RotationsPerSecond.of(65), Degrees.of(0));
+    TRENCH(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
+    CORNER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
+    TOWER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)); // TODO: tune presets
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -234,6 +231,7 @@ public class Shooter {
   }
 
   public void setState(SHOOTER_STATE pState) {
+    if (this.m_shouldOverride) return;
     if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
@@ -245,43 +243,104 @@ public class Shooter {
     // }
   }
 
+  public void override(boolean pShouldOverride, SHOOTER_STATE pState) {
+    this.m_shouldOverride = pShouldOverride;
+    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        pState.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
+    }
+    this.m_currentState = pState;
+  }
+
   @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;
   }
 
+  /** Calculates the fuel per second (FPS) based on the timestamps of fuel detection events. */
+  @NotLogged
+  public void calculateFPS() {
+    /* Fuel per second Handling */
+    long currentTime = System.currentTimeMillis();
+
+    // Prune timestamps older than 1 second using an iterator (safe removal while iterating)
+    for (ArrayDeque<Long> queue : m_timestampQueues) {
+      while (!queue.isEmpty() && queue.peekFirst() < currentTime - 1000) {
+        queue.removeFirst();
+      }
+    }
+
+    // Shift current column → previous column in rising detection matrix
+    m_risingDetection.set(0, 1, m_risingDetection.get(0, 0));
+    m_risingDetection.set(1, 1, m_risingDetection.get(1, 0));
+
+    // Update current column with fresh sensor readings
+    m_risingDetection.set(0, 0, m_io.hasBreakerLeftBroke() ? 1 : 0);
+    m_risingDetection.set(1, 0, m_io.hasBreakerRightBroke() ? 1 : 0);
+    // Rising edge: current=1, previous=0 → use per-row index for each side
+    for (int i = 0; i < 2; i++) {
+      m_fuelDetection[i] = (m_risingDetection.get(i, 0) > m_risingDetection.get(i, 1));
+      if (m_fuelDetection[i]) {
+        ArrayDeque<Long> queue = m_timestampQueues.get(i);
+        // Debounce: ignore duplicate triggers within a physically impossible interval (< 1/24 s)
+        if (!queue.isEmpty()
+            && (currentTime - queue.peekLast()) < (ShooterConstants.UNREALISTIC_FPS_INTERVAL_MS)) {
+          continue;
+        }
+        queue.addLast(currentTime);
+        this.m_ballCount++;
+      }
+    }
+
+    // Calculate combined FPS over the 1-second window
+    int totalEvents = m_timestampQueues.get(0).size() + m_timestampQueues.get(1).size();
+    if (totalEvents < 2) {
+      // Not enough data points — keep last valid FPS or return 0
+      if (totalEvents == 0) this.m_FPS = 0.0;
+      return;
+    }
+
+    // Span = from earliest event across both queues to latest
+    double earliest =
+        Math.min(
+            m_timestampQueues.get(0).isEmpty()
+                ? Double.MAX_VALUE
+                : m_timestampQueues.get(0).peekFirst(),
+            m_timestampQueues.get(1).isEmpty()
+                ? Double.MAX_VALUE
+                : m_timestampQueues.get(1).peekFirst());
+    double latest =
+        Math.max(
+            m_timestampQueues.get(0).isEmpty()
+                ? Double.MIN_VALUE
+                : m_timestampQueues.get(0).peekLast(),
+            m_timestampQueues.get(1).isEmpty()
+                ? Double.MIN_VALUE
+                : m_timestampQueues.get(1).peekLast());
+
+    double span = latest - earliest;
+    this.m_FPS = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
+  }
+
+  /** Returns the current ball count based on the timestamps of fuel detection events. */
   @NotLogged
   public int getBallCount() {
-    return this.m_fuelCount;
+    return this.m_ballCount;
   }
 
+  /** Resets the ball count and FPS to zero. */
   @NotLogged
   public void resetBallCount() {
-    this.m_fuelCount = 0;
+    this.m_timestampQueues.get(0).clear();
+    this.m_timestampQueues.get(1).clear();
+    this.m_ballCount = 0;
+    this.m_FPS = 0.0;
   }
 
-  void addInterval(double interval) {
-    fpsDeque.addLast(interval);
-    fpsRunningSum += interval;
-    while (fpsRunningSum > 1.0 && !fpsDeque.isEmpty()) {
-      fpsRunningSum -= fpsDeque.removeFirst();
-    }
-  }
-
-  @NotLogged
+  /** Returns the current fuel per second (FPS) based on the timestamps of fuel detection events. */
+  @Logged(importance = Importance.INFO)
   public double getFPS() {
-    if (Mode.currentMode == CurrentMode.SIMULATION) {
-      return 0.3;
-    }
-
-    if (this.fpsDeque.isEmpty() || this.fpsRunningSum <= 0.0) {
-      return 0.0;
-    }
-
-    // FPS = number of events / total time window (events per second)
-    double fps = this.fpsDeque.size() / this.fpsRunningSum;
-    this.m_FPS = fps;
-    return fps;
+    return this.m_FPS;
   }
 
   @Logged(importance = Importance.INFO)

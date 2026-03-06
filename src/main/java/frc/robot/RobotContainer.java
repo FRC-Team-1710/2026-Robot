@@ -40,7 +40,12 @@ import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
+import frc.robot.subsystems.leds.Leds;
+import frc.robot.subsystems.leds.LedsIO;
+import frc.robot.subsystems.leds.LedsIOArduino;
+import frc.robot.subsystems.leds.LedsIOSim;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
@@ -76,6 +81,9 @@ public class RobotContainer {
   @Logged(importance = Importance.CRITICAL)
   private final Feeder feeder;
 
+  @Logged(importance = Importance.CRITICAL)
+  private final Leds leds;
+
   // Should add logging soon
   @NotLogged private final Vision[] cameras;
 
@@ -93,6 +101,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOCTRE(), consumer);
         indexer =
             new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
+        leds = new Leds(new LedsIOArduino(), shooter);
 
         cameras =
             // Create a stream of Vision objects from the camera configs
@@ -115,7 +124,7 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIOSIM(), consumer);
         indexer =
             new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
-
+        leds = new Leds(new LedsIOSim(), shooter);
         cameras = new Vision[0];
         break;
 
@@ -125,12 +134,13 @@ public class RobotContainer {
         feeder = new Feeder(new FeederIO() {}, consumer);
         indexer =
             new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
-
+        leds = new Leds(new LedsIO() {}, shooter);
         cameras = new Vision[0];
         break;
     }
 
-    superstructure = new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder);
+    superstructure =
+        new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder, leds);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
@@ -204,6 +214,48 @@ public class RobotContainer {
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
 
     driver
+        .x()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TRENCH))));
+
+    driver
+        .x()
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    driver
+        .a()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.CORNER))));
+
+    driver
+        .a()
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    driver
+        .b()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TOWER))));
+
+    driver
+        .b()
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    driver
         .leftTrigger()
         .negate()
         .and(driver.rightTrigger().negate())
@@ -214,6 +266,11 @@ public class RobotContainer {
         .povRight()
         .and(superstructure::currentStateUsesIntake)
         .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateUsesIntake)
+        .onFalse(superstructure.setAddableStateCommand(AddableStates.Jostle));
 
     driver
         .povRight()
@@ -240,43 +297,52 @@ public class RobotContainer {
     ArrayList<SubsystemInfo> map = new ArrayList<>();
     map.add(
         new SubsystemInfo(
+            Subsystems.Vision,
+            this::cycleVision,
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length))));
+    map.add(
+        new SubsystemInfo(
             Subsystems.Superstructure,
             superstructure::periodic,
             Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 1)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Intake,
-            intake::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 2 + 20.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Shooter,
-            shooter::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 3 + 40.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Indexer,
-            indexer::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + 60.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Feeder,
-            feeder::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + 60.0)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Vision, this::cycleVision, Milliseconds.of(20), Microseconds.of(0)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 2)));
     map.add(
         new SubsystemInfo(
             Subsystems.Drive,
             drivetrain::periodic,
             Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 5)));
+            Milliseconds.of((20.0 / Subsystems.values().length) * 3)));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Shooter,
+            shooter::periodic,
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + (60.0 / 4))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Feeder,
+            feeder::periodic,
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + ((60.0 / 4) * 2))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Indexer,
+            indexer::periodic,
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 6 + ((60.0 / 4) * 3))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Intake,
+            intake::periodic,
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
+    map.add(
+        new SubsystemInfo(
+            Subsystems.Leds,
+            leds::periodic,
+            Milliseconds.of(20),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 8)));
     return map.toArray(new SubsystemInfo[0]);
   }
 
