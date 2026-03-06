@@ -33,9 +33,9 @@ public class ShooterIOSIM implements ShooterIO {
 
   private final HoodMechanism m_hoodMechanism;
 
-  private FuelSim fuelSim;
+  private FuelSim m_fuelSim;
   private final Debouncer m_shooterDebouncer = new Debouncer(1 / 12.0); // 12 fuel/sec
-  private boolean leftShooter = false;
+  private boolean m_leftShooter = false;
 
   public ShooterIOSIM() {
     this.m_flyWheelMechanism = new WheelMechanism("Flywheel 1", 0.1, -0.25, 0.5);
@@ -43,7 +43,7 @@ public class ShooterIOSIM implements ShooterIO {
 
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
 
-    SmartDashboard.putNumber("ShooterMult", 0.205);
+    SmartDashboard.putNumber("ShooterMult", 0.105);
   }
 
   public void update(double dtSeconds) {
@@ -57,12 +57,12 @@ public class ShooterIOSIM implements ShooterIO {
 
     SmartDashboard.putData("Hood", this.m_hoodMechanism.getMechanism());
 
-    if (fuelSim == null) return;
+    if (m_fuelSim == null) return;
 
-    if (m_shooterDebouncer.calculate(fuelSim.getCurrentFuelStorage() > 0)
-        && fuelSim.shouldShoot.getAsBoolean()) {
-      if (leftShooter) {
-        fuelSim.spawnFuel(
+    if (m_shooterDebouncer.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
+        && m_fuelSim.shouldShoot.getAsBoolean()) {
+      if (m_leftShooter) {
+        m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
                         ShooterMath2.currentPose.getTranslation(),
@@ -87,7 +87,7 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterMath2.currentSpeeds.vyMetersPerSecond,
                         0)));
       } else {
-        fuelSim.spawnFuel(
+        m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
                         ShooterMath2.currentPose.getTranslation(),
@@ -113,7 +113,7 @@ public class ShooterIOSIM implements ShooterIO {
                         0)));
       }
       // fuelSim.removeFuelFromStorage(1);
-      leftShooter = !leftShooter;
+      m_leftShooter = !m_leftShooter;
       m_shooterDebouncer.calculate(false);
     }
   }
@@ -146,6 +146,6 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   public void setFuelSim(FuelSim fuelSim) {
-    this.fuelSim = fuelSim;
+    this.m_fuelSim = fuelSim;
   }
 }

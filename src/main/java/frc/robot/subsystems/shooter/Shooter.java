@@ -103,24 +103,16 @@ public class Shooter {
 
     this.m_shouldOverride = false;
 
-    SmartDashboard.putNumber("Flywheel Scalar", 2);
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
   }
 
   public void periodic() {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_leftTargetVelocity =
-            ShooterMath2.currentSolution
-                .shooterLeft()
-                .flywheelOmega()
-                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
+        this.m_leftTargetVelocity = ShooterMath2.currentSolution.shooterLeft().flywheelOmega();
         this.m_leftHoodTarget = ShooterMath2.currentSolution.shooterLeft().hoodAngle();
-        this.m_rightTargetVelocity =
-            ShooterMath2.currentSolution
-                .shooterRight()
-                .flywheelOmega()
-                .times(SmartDashboard.getNumber("Flywheel Scalar", 1));
+        this.m_rightTargetVelocity = ShooterMath2.currentSolution.shooterRight().flywheelOmega();
         this.m_rightHoodTarget = ShooterMath2.currentSolution.shooterRight().hoodAngle();
         break;
 
@@ -269,7 +261,6 @@ public class Shooter {
   @NotLogged
   public void calculateFPS() {
     /* Fuel per second Handling */
-
     long currentTime = System.currentTimeMillis();
 
     // Prune timestamps older than 1 second using an iterator (safe removal while iterating)

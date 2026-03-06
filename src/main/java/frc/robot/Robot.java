@@ -140,6 +140,8 @@ public class Robot extends DynamicTimedRobot {
   public void teleopInit() {
     Alliance.updateRedAlliance();
 
+    MatchState.startTeleop();
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
