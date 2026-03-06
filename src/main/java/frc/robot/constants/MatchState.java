@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.Optional;
 
 public class MatchState {
-  // TODO: Set to simulate a match enviornment to test match specific code
+  // TODO: Set to simulate a match environment to test match specific code
   private static final boolean kSimulatePracticeMatch = false;
 
   public static Optional<Boolean> autonomousWinnerIsRed = Optional.empty();
