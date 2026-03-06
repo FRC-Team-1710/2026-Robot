@@ -13,10 +13,25 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
+/**
+ * Hardware abstraction interface for the Intake subsystem.
+ *
+ * <p>Implementations provide the concrete ways to control the intake's deployment (arm) and roller
+ * motors, as well as to read back sensor values. Typical implementations are {@code IntakeIOCTRE}
+ * (real hardware) and {@code IntakeIOSIM} (simulation).
+ */
 @Logged
 public interface IntakeIO {
+  /**
+   * Command the deployment/arm to the requested angle setpoint.
+   *
+   * @param angle desired arm angle
+   * @param velocity desired
+   * @param acceleration desired
+   */
   public default void setAngle(Angle angle, double velocity, double acceleration) {}
 
+  /** Returns the closed loop reference slope == 0 */
   public default boolean getSetpointReferenceVelocityIsZero() {
     return false;
   }
@@ -24,25 +39,39 @@ public interface IntakeIO {
   /**
    * Sets the intake motor parameters.
    *
-   * @param speed The speed of the intake roller motor, typically in the range [-1.0, 1.0].
-   * @param deploymentVelocity The desired deployment velocity, in units of rotations per second.
-   * @param deploymentAcceleration The desired deployment acceleration, in units of rotations per
-   *     second squared.
+   * @param speed The speed of the intake roller motor
+   * @param deploymentVelocity The desired maximum deployment velocity, in units of rotations per
+   *     second.
+   * @param deploymentAcceleration The desired maximum deployment acceleration, in units of
+   *     rotations per second squared.
    */
   public default void setIntakeMotor(double speed) {}
 
+  /**
+   * Called periodically to allow the IO implementation to refresh status signals, update internal
+   * state, or sample sensors.
+   */
   public default void update() {}
 
+  /**
+   * @return the current draw of the intake roller motor
+   */
   @Logged(importance = Importance.DEBUG)
   public default Current getRollerCurrent() {
     return Amps.of(0);
   }
 
+  /**
+   * @return the angular velocity of the intake roller
+   */
   @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getRollerVelocity() {
     return RotationsPerSecond.of(0);
   }
 
+  /**
+   * @return the current draw of the deployment (arm) motor
+   */
   @Logged(importance = Importance.DEBUG)
   public default Current getDeploymentCurrent() {
     return Amps.of(0);

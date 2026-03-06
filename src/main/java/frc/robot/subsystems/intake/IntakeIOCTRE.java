@@ -27,9 +27,15 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.utils.TalonFXUtil;
 
+/**
+ * CTRE (TalonFX) implementation of {@link IntakeIO}.
+ *
+ * <p>This class configures TalonFX motor controllers for the intake roller and the deployment
+ * motor, exposes status signals, and provides methods used by the {@link Intake} subsystem to
+ * command motion and read sensor feedback.
+ */
 @Logged
 public class IntakeIOCTRE implements IntakeIO {
-  /** Creates a new Intake. */
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotor;
 
@@ -43,8 +49,10 @@ public class IntakeIOCTRE implements IntakeIO {
   @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
 
+  /** Cached status signals for the intake TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_intakeSignals;
 
+  /** Cached status signals for the deployment TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
   @NotLogged private final BaseStatusSignal m_deploymentSetpointVelocitySignal;
@@ -101,12 +109,23 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.optimizeBusUtilization();
   }
 
+  /**
+   * Refresh status signals from underlying TalonFX devices. Should be called periodically by the
+   * owning subsystem.
+   */
   public void update() {
     BaseStatusSignal.refreshAll(m_intakeSignals);
     BaseStatusSignal.refreshAll(m_deploymentSetpointVelocitySignal);
     BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
 
+  /**
+   * Command the deployment motor toward the requested angle.
+   *
+   * @param angle desired deploy/setpoint angle
+   * @param velocity desired deploy/setpoint
+   * @param acceleration desired deploy/setpoint
+   */
   public void setAngle(Angle angle, double velocity, double acceleration) {
     m_angleSetpoint = angle;
     if (m_deploymentMotor.getPosition().getValue().in(Rotations) < 0.1
@@ -121,24 +140,39 @@ public class IntakeIOCTRE implements IntakeIO {
     }
   }
 
+  /** Returns the closed loop reference slope == 0 */
   public boolean getSetpointReferenceVelocityIsZero() {
     return m_deploymentSetpointVelocitySignal.getValueAsDouble() == 0;
   }
 
+  /**
+   * Set the intake roller motor output.
+   *
+   * @param speed motor output in the range [-1.0, 1.0]
+   */
   public void setIntakeMotor(double speed) {
     m_intakeMotor.setControl(new DutyCycleOut(speed));
   }
 
+  /**
+   * @return the rotor/angular velocity of the intake roller motor.
+   */
   @NotLogged
   public AngularVelocity getRollerVelocity() {
     return m_intakeMotor.getRotorVelocity().getValue();
   }
 
+  /**
+   * @return the stator current draw of the intake roller motor.
+   */
   @NotLogged
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent().getValue();
   }
 
+  /**
+   * @return the stator current draw of the deployment motor.
+   */
   @NotLogged
   public Current getDeploymentCurrent() {
     return m_deploymentMotor.getStatorCurrent().getValue();
