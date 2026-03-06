@@ -45,6 +45,7 @@ import frc.robot.subsystems.leds.LedsIO;
 import frc.robot.subsystems.leds.LedsIOArduino;
 import frc.robot.subsystems.leds.LedsIOSim;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
@@ -213,6 +214,48 @@ public class RobotContainer {
         .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
 
     driver
+        .x()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TRENCH))));
+
+    driver
+        .x()
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    driver
+        .a()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.CORNER))));
+
+    driver
+        .a()
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    driver
+        .b()
+        .onTrue(
+            superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TOWER))));
+
+    driver
+        .b()
+        .onFalse(
+            superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    driver
         .leftTrigger()
         .negate()
         .and(driver.rightTrigger().negate())
@@ -223,6 +266,11 @@ public class RobotContainer {
         .povRight()
         .and(superstructure::currentStateUsesIntake)
         .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+
+    driver
+        .povRight()
+        .and(superstructure::currentStateUsesIntake)
+        .onFalse(superstructure.setAddableStateCommand(AddableStates.Jostle));
 
     driver
         .povRight()

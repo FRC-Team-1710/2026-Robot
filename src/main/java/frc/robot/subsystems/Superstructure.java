@@ -98,6 +98,7 @@ public class Superstructure {
       case ScoreWithIntakeUpAuto -> true;
       case Intake -> true;
       case IntakeAuto -> true;
+      case Override -> true;
       default -> false;
     };
   }
@@ -143,6 +144,7 @@ public class Superstructure {
       case IntakeAuto -> CurrentStates.IntakeAuto;
       case IntakeAndShootAuto -> CurrentStates.ScoreWhileIntakingAuto;
       case ClimbAuto -> CurrentStates.ClimbAuto;
+      case Override -> CurrentStates.Override;
     };
   }
 
@@ -184,6 +186,9 @@ public class Superstructure {
         break;
       case ClimbAuto:
         climbAuto();
+        break;
+      case Override:
+        override();
         break;
     }
   }
@@ -323,6 +328,12 @@ public class Superstructure {
     feeder.setState(FEEDER_STATE.STOP);
   }
 
+  private void override() {
+    intake.setState(addableState == AddableStates.IntakeUp ? IntakeStates.Up : IntakeStates.Jostle);
+    indexer.setState(IndexStates.Indexing);
+    feeder.setState(FEEDER_STATE.FEEDING);
+  }
+
   @Logged(importance = Importance.INFO)
   public boolean allAtTarget() {
     return leftAtTarget() && rightAtTarget();
@@ -365,6 +376,7 @@ public class Superstructure {
     IntakeAuto(),
     IntakeAndShootAuto(),
     ClimbAuto(),
+    Override(),
   }
 
   /** The current states of superstructure */
@@ -381,6 +393,7 @@ public class Superstructure {
     IntakeAuto(),
     ScoreWhileIntakingAuto(),
     ClimbAuto(),
+    Override(),
   }
 
   public enum AddableStates {
