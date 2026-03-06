@@ -16,7 +16,7 @@ import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
 @Logged
-/** Creates a new IndexIOCTRE. */
+/** Creates a new IndexerIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
   @Logged(importance = Logged.Importance.CRITICAL)
   private final TalonFX m_indexerMotor;
