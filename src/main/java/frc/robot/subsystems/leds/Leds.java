@@ -40,8 +40,8 @@ public class Leds {
             && this.m_autosTimer.get() < 3);
 
     double shooterCharge =
-        (this.m_shooter.getVelocity().in(DegreesPerSecond)
-                / this.m_shooter.getTargetVelocity().in(DegreesPerSecond))
+        (this.m_shooter.getLeftVelocity().in(DegreesPerSecond)
+                / this.m_shooter.getLeftTargetVelocity().in(DegreesPerSecond))
             * 100;
     this.m_io.setFlyWheelCharge(shooterCharge);
 
