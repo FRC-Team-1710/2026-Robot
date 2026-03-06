@@ -58,6 +58,8 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
+  @NotLogged private boolean m_testing = false;
+
   @NotLogged private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
 
   @NotLogged private Debouncer m_jamDetect;
@@ -212,12 +214,25 @@ public class Shooter {
   }
 
   public enum SHOOTER_STATE {
-    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(0)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)),
-    TRENCH(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
-    CORNER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)), // TODO: tune presets
-    TOWER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(0)); // TODO: tune presets
+    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    TESTING(
+        Milliseconds.of(20),
+        RotationsPerSecond.of(40),
+        Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
+    TRENCH(
+        Milliseconds.of(20),
+        RotationsPerSecond.of(0),
+        Degrees.of(ShooterConstants.HOOD_MIN)), // TODO: tune presets
+    CORNER(
+        Milliseconds.of(20),
+        RotationsPerSecond.of(0),
+        Degrees.of(ShooterConstants.HOOD_MIN)), // TODO: tune presets
+    TOWER(
+        Milliseconds.of(20),
+        RotationsPerSecond.of(0),
+        Degrees.of(ShooterConstants.HOOD_MIN)); // TODO: tune presets
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -231,25 +246,36 @@ public class Shooter {
   }
 
   public void setState(SHOOTER_STATE pState) {
+    if (this.m_testing) return;
     if (this.m_shouldOverride) return;
     if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
-    // if (pState == SHOOTER_STATE.IDLE && m_isGoingTowardsAllianceZone && m_didIntake) {
-    //   this.m_state = SHOOTER_STATE.PRESET_SCORE;
-    // } else {
     this.m_currentState = pState;
-    // }
+  }
+
+  public void setStateTesting(SHOOTER_STATE pState) {
+    if (!this.m_testing) return;
+    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        pState.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
+    }
+    this.m_currentState = pState;
   }
 
   public void override(boolean pShouldOverride, SHOOTER_STATE pState) {
+    if (this.m_testing) return;
     this.m_shouldOverride = pShouldOverride;
     if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
     this.m_currentState = pState;
+  }
+
+  public void setTesting(boolean testing) {
+    this.m_testing = testing;
   }
 
   @NotLogged
