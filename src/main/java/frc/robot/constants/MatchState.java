@@ -19,6 +19,8 @@ public class MatchState {
   // Time after hub inactive until it stops counting
   public static final double kHubCountingEndOffset = 2;
 
+  public static final double kFuelTimeOffset = kFuelProcessTime - kHubCountingEndOffset;
+
   private static final Timer m_teleopTimer = new Timer();
 
   public static boolean isActive() {
@@ -47,8 +49,7 @@ public class MatchState {
 
   public static Time timeTillActive(double tof) {
     if (fmsAttached()) {
-      var currentMatchTime =
-          (140 - m_teleopTimer.get()) + kFuelProcessTime - kHubCountingEndOffset + tof;
+      var currentMatchTime = (140 - m_teleopTimer.get()) + kFuelTimeOffset + tof;
       if (DriverStation.isAutonomous() || currentMatchTime <= 30 || currentMatchTime > 130) {
         return Seconds.of(0);
       }
@@ -84,8 +85,7 @@ public class MatchState {
 
   public static Time timeTillInactive(double tof) {
     if (fmsAttached()) {
-      var currentMatchTime =
-          (140 - m_teleopTimer.get()) + kFuelProcessTime - kHubCountingEndOffset + tof;
+      var currentMatchTime = (140 - m_teleopTimer.get()) + kFuelTimeOffset + tof;
       if (DriverStation.isAutonomous() || currentMatchTime <= 30) {
         return Seconds.of(0);
       }
@@ -127,7 +127,7 @@ public class MatchState {
   }
 
   public static void setAutoWinner(boolean redAlliance) {
-    autonomousWinnerIsRed = Optional.of(true);
+    autonomousWinnerIsRed = Optional.of(redAlliance);
   }
 
   public static void updateAutonomousWinner() {
