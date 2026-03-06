@@ -56,15 +56,18 @@ public class FeederIOCTRE implements FeederIO {
     m_feederRight.optimizeBusUtilization();
   }
 
+  /** {@inheritDoc} */
   public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_feederSignals);
     BaseStatusSignal.refreshAll(m_feederFollowerSignals);
   }
 
+  /** {@inheritDoc} */
   public void setLeft(double percent) {
     this.m_feederLeft.setControl(m_leftPercentOutput.withOutput(percent));
   }
 
+  /** {@inheritDoc} */
   public void setRight(double percent) {
     this.m_feederRight.setControl(m_rightPercentOutput.withOutput(percent));
   }

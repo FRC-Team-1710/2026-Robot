@@ -46,6 +46,7 @@ public class ShooterIOSIM implements ShooterIO {
     SmartDashboard.putNumber("ShooterMult", 0.105);
   }
 
+  /** {@inheritDoc} */
   public void update(double dtSeconds) {
     this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
     this.m_flyWheelFollowerMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
@@ -118,22 +119,27 @@ public class ShooterIOSIM implements ShooterIO {
     }
   }
 
+  /** {@inheritDoc} */
   public void stop() {
     this.m_velocity = DegreesPerSecond.of(0);
   }
 
+  /** {@inheritDoc} */
   public void setLeftTargetVelocity(AngularVelocity pVelocity) {
     this.m_velocity = pVelocity;
   }
 
+  /** {@inheritDoc} */
   public AngularVelocity getVelocity() {
     return this.m_velocity;
   }
 
+  /** {@inheritDoc} */
   public AngularVelocity getTargetVelocity() {
     return this.m_velocity;
   }
 
+  /** {@inheritDoc} */
   public void setLeftHoodTarget(Angle pAngle) {
     this.m_hoodAngle =
         Degrees.of(
@@ -141,10 +147,12 @@ public class ShooterIOSIM implements ShooterIO {
                 pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
   }
 
+  /** {@inheritDoc} */
   public Angle getLeftHoodPosition() {
     return this.m_hoodAngle;
   }
 
+  /** Sets the fuel simulation instance for this shooter IO. */
   public void setFuelSim(FuelSim fuelSim) {
     this.m_fuelSim = fuelSim;
   }

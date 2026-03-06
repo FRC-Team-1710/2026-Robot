@@ -16,6 +16,7 @@ public class LedsIOArduino implements LedsIO {
     this.m_port = new SerialPort(115200, SerialPort.Port.kMXP);
   }
 
+  /** {@inheritDoc} */
   public void update() {
     byte[] data = new byte[1];
     data[0] = (byte) (this.m_data & 0xFF);
@@ -23,6 +24,7 @@ public class LedsIOArduino implements LedsIO {
     this.m_port.write(data, data.length);
   }
 
+  /** {@inheritDoc} */
   public void setValue(LED_STATE pState, boolean pValue) {
     int offset = 0;
     switch (pState) {
@@ -43,6 +45,7 @@ public class LedsIOArduino implements LedsIO {
     this.m_data = bitValue | (1 << offset);
   }
 
+  /** {@inheritDoc} */
   public void setFlyWheelCharge(double pPercentage) {
     int formatedPercent = (int) (30 * pPercentage);
     for (int i = 0; i < 5; i++) {

@@ -27,6 +27,7 @@ public class Leds {
     this.m_autosTimer.start();
   }
 
+  /** Runs periodic LED logic based on match state and shooter status. */
   public void periodic() {
     this.m_io.setValue(LED_STATE.ATTACKING, MatchState.timeTillActive().in(Seconds) <= 3);
     this.m_io.setValue(

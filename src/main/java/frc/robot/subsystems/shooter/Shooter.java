@@ -277,6 +277,12 @@ public class Shooter {
     // }
   }
 
+  /**
+   * Overrides the shooter state.
+   *
+   * @param pShouldOverride true to enable override
+   * @param pState the shooter state to override with
+   */
   public void override(boolean pShouldOverride, SHOOTER_STATE pState) {
     this.m_shouldOverride = pShouldOverride;
     if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
@@ -286,6 +292,7 @@ public class Shooter {
     this.m_currentState = pState;
   }
 
+  /** Returns the current shooter state. */
   @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;

@@ -224,48 +224,42 @@ public class RobotContainer {
         .onTrue(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(
-                    Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TRENCH))));
+                .alongWith(Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TRENCH))));
 
     m_driver
         .x()
         .onFalse(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Default)
-                .alongWith(
-                    Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
+                .alongWith(Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
 
     m_driver
         .a()
         .onTrue(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(
-                    Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.CORNER))));
+                .alongWith(Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.CORNER))));
 
     m_driver
         .a()
         .onFalse(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Default)
-                .alongWith(
-                    Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
+                .alongWith(Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
 
     m_driver
         .b()
         .onTrue(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Override)
-                .alongWith(
-                    Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TOWER))));
+                .alongWith(Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TOWER))));
 
     m_driver
         .b()
         .onFalse(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Default)
-                .alongWith(
-                    Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
+                .alongWith(Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
 
     m_driver
         .leftTrigger()
