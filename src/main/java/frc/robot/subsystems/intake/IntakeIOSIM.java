@@ -47,7 +47,7 @@ public class IntakeIOSIM implements IntakeIO {
             IntakeConstants.minDeploymentDegrees.in(Radians),
             IntakeConstants.maxDeploymentDegrees.in(Radians),
             false,
-            45,
+            Units.degreesToRadians(45),
             new double[2]);
 
     m_intakeVisualSim =
