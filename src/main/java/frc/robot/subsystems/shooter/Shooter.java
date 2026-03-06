@@ -58,27 +58,15 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-<<<<<<< feature/updated-shooter-math-and-logic
-  @NotLogged private ArrayDeque<Double> m_fpsDeque;
-
-  @Logged(importance = Importance.DEBUG)
-  private double m_fpsRunningSum = 0.0;
-=======
   @NotLogged private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
 
   @NotLogged private Debouncer m_jamDetect;
->>>>>>> main
 
   @NotLogged private Boolean[] m_fuelDetection = new Boolean[] {false, false};
 
   @Logged(importance = Importance.INFO)
   private int m_ballCount;
 
-<<<<<<< feature/updated-shooter-math-and-logic
-  @NotLogged private boolean m_prevLeftBroken = false;
-
-  @NotLogged private boolean m_prevRightBroken = false;
-=======
   /**
    * This Matrix is derived from values of the beam breakers for rising and falling detection.
    *
@@ -90,7 +78,6 @@ public class Shooter {
 
   @Logged(importance = Importance.INFO)
   private boolean m_shouldOverride;
->>>>>>> main
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -109,15 +96,6 @@ public class Shooter {
 
     this.m_risingDetection = MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 0, 0, 0);
 
-<<<<<<< feature/updated-shooter-math-and-logic
-    this.m_fpsDeque = new ArrayDeque<Double>();
-    this.m_FPSTimer = new Timer();
-    this.m_FPSTimer.start();
-
-    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
-
-    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
-=======
     m_timestampQueues.add(new ArrayDeque<>()); // left
     m_timestampQueues.add(new ArrayDeque<>()); // right
 
@@ -125,8 +103,7 @@ public class Shooter {
 
     this.m_shouldOverride = false;
 
-    SmartDashboard.putNumber("Flywheel Scalar", 2);
->>>>>>> main
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
   }
 
   public void periodic() {
@@ -147,22 +124,6 @@ public class Shooter {
         break;
     }
 
-<<<<<<< feature/updated-shooter-math-and-logic
-    // Fuel Counting
-    boolean left = m_io.hasBreakerLeftBroke();
-    boolean right = m_io.hasBreakerRightBroke();
-
-    if ((left && !m_prevLeftBroken) || (right && !m_prevRightBroken)) {
-      double elapsed = m_FPSTimer.get();
-      if (elapsed < 1.0) addInterval(elapsed); // see deque suggestion below
-      m_FPSTimer.restart();
-      m_fuelCount++;
-    }
-    m_prevLeftBroken = left;
-    m_prevRightBroken = right;
-
-=======
->>>>>>> main
     this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
     this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
     this.m_io.setRightTargetVelocity(this.m_rightTargetVelocity);
@@ -300,22 +261,13 @@ public class Shooter {
   @NotLogged
   public void calculateFPS() {
     /* Fuel per second Handling */
-
     long currentTime = System.currentTimeMillis();
 
-<<<<<<< feature/updated-shooter-math-and-logic
-  void addInterval(double interval) {
-    m_fpsDeque.addLast(interval);
-    m_fpsRunningSum += interval;
-    while (m_fpsRunningSum > 1.0 && !m_fpsDeque.isEmpty()) {
-      m_fpsRunningSum -= m_fpsDeque.removeFirst();
-=======
     // Prune timestamps older than 1 second using an iterator (safe removal while iterating)
     for (ArrayDeque<Long> queue : m_timestampQueues) {
       while (!queue.isEmpty() && queue.peekFirst() < currentTime - 1000) {
         queue.removeFirst();
       }
->>>>>>> main
     }
 
     // Shift current column → previous column in rising detection matrix
@@ -340,16 +292,6 @@ public class Shooter {
       }
     }
 
-<<<<<<< feature/updated-shooter-math-and-logic
-    if (this.m_fpsDeque.isEmpty() || this.m_fpsRunningSum <= 0.0) {
-      return 0.0;
-    }
-
-    // FPS = number of events / total time window (events per second)
-    double fps = this.m_fpsDeque.size() / this.m_fpsRunningSum;
-    this.m_FPS = fps;
-    return fps;
-=======
     // Calculate combined FPS over the 1-second window
     int totalEvents = m_timestampQueues.get(0).size() + m_timestampQueues.get(1).size();
     if (totalEvents < 2) {
@@ -399,7 +341,6 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   public double getFPS() {
     return this.m_FPS;
->>>>>>> main
   }
 
   @Logged(importance = Importance.INFO)
