@@ -73,7 +73,7 @@ public class VisionFuel extends SubsystemBase {
     if (camZ <= SPHERE_RADIUS_M) return results;
 
     for (PhotonTrackedTarget target : photonResult.getTargets()) {
-      // (Your existing yaw/pitch math remains here)
+
       double yawRad =
           Units.degreesToRadians(
               (178.37 / 4)
@@ -127,6 +127,9 @@ public class VisionFuel extends SubsystemBase {
     field.getObject("Spheres - Visible").setPoses(visiblePoses);
     field.getObject("Spheres - Remembered").setPoses(rememberedPoses);
 
+    SmartDashboard.putNumber("Fuel/Total Tracks", fuelFieldMap.getTracks().size());
+    SmartDashboard.putNumber("Fuel/Visible Count", visiblePoses.size());
+    SmartDashboard.putNumber("Fuel/Remembered Count", rememberedPoses.size());
     // Dashboard per-track logic and "Closest" logic would go here, calling fuelFieldMap.getTracks()
   }
 
