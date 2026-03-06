@@ -50,6 +50,8 @@ public final class ShooterConstants {
 
   public static final double JAM_DETECT_TIME = 1.0;
 
+  public static final double UNREALISTIC_FPS_INTERVAL_MS = 1000.0 / 24.0;
+
   /* Offsets (center of robot to center of bottom flywheel) */
 
   public static final Transform3d kLEFT_SHOOTER_OFFSET =
