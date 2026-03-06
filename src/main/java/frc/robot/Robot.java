@@ -11,13 +11,10 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -43,13 +40,15 @@ public class Robot extends DynamicTimedRobot {
   @Logged(importance = Importance.INFO)
   private final PowerDistribution pdhLogging = new PowerDistribution();
 
+  @NotLogged private boolean m_hasAppliedTestingControls = false;
+
+  @NotLogged public static final EpilogueConfiguration epilogueConfig = new EpilogueConfiguration();
+
   public Robot() {
     Alliance.updateRedAlliance();
 
     m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
     DataLogManager.start();
-
-    var epilogueConfig = new EpilogueConfiguration();
 
     epilogueConfig.backend =
         EpilogueBackend.multi(
@@ -89,18 +88,11 @@ public class Robot extends DynamicTimedRobot {
 
     addAllSubsystems(m_robotContainer.getAllSubsystems());
 
-    SmartDashboard.putBoolean("Reset Fuel Sim", false);
+    if (Mode.currentMode == CurrentMode.SIMULATION) {
+      SmartDashboard.putBoolean("Reset Fuel Sim", false);
+    }
 
-    telemetry()
-        .log(
-            "CameraTransform",
-            new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(7.769),
-                    Units.inchesToMeters(13.341),
-                    Units.inchesToMeters(7.995)),
-                new Rotation3d(Math.toRadians(180), Math.toRadians(135), Math.toRadians(175.0))),
-            Transform3d.struct);
+    SmartDashboard.putBoolean("MatchState/IgnoreFMS", false);
   }
 
   @Override
@@ -148,7 +140,9 @@ public class Robot extends DynamicTimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    MatchState.setIgnoreFMS(SmartDashboard.getBoolean("MatchState/IgnoreFMS", true));
+  }
 
   @Override
   public void simulationPeriodic() {
@@ -169,13 +163,21 @@ public class Robot extends DynamicTimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+
+    if (!m_hasAppliedTestingControls) {
+      m_robotContainer.addTestingBindings();
+    }
+
+    m_robotContainer.setAllSubsystemTesting(true);
   }
 
   @Override
   public void testPeriodic() {}
 
   @Override
-  public void testExit() {}
+  public void testExit() {
+    m_robotContainer.setAllSubsystemTesting(false);
+  }
 
   public static EpilogueBackend telemetry() {
     return Epilogue.getConfig().backend.getNested("Outputs");

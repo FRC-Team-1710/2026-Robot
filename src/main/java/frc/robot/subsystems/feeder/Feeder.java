@@ -18,6 +18,8 @@ public class Feeder {
   @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
+  @NotLogged private boolean m_testing = false;
+
   @NotLogged private final TimesConsumer m_timesConsumer;
 
   public Feeder(FeederIO io, TimesConsumer consumer) {
@@ -70,12 +72,27 @@ public class Feeder {
   }
 
   public void setState(FEEDER_STATE state) {
+    if (m_testing) return;
     if (!this.m_currentState
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     this.m_currentState = state;
+  }
+
+  public void setStateTesting(FEEDER_STATE state) {
+    if (!m_testing) return;
+    if (!this.m_currentState
+        .getSubsystemPeriodicFrequency()
+        .isEquivalent(state.getSubsystemPeriodicFrequency())) {
+      m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
+    }
+    this.m_currentState = state;
+  }
+
+  public void setTesting(boolean testing) {
+    this.m_testing = testing;
   }
 
   @NotLogged

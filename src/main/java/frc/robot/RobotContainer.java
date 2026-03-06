@@ -28,10 +28,12 @@ import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
 import frc.robot.subsystems.feeder.FeederIO;
 import frc.robot.subsystems.feeder.FeederIOCTRE;
 import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.indexer.IndexerIOSIM;
@@ -180,6 +182,60 @@ public class RobotContainer {
     autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
 
     configureBindings();
+  }
+
+  public void addTestingBindings() {
+
+    driver.a().onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Intaking)));
+
+    driver
+        .b()
+        .onTrue(Commands.runOnce(() -> indexer.setStateTesting(IndexStates.Indexing)))
+        .onFalse(Commands.runOnce(() -> indexer.setStateTesting(IndexStates.Idle)));
+
+    driver
+        .x()
+        .onTrue(Commands.runOnce(() -> feeder.setStateTesting(FEEDER_STATE.FEEDING)))
+        .onFalse(Commands.runOnce(() -> feeder.setStateTesting(FEEDER_STATE.STOP)));
+
+    driver
+        .y()
+        .onTrue(Commands.runOnce(() -> shooter.setStateTesting(SHOOTER_STATE.CORNER)))
+        .onFalse(Commands.runOnce(() -> shooter.setStateTesting(SHOOTER_STATE.IDLE)));
+
+    driver
+        .rightTrigger()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  shooter.setStateTesting(SHOOTER_STATE.TESTING);
+                  feeder.setStateTesting(FEEDER_STATE.FEEDING);
+                  indexer.setStateTesting(IndexStates.Indexing);
+                  intake.setState(IntakeStates.Jostle);
+                }))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  shooter.setStateTesting(SHOOTER_STATE.IDLE);
+                  feeder.setStateTesting(FEEDER_STATE.STOP);
+                  indexer.setStateTesting(IndexStates.Idle);
+                  if (intake.getState() == IntakeStates.Jostle) {
+                    intake.setStateTesting(IntakeStates.Down);
+                  }
+                }));
+
+    driver
+        .povRight()
+        .onTrue(
+            Commands.runOnce(() -> intake.setState(IntakeStates.Up))
+                .onlyIf(driver.povRight().negate()));
+  }
+
+  public void setAllSubsystemTesting(boolean testing) {
+    shooter.setTesting(testing);
+    intake.setTesting(testing);
+    indexer.setTesting(testing);
+    feeder.setTesting(testing);
   }
 
   private void configureBindings() {
