@@ -9,24 +9,24 @@ import java.util.Optional;
 
 public class MatchState {
   // TODO: Set to simulate a match enviornment to test match specific code
-  public static boolean simulatePracticeMatch = true;
+  private static final boolean kSimulatePracticeMatch = false;
 
   public static Optional<Boolean> autonomousWinnerIsRed = Optional.empty();
 
   // Mechanical Advantage's estimate
-  public static final double fuelProcessTime = 1.5;
+  public static final double kFuelProcessTime = 1.5;
 
   // Time after hub inactive until it stops counting
-  public static final double hubCountingEndOffset = 2;
+  public static final double kHubCountingEndOffset = 2;
 
-  private static final Timer teleopTimer = new Timer();
+  private static final Timer m_teleopTimer = new Timer();
 
   public static boolean isActive() {
     return timeTillActive().in(Seconds) == 0;
   }
 
   public static void startTeleop() {
-    teleopTimer.restart();
+    m_teleopTimer.restart();
   }
 
   public static boolean canShoot(double tof) {
@@ -48,7 +48,7 @@ public class MatchState {
   public static Time timeTillActive(double tof) {
     if (fmsAttached()) {
       var currentMatchTime =
-          (140 - teleopTimer.get()) + fuelProcessTime - hubCountingEndOffset + tof;
+          (140 - m_teleopTimer.get()) + kFuelProcessTime - kHubCountingEndOffset + tof;
       if (DriverStation.isAutonomous() || currentMatchTime <= 30 || currentMatchTime > 130) {
         return Seconds.of(0);
       }
@@ -85,7 +85,7 @@ public class MatchState {
   public static Time timeTillInactive(double tof) {
     if (fmsAttached()) {
       var currentMatchTime =
-          (140 - teleopTimer.get()) + fuelProcessTime - hubCountingEndOffset + tof;
+          (140 - m_teleopTimer.get()) + kFuelProcessTime - kHubCountingEndOffset + tof;
       if (DriverStation.isAutonomous() || currentMatchTime <= 30) {
         return Seconds.of(0);
       }
@@ -121,8 +121,9 @@ public class MatchState {
     return Seconds.of(0);
   }
 
+  @SuppressWarnings("unused")
   public static boolean fmsAttached() {
-    return simulatePracticeMatch || DriverStation.isFMSAttached();
+    return kSimulatePracticeMatch || DriverStation.isFMSAttached();
   }
 
   public static void setAutoWinner(boolean redAlliance) {

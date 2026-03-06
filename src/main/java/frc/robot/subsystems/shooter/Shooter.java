@@ -55,19 +55,19 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private double m_FPS;
 
-  @NotLogged private ArrayDeque<Double> fpsDeque;
+  @NotLogged private ArrayDeque<Double> m_fpsDeque;
 
   @Logged(importance = Importance.DEBUG)
-  private double fpsRunningSum = 0.0;
+  private double m_fpsRunningSum = 0.0;
 
   @Logged(importance = Importance.CRITICAL)
   private int m_fuelCount;
 
   @NotLogged private Debouncer m_jamDetect;
 
-  @NotLogged private boolean prevLeftBroken = false;
+  @NotLogged private boolean m_prevLeftBroken = false;
 
-  @NotLogged private boolean prevRightBroken = false;
+  @NotLogged private boolean m_prevRightBroken = false;
 
   public Shooter(ShooterIO io, TimesConsumer consumer) {
     this.m_io = io;
@@ -84,13 +84,13 @@ public class Shooter {
 
     this.m_fuelCount = 0;
 
-    this.fpsDeque = new ArrayDeque<Double>();
+    this.m_fpsDeque = new ArrayDeque<Double>();
     this.m_FPSTimer = new Timer();
     this.m_FPSTimer.start();
 
     this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
 
-    SmartDashboard.putNumber("whynowork", 0);
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
   }
 
   public void periodic() {
@@ -115,14 +115,14 @@ public class Shooter {
     boolean left = m_io.hasBreakerLeftBroke();
     boolean right = m_io.hasBreakerRightBroke();
 
-    if ((left && !prevLeftBroken) || (right && !prevRightBroken)) {
+    if ((left && !m_prevLeftBroken) || (right && !m_prevRightBroken)) {
       double elapsed = m_FPSTimer.get();
       if (elapsed < 1.0) addInterval(elapsed); // see deque suggestion below
       m_FPSTimer.restart();
       m_fuelCount++;
     }
-    prevLeftBroken = left;
-    prevRightBroken = right;
+    m_prevLeftBroken = left;
+    m_prevRightBroken = right;
 
     this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
     this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
@@ -253,10 +253,10 @@ public class Shooter {
   }
 
   void addInterval(double interval) {
-    fpsDeque.addLast(interval);
-    fpsRunningSum += interval;
-    while (fpsRunningSum > 1.0 && !fpsDeque.isEmpty()) {
-      fpsRunningSum -= fpsDeque.removeFirst();
+    m_fpsDeque.addLast(interval);
+    m_fpsRunningSum += interval;
+    while (m_fpsRunningSum > 1.0 && !m_fpsDeque.isEmpty()) {
+      m_fpsRunningSum -= m_fpsDeque.removeFirst();
     }
   }
 
@@ -266,12 +266,12 @@ public class Shooter {
       return 0.3;
     }
 
-    if (this.fpsDeque.isEmpty() || this.fpsRunningSum <= 0.0) {
+    if (this.m_fpsDeque.isEmpty() || this.m_fpsRunningSum <= 0.0) {
       return 0.0;
     }
 
     // FPS = number of events / total time window (events per second)
-    double fps = this.fpsDeque.size() / this.fpsRunningSum;
+    double fps = this.m_fpsDeque.size() / this.m_fpsRunningSum;
     this.m_FPS = fps;
     return fps;
   }

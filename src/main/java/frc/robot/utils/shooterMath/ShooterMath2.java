@@ -27,56 +27,57 @@ public final class ShooterMath2 {
    * 45° = Ball enters at roughly 45° into the funnel, 60° = Noticeably higher flywheel demand at
    * mid-range, 70° = May be unreachable from far positions
    */
-  private static double PREFERRED_MIN_ARRIVAL_ANGLE_RAD = Math.toRadians(45.0);
+  // Soon to be k, need to tune first
+  private static double m_preferredMinArrivalAngleRad = Math.toRadians(45.0);
 
   /** Efficiency of speed transfer from flywheel to ball. */
-  private static final double SPEED_TRANSFER_EFFICIENCY = 0.5; // 1.0 = No slip
+  private static final double kSpeedTransferEfficiency = 0.5; // 1.0 = No slip
 
   /** Ball diameter: 5.91 in → meters. */
-  private static final double BALL_DIAMETER_M = 5.91 * 0.0254;
+  private static final double kBallDiameterMeters = 5.91 * 0.0254;
 
   /** Ball radius: 2.955 in → meters. */
-  private static final double BALL_RADIUS_M = BALL_DIAMETER_M / 2.0;
+  private static final double kBallRadiusMeters = kBallDiameterMeters / 2.0;
 
   /** Compression: 1 in → meters. */
-  private static final double COMPRESSION_M = 1.00 * 0.0254;
+  private static final double kCompressionMeters = 1.00 * 0.0254;
 
   /** Bottom flywheel radius: 1.5 in → meters. */
-  private static final double BOTTOM_WHEEL_RADIUS_M = 1.50 * 0.0254;
+  private static final double kBottomWheelRadiusMeters = 1.50 * 0.0254;
 
   /** Top flywheel radius: 1.0 in → meters. */
-  private static final double TOP_WHEEL_RADIUS_M = 1.00 * 0.0254;
+  private static final double kTopWheelRadiusMeters = 1.00 * 0.0254;
 
   /**
    * Distance from the bottom flywheel center to the ball center at the exit point (meters). The
    * ball center lies along the center-to-center line at:
    */
-  private static final double EXIT_OFFSET_M =
-      BOTTOM_WHEEL_RADIUS_M + (BALL_DIAMETER_M - COMPRESSION_M) / 2.0;
+  private static final double kExitOffsetMeters =
+      kBottomWheelRadiusMeters + (kBallDiameterMeters - kCompressionMeters) / 2.0;
 
   /** Ball exit speed per unit flywheel. */
-  private static final double SPEED_PER_OMEGA =
-      SPEED_TRANSFER_EFFICIENCY * (BOTTOM_WHEEL_RADIUS_M + TOP_WHEEL_RADIUS_M) / 2.0;
+  private static final double kSpeedPerOmega =
+      kSpeedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
 
   /** Minimum mechanical hood angle (radians) — steepest shot. */
-  private static final double MIN_HOOD_ANGLE_RAD = Math.toRadians(ShooterConstants.HOOD_MIN);
+  private static final double kMinHoodAngleRad = Math.toRadians(ShooterConstants.HOOD_MIN);
 
   /** Maximum mechanical hood angle (radians) — flattest shot. */
-  private static final double MAX_HOOD_ANGLE_RAD = Math.toRadians(ShooterConstants.HOOD_MAX);
+  private static final double kMaxHoodAngleRad = Math.toRadians(ShooterConstants.HOOD_MAX);
 
   /** Gravitational acceleration (m/s²). */
-  private static final double G = 9.80665;
+  private static final double kG = 9.80665;
 
   /** Maximum number of iterations for the solver. */
-  private static final int MAX_ITER = 20;
+  private static final int kMaxIter = 20;
 
   /** Time-of-flight epsilon for the solver (seconds). */
-  private static final double TOF_EPSILON_S = 1e-7;
+  private static final double kTofEpsilonSeconds = 1e-7;
 
   /** Finite-difference step for tolerance computation (radians / rad·s⁻¹). */
-  private static final double FD_ANGLE = 1e-4;
+  private static final double kFdAngle = 1e-4;
 
-  private static final double FD_OMEGA = 0.1;
+  private static final double kFdOmega = 0.1;
 
   /**
    * Per-parameter shooting tolerances for a single shooter.
@@ -151,10 +152,10 @@ public final class ShooterMath2 {
       Rotation2d robotHeading, ShooterSolution shooterLeft, ShooterSolution shooterRight) {}
 
   /** Center of the hub */
-  private static Translation3d TARGET_CENTER = new Translation3d();
+  private static Translation3d m_targetCenter = new Translation3d();
 
   /** Center of the hub */
-  private static Translation3d[] TARGET_VERTICES = new Translation3d[0];
+  private static Translation3d[] m_targetVertices = new Translation3d[0];
 
   /** The current solution for the dual shooter system. */
   public static DualShooterSolution currentSolution =
@@ -201,11 +202,12 @@ public final class ShooterMath2 {
    * @param fieldSpeeds Chassis speeds in the field frame.
    */
   public static void calculate(Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
-    PREFERRED_MIN_ARRIVAL_ANGLE_RAD = Math.toRadians(SmartDashboard.getNumber("whynowork", 0));
+    m_preferredMinArrivalAngleRad =
+        Math.toRadians(SmartDashboard.getNumber("preferredMinArrivalAngleDeg", 0));
 
-    TARGET_CENTER =
+    m_targetCenter =
         Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue;
-    TARGET_VERTICES =
+    m_targetVertices =
         Alliance.redAlliance ? FieldConstants.kHexagonRed : FieldConstants.kHexagonBlue;
     currentPose = robotPose;
     currentSpeeds = fieldSpeeds;
@@ -219,9 +221,9 @@ public final class ShooterMath2 {
     SolverResult r2 = solveDirection(pivot2, fieldSpeeds);
 
     double D1 =
-        Math.hypot(TARGET_CENTER.getX() - pivot1.getX(), TARGET_CENTER.getY() - pivot1.getY());
+        Math.hypot(m_targetCenter.getX() - pivot1.getX(), m_targetCenter.getY() - pivot1.getY());
     double D2 =
-        Math.hypot(TARGET_CENTER.getX() - pivot2.getX(), TARGET_CENTER.getY() - pivot2.getY());
+        Math.hypot(m_targetCenter.getX() - pivot2.getX(), m_targetCenter.getY() - pivot2.getY());
 
     double phiComp =
         Math.atan2(
@@ -233,8 +235,8 @@ public final class ShooterMath2 {
     PhysicsResult phys1 = solvePhysicsAlongDirection(pivot1, fieldSpeeds, phiComp, tofGuess);
     PhysicsResult phys2 = solvePhysicsAlongDirection(pivot2, fieldSpeeds, phiComp, tofGuess);
 
-    double omega1 = phys1.exitSpeed / SPEED_PER_OMEGA;
-    double omega2 = phys2.exitSpeed / SPEED_PER_OMEGA;
+    double omega1 = phys1.exitSpeed / kSpeedPerOmega;
+    double omega2 = phys2.exitSpeed / kSpeedPerOmega;
 
     currentSolution =
         new DualShooterSolution(
@@ -336,17 +338,17 @@ public final class ShooterMath2 {
    */
   private static SolverResult solveDirection(Translation3d pivotPos, ChassisSpeeds fieldSpeeds) {
     final double vRx = fieldSpeeds.vxMetersPerSecond, vRy = fieldSpeeds.vyMetersPerSecond;
-    double rawDx = TARGET_CENTER.getX() - pivotPos.getX();
-    double rawDy = TARGET_CENTER.getY() - pivotPos.getY();
+    double rawDx = m_targetCenter.getX() - pivotPos.getX();
+    double rawDy = m_targetCenter.getY() - pivotPos.getY();
     double tof = Math.max(Math.hypot(rawDx, rawDy) / 8.0, 0.05);
     double phi = Math.atan2(rawDy, rawDx);
-    double hood = (MIN_HOOD_ANGLE_RAD + MAX_HOOD_ANGLE_RAD) / 2.0;
+    double hood = (kMinHoodAngleRad + kMaxHoodAngleRad) / 2.0;
 
-    for (int i = 0; i < MAX_ITER; i++) {
+    for (int i = 0; i < kMaxIter; i++) {
       Translation3d ep = exitPoint(pivotPos, hood, phi);
-      double effDx = (TARGET_CENTER.getX() - ep.getX()) - vRx * tof;
-      double effDy = (TARGET_CENTER.getY() - ep.getY()) - vRy * tof;
-      double dz = TARGET_CENTER.getZ() - ep.getZ();
+      double effDx = (m_targetCenter.getX() - ep.getX()) - vRx * tof;
+      double effDy = (m_targetCenter.getY() - ep.getY()) - vRy * tof;
+      double dz = m_targetCenter.getZ() - ep.getZ();
       double D = Math.hypot(effDx, effDy);
       if (D < 1e-4) {
         phi = Math.atan2(rawDy, rawDx);
@@ -358,19 +360,19 @@ public final class ShooterMath2 {
       hood =
           clamp(
               Math.PI / 2.0 - (Math.atan2(dz + Math.sqrt(dz * dz + D * D), D)),
-              MIN_HOOD_ANGLE_RAD,
-              MAX_HOOD_ANGLE_RAD);
+              kMinHoodAngleRad,
+              kMaxHoodAngleRad);
       double la = Math.PI / 2.0 - hood;
       double v = minExitSpeed(D, dz, la);
       if (!Double.isFinite(v) || v <= 0) {
-        hood = (hood <= MIN_HOOD_ANGLE_RAD) ? MAX_HOOD_ANGLE_RAD : MIN_HOOD_ANGLE_RAD;
+        hood = (hood <= kMinHoodAngleRad) ? kMaxHoodAngleRad : kMinHoodAngleRad;
         la = Math.PI / 2.0 - hood;
         v = minExitSpeed(D, dz, la);
       }
       double cl = Math.cos(la);
       double newT = (Double.isFinite(v) && v > 0 && cl > 1e-9) ? D / (v * cl) : tof;
       if (!Double.isFinite(newT) || newT <= 0) newT = tof;
-      if (Math.abs(newT - tof) < TOF_EPSILON_S) {
+      if (Math.abs(newT - tof) < kTofEpsilonSeconds) {
         tof = newT;
         break;
       }
@@ -402,20 +404,20 @@ public final class ShooterMath2 {
     final double cP = Math.cos(phi), sP = Math.sin(phi);
 
     double tof = Math.max(tofGuess, 0.05);
-    double hood = (MIN_HOOD_ANGLE_RAD + MAX_HOOD_ANGLE_RAD) / 2.0;
+    double hood = (kMinHoodAngleRad + kMaxHoodAngleRad) / 2.0;
     double speed = 0.0;
     boolean hCl = false, arrCl = false;
-    double effMax = MAX_HOOD_ANGLE_RAD;
+    double effMax = kMaxHoodAngleRad;
 
-    for (int i = 0; i < MAX_ITER; i++) {
+    for (int i = 0; i < kMaxIter; i++) {
       Translation3d ep = exitPoint(pivot, hood, phi);
-      double effDx = (TARGET_CENTER.getX() - ep.getX()) - vRx * tof;
-      double effDy = (TARGET_CENTER.getY() - ep.getY()) - vRy * tof;
-      double dz = TARGET_CENTER.getZ() - ep.getZ();
+      double effDx = (m_targetCenter.getX() - ep.getX()) - vRx * tof;
+      double effDy = (m_targetCenter.getY() - ep.getY()) - vRy * tof;
+      double dz = m_targetCenter.getZ() - ep.getZ();
       double D = effDx * cP + effDy * sP;
 
       if (D < 1e-4) {
-        hood = MAX_HOOD_ANGLE_RAD;
+        hood = kMaxHoodAngleRad;
         hCl = true;
         double la = Math.PI / 2.0 - hood;
         speed = minExitSpeed(1e-4, dz, la);
@@ -426,35 +428,35 @@ public final class ShooterMath2 {
 
       // Arrival angle constraint
       double dNear = edgeDistance(-cP, -sP);
-      effMax = MAX_HOOD_ANGLE_RAD;
+      effMax = kMaxHoodAngleRad;
 
       // Geometric near-edge constraint
       if (dNear > 1e-4) {
-        double laMinGeo = Math.atan(BALL_RADIUS_M / dNear + 2.0 * dz / D);
+        double laMinGeo = Math.atan(kBallRadiusMeters / dNear + 2.0 * dz / D);
         effMax = Math.min(effMax, Math.PI / 2.0 - laMinGeo);
       }
 
       // Preferred minimum arrival angle
-      if (PREFERRED_MIN_ARRIVAL_ANGLE_RAD > 1e-6) {
-        double laMinPref = Math.atan(Math.tan(PREFERRED_MIN_ARRIVAL_ANGLE_RAD) + 2.0 * dz / D);
+      if (m_preferredMinArrivalAngleRad > 1e-6) {
+        double laMinPref = Math.atan(Math.tan(m_preferredMinArrivalAngleRad) + 2.0 * dz / D);
         effMax = Math.min(effMax, Math.PI / 2.0 - laMinPref);
       }
 
-      if (effMax < MIN_HOOD_ANGLE_RAD) {
-        effMax = MIN_HOOD_ANGLE_RAD;
+      if (effMax < kMinHoodAngleRad) {
+        effMax = kMinHoodAngleRad;
         hCl = true;
         arrCl = true;
       }
 
       double optHood = Math.PI / 2.0 - (Math.atan2(dz + Math.sqrt(dz * dz + D * D), D));
       arrCl = optHood > effMax;
-      hCl = (optHood < MIN_HOOD_ANGLE_RAD) || arrCl;
-      hood = clamp(optHood, MIN_HOOD_ANGLE_RAD, effMax);
+      hCl = (optHood < kMinHoodAngleRad) || arrCl;
+      hood = clamp(optHood, kMinHoodAngleRad, effMax);
 
       double la = Math.PI / 2.0 - hood;
       speed = minExitSpeed(D, dz, la);
       if (!Double.isFinite(speed) || speed <= 0) {
-        hood = (hood <= MIN_HOOD_ANGLE_RAD) ? effMax : MIN_HOOD_ANGLE_RAD;
+        hood = (hood <= kMinHoodAngleRad) ? effMax : kMinHoodAngleRad;
         hCl = true;
         la = Math.PI / 2.0 - hood;
         speed = minExitSpeed(D, dz, la);
@@ -463,7 +465,7 @@ public final class ShooterMath2 {
       double cl = Math.cos(la);
       double newT = (Double.isFinite(speed) && speed > 0 && cl > 1e-9) ? D / (speed * cl) : tof;
       if (!Double.isFinite(newT) || newT <= 0) newT = tof;
-      if (Math.abs(newT - tof) < TOF_EPSILON_S) {
+      if (Math.abs(newT - tof) < kTofEpsilonSeconds) {
         tof = newT;
         break;
       }
@@ -484,7 +486,7 @@ public final class ShooterMath2 {
   private static ShooterTolerances computeTolerances(
       Translation3d pivot, double phi, double hoodAngle, double omega, double effectiveMaxHood) {
 
-    final double v = omega * SPEED_PER_OMEGA;
+    final double v = omega * kSpeedPerOmega;
     final double theta = Math.PI / 2.0 - hoodAngle;
     final double cP = Math.cos(phi), sP = Math.sin(phi);
 
@@ -506,10 +508,12 @@ public final class ShooterMath2 {
     //   c = (distance from centroid to hexagon edge in direction d) − ball_radius
     // The ball center must stay within this shrunk hexagon.
     // ------------------------------------------------------------------
-    double cFar = Math.max(0, edgeDistance(cP, sP) - BALL_RADIUS_M); // forward (away from shooter)
-    double cNear = Math.max(0, edgeDistance(-cP, -sP) - BALL_RADIUS_M); // backward (toward shooter)
-    double cLeft = Math.max(0, edgeDistance(-sP, cP) - BALL_RADIUS_M); // CCW side
-    double cRight = Math.max(0, edgeDistance(sP, -cP) - BALL_RADIUS_M); // CW side
+    double cFar =
+        Math.max(0, edgeDistance(cP, sP) - kBallRadiusMeters); // forward (away from shooter)
+    double cNear =
+        Math.max(0, edgeDistance(-cP, -sP) - kBallRadiusMeters); // backward (toward shooter)
+    double cLeft = Math.max(0, edgeDistance(-sP, cP) - kBallRadiusMeters); // CCW side
+    double cRight = Math.max(0, edgeDistance(sP, -cP) - kBallRadiusMeters); // CW side
 
     // ------------------------------------------------------------------
     // HEADING TOLERANCE
@@ -522,20 +526,20 @@ public final class ShooterMath2 {
     //   right = dot(off − nom, right_dir) / dφ   where right_dir = ( sP, −cP)
     // ------------------------------------------------------------------
     double[] offPhiL =
-        landingOffset(exitPoint(pivot, hoodAngle, phi + FD_ANGLE), v, theta, phi + FD_ANGLE);
+        landingOffset(exitPoint(pivot, hoodAngle, phi + kFdAngle), v, theta, phi + kFdAngle);
     double[] offPhiR =
-        landingOffset(exitPoint(pivot, hoodAngle, phi - FD_ANGLE), v, theta, phi - FD_ANGLE);
+        landingOffset(exitPoint(pivot, hoodAngle, phi - kFdAngle), v, theta, phi - kFdAngle);
 
     // Left sensitivity: positive when ball goes left as phi increases
     double sensL =
         offPhiL == null
             ? 1.0
-            : (-(offPhiL[0] - nom[0]) * sP + (offPhiL[1] - nom[1]) * cP) / FD_ANGLE;
+            : (-(offPhiL[0] - nom[0]) * sP + (offPhiL[1] - nom[1]) * cP) / kFdAngle;
     // Right sensitivity: positive when ball goes right as phi decreases
     double sensR =
         offPhiR == null
             ? 1.0
-            : ((offPhiR[0] - nom[0]) * sP - (offPhiR[1] - nom[1]) * cP) / FD_ANGLE;
+            : ((offPhiR[0] - nom[0]) * sP - (offPhiR[1] - nom[1]) * cP) / kFdAngle;
 
     double headingTolLeft = cLeft / Math.max(sensL, 1e-9);
     double headingTolRight = cRight / Math.max(sensR, 1e-9);
@@ -555,8 +559,8 @@ public final class ShooterMath2 {
     //
     // Flywheel speed is held constant; only the hood moves.
     // ------------------------------------------------------------------
-    double steepHood = Math.max(MIN_HOOD_ANGLE_RAD, hoodAngle - FD_ANGLE);
-    double flatHood = Math.min(effectiveMaxHood, hoodAngle + FD_ANGLE);
+    double steepHood = Math.max(kMinHoodAngleRad, hoodAngle - kFdAngle);
+    double flatHood = Math.min(effectiveMaxHood, hoodAngle + kFdAngle);
 
     double[] offSteep =
         landingOffset(exitPoint(pivot, steepHood, phi), v, Math.PI / 2.0 - steepHood, phi);
@@ -566,17 +570,17 @@ public final class ShooterMath2 {
     double sensSteep =
         offSteep == null
             ? 0.0
-            : ((offSteep[0] - nom[0]) * cP + (offSteep[1] - nom[1]) * sP) / FD_ANGLE;
+            : ((offSteep[0] - nom[0]) * cP + (offSteep[1] - nom[1]) * sP) / kFdAngle;
     double sensFlat =
         offFlat == null
             ? 0.0
-            : ((offFlat[0] - nom[0]) * cP + (offFlat[1] - nom[1]) * sP) / FD_ANGLE;
+            : ((offFlat[0] - nom[0]) * cP + (offFlat[1] - nom[1]) * sP) / kFdAngle;
 
     double hoodTolSteep = alongTolerance(sensSteep, cFar, cNear);
     double hoodTolFlat = alongTolerance(sensFlat, cFar, cNear);
 
     // Clamp to mechanical range and arrival-angle constraint
-    hoodTolSteep = clamp(hoodTolSteep, 0, hoodAngle - MIN_HOOD_ANGLE_RAD);
+    hoodTolSteep = clamp(hoodTolSteep, 0, hoodAngle - kMinHoodAngleRad);
     hoodTolFlat = clamp(hoodTolFlat, 0, effectiveMaxHood - hoodAngle);
 
     // ------------------------------------------------------------------
@@ -587,7 +591,7 @@ public final class ShooterMath2 {
     //
     // Hood is held constant; only exit speed changes.
     // ------------------------------------------------------------------
-    double dV = FD_OMEGA * SPEED_PER_OMEGA;
+    double dV = kFdOmega * kSpeedPerOmega;
 
     double[] offFast = landingOffset(exitNom, v + dV, theta, phi);
     double[] offSlow = landingOffset(exitNom, v - dV, theta, phi);
@@ -595,12 +599,12 @@ public final class ShooterMath2 {
     double sensFast =
         offFast == null
             ? 0.0
-            : ((offFast[0] - nom[0]) * cP + (offFast[1] - nom[1]) * sP) / FD_OMEGA;
+            : ((offFast[0] - nom[0]) * cP + (offFast[1] - nom[1]) * sP) / kFdOmega;
     double sensSlow =
         offSlow == null
             ? 0.0
             : ((offSlow[0] - nom[0]) * cP + (offSlow[1] - nom[1]) * sP)
-                / (-FD_OMEGA); // per rad/s of reduction
+                / (-kFdOmega); // per rad/s of reduction
 
     double flywheelTolFast = Math.max(0, alongTolerance(sensFast, cFar, cNear));
     double flywheelTolSlow = Math.max(0, alongTolerance(sensSlow, cFar, cNear));
@@ -635,18 +639,18 @@ public final class ShooterMath2 {
       Translation3d exitPos, double v, double launchAngle, double phi) {
 
     double vz = v * Math.sin(launchAngle);
-    double disc = vz * vz - 2.0 * G * (TARGET_CENTER.getZ() - exitPos.getZ());
+    double disc = vz * vz - 2.0 * kG * (m_targetCenter.getZ() - exitPos.getZ());
     if (disc < 0) return null;
 
-    double T = (vz + Math.sqrt(disc)) / G;
+    double T = (vz + Math.sqrt(disc)) / kG;
     if (T <= 0) {
-      T = (vz - Math.sqrt(disc)) / G;
+      T = (vz - Math.sqrt(disc)) / kG;
       if (T <= 0) return null;
     }
 
     return new double[] {
-      exitPos.getX() + v * Math.cos(launchAngle) * Math.cos(phi) * T - TARGET_CENTER.getX(),
-      exitPos.getY() + v * Math.cos(launchAngle) * Math.sin(phi) * T - TARGET_CENTER.getY()
+      exitPos.getX() + v * Math.cos(launchAngle) * Math.cos(phi) * T - m_targetCenter.getX(),
+      exitPos.getY() + v * Math.cos(launchAngle) * Math.sin(phi) * T - m_targetCenter.getY()
     };
   }
 
@@ -657,15 +661,15 @@ public final class ShooterMath2 {
    * @return distance in meters, or {@link Double#MAX_VALUE} if no intersection found.
    */
   private static double edgeDistance(double rdx, double rdy) {
-    final double cx = TARGET_CENTER.getX(), cy = TARGET_CENTER.getY();
+    final double cx = m_targetCenter.getX(), cy = m_targetCenter.getY();
     double minT = Double.MAX_VALUE;
-    int n = TARGET_VERTICES.length;
+    int n = m_targetVertices.length;
 
     for (int i = 0; i < n; i++) {
-      double ax = TARGET_VERTICES[i].getX() - cx;
-      double ay = TARGET_VERTICES[i].getY() - cy;
-      double bx = TARGET_VERTICES[(i + 1) % n].getX() - cx;
-      double by = TARGET_VERTICES[(i + 1) % n].getY() - cy;
+      double ax = m_targetVertices[i].getX() - cx;
+      double ay = m_targetVertices[i].getY() - cy;
+      double bx = m_targetVertices[(i + 1) % n].getX() - cx;
+      double by = m_targetVertices[(i + 1) % n].getY() - cy;
       double ex = bx - ax, ey = by - ay;
 
       // Solve: t·[rdx,rdy] = [ax,ay] + s·[ex,ey]
@@ -692,9 +696,9 @@ public final class ShooterMath2 {
    */
   private static Translation3d exitPoint(Translation3d pivotPos, double hoodAngle, double phi) {
     return new Translation3d(
-        pivotPos.getX() + EXIT_OFFSET_M * Math.cos(hoodAngle) * Math.cos(phi),
-        pivotPos.getY() + EXIT_OFFSET_M * Math.cos(hoodAngle) * Math.sin(phi),
-        pivotPos.getZ() + EXIT_OFFSET_M * Math.sin(hoodAngle));
+        pivotPos.getX() + kExitOffsetMeters * Math.cos(hoodAngle) * Math.cos(phi),
+        pivotPos.getY() + kExitOffsetMeters * Math.cos(hoodAngle) * Math.sin(phi),
+        pivotPos.getZ() + kExitOffsetMeters * Math.sin(hoodAngle));
   }
 
   /**
@@ -705,7 +709,7 @@ public final class ShooterMath2 {
    */
   private static double minExitSpeed(double D, double dz, double theta) {
     double den = 2.0 * Math.cos(theta) * Math.cos(theta) * (D * Math.tan(theta) - dz);
-    return (den > 0.0) ? Math.sqrt(G * D * D / den) : Double.NaN;
+    return (den > 0.0) ? Math.sqrt(kG * D * D / den) : Double.NaN;
   }
 
   private static double clamp(double v, double lo, double hi) {
