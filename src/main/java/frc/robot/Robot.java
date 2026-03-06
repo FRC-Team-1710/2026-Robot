@@ -166,6 +166,7 @@ public class Robot extends DynamicTimedRobot {
 
     if (!m_hasAppliedTestingControls) {
       m_robotContainer.addTestingBindings();
+      m_hasAppliedTestingControls = true;
     }
 
     m_robotContainer.setAllSubsystemTesting(true);
