@@ -56,7 +56,7 @@ public class Shooter {
   private boolean m_didIntake;
 
   @Logged(importance = Importance.INFO)
-  private double m_FPS;
+  private double m_fps;
 
   @NotLogged private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
 
@@ -337,7 +337,7 @@ public class Shooter {
     int totalEvents = m_timestampQueues.get(0).size() + m_timestampQueues.get(1).size();
     if (totalEvents < 2) {
       // Not enough data points — keep last valid FPS or return 0
-      if (totalEvents == 0) this.m_FPS = 0.0;
+      if (totalEvents == 0) this.m_fps = 0.0;
       return;
     }
 
@@ -360,7 +360,7 @@ public class Shooter {
                 : m_timestampQueues.get(1).peekLast());
 
     double span = latest - earliest;
-    this.m_FPS = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
+    this.m_fps = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
   }
 
   /** Returns the current ball count based on the timestamps of fuel detection events. */
@@ -375,13 +375,13 @@ public class Shooter {
     this.m_timestampQueues.get(0).clear();
     this.m_timestampQueues.get(1).clear();
     this.m_ballCount = 0;
-    this.m_FPS = 0.0;
+    this.m_fps = 0.0;
   }
 
   /** Returns the current fuel per second (FPS) based on the timestamps of fuel detection events. */
   @Logged(importance = Importance.INFO)
   public double getFPS() {
-    return this.m_FPS;
+    return this.m_fps;
   }
 
   /** Returns whether the shooter is jammed. */
