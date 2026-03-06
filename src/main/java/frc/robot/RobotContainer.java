@@ -185,7 +185,6 @@ public class RobotContainer {
   }
 
   public void addTestingBindings() {
-
     driver.a().onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Intaking)));
 
     driver
@@ -211,7 +210,7 @@ public class RobotContainer {
                   shooter.setStateTesting(SHOOTER_STATE.TESTING);
                   feeder.setStateTesting(FEEDER_STATE.FEEDING);
                   indexer.setStateTesting(IndexStates.Indexing);
-                  intake.setState(IntakeStates.Jostle);
+                  intake.setStateTesting(IntakeStates.Jostle);
                 }))
         .onFalse(
             Commands.runOnce(
@@ -224,11 +223,7 @@ public class RobotContainer {
                   }
                 }));
 
-    driver
-        .povRight()
-        .onTrue(
-            Commands.runOnce(() -> intake.setState(IntakeStates.Up))
-                .onlyIf(driver.povRight().negate()));
+    driver.povRight().onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Up)));
   }
 
   public void setAllSubsystemTesting(boolean testing) {
