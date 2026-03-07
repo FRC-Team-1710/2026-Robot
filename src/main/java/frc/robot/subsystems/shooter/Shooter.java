@@ -106,6 +106,7 @@ public class Shooter {
     this.m_shouldOverride = false;
 
     SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
+    SmartDashboard.putNumber("speedTransferEfficiency", 0);
   }
 
   public void periodic() {
@@ -140,28 +141,40 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtLeftTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterLeft().inTolerance(this.getLeftVelocity()))
+        ? (ShooterMath2.currentSolution
+            .shooterLeft()
+            .flywheelOmega()
+            .isNear(this.getLeftVelocity(), RotationsPerSecond.of(20)))
         : true;
   }
 
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtLeftTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterLeft().inTolerance(this.getLeftHoodPosition()))
+        ? (ShooterMath2.currentSolution
+            .shooterLeft()
+            .hoodAngle()
+            .isNear(this.getLeftHoodPosition(), Degrees.of(3)))
         : true;
   }
 
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtRightTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterRight().inTolerance(this.getRightVelocity()))
+        ? (ShooterMath2.currentSolution
+            .shooterRight()
+            .flywheelOmega()
+            .isNear(this.getRightVelocity(), RotationsPerSecond.of(20)))
         : true;
   }
 
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtRightTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterRight().inTolerance(this.getRightHoodPosition()))
+        ? (ShooterMath2.currentSolution
+            .shooterRight()
+            .hoodAngle()
+            .isNear(this.getRightHoodPosition(), Degrees.of(3)))
         : true;
   }
 

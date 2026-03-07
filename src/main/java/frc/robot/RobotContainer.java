@@ -185,7 +185,10 @@ public class RobotContainer {
   }
 
   public void addTestingBindings() {
-    driver.a().onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Intaking)));
+    driver
+        .a()
+        .onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Intaking)))
+        .onFalse(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Down)));
 
     driver
         .b()
@@ -246,7 +249,7 @@ public class RobotContainer {
         .onTrue(
             superstructure
                 .setWantedStateCommand(WantedStates.Shoot)
-                .alongWith(superstructure.setAddableStateCommand(AddableStates.Jostle)));
+                .alongWith(superstructure.setAddableStateCommand(AddableStates.Intaking)));
 
     driver
         .leftTrigger()
@@ -315,18 +318,28 @@ public class RobotContainer {
 
     driver
         .povRight()
+        .and(superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+
+    driver
+        .povRight()
         .and(superstructure::currentStateUsesIntake)
         .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
 
     driver
         .povRight()
         .and(superstructure::currentStateUsesIntake)
-        .onFalse(superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .onFalse(superstructure.setAddableStateCommand(AddableStates.Intaking));
 
     driver
-        .povRight()
-        .and(superstructure::currentStateDoesntUseIntake)
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+        .povLeft()
+        .and(superstructure::currentStateUsesIntake)
+        .onTrue(superstructure.setAddableStateCommand(AddableStates.Jostle));
+
+    driver
+        .povLeft()
+        .and(superstructure::currentStateUsesIntake)
+        .onFalse(superstructure.setAddableStateCommand(AddableStates.Intaking));
 
     mech.rightBumper()
         .onTrue(

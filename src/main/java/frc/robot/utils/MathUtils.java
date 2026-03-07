@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.FieldConstants;
 
 public class MathUtils {
@@ -159,5 +160,30 @@ public class MathUtils {
 
   public static boolean inRange(double value, double min, double max) {
     return value >= min && value <= max;
+  }
+
+  public static double[] snapAngles = {
+    DrivetrainAutomationConstants.BumpDetection.kOtherRotation1.getDegrees(),
+    DrivetrainAutomationConstants.BumpDetection.kOtherRotation2.getDegrees(),
+    DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake1.getDegrees(),
+    DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake2.getDegrees()
+  };
+
+  public static double snapAngle(double angle) {
+    double closest = snapAngles[0];
+    double minDist = angularDistance(angle, snapAngles[0]);
+
+    for (int i = 1; i < snapAngles.length; i++) {
+      double dist = angularDistance(angle, snapAngles[i]);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = snapAngles[i];
+      }
+    }
+    return closest;
+  }
+
+  private static double angularDistance(double a, double b) {
+    return Math.abs(((a - b + 180) % 360 + 360) % 360 - 180);
   }
 }

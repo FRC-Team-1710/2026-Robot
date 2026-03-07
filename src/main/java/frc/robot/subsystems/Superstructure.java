@@ -46,7 +46,7 @@ public class Superstructure {
   private boolean didIntake = false;
 
   @Logged(importance = Importance.CRITICAL)
-  private AddableStates addableState = AddableStates.Jostle;
+  private AddableStates addableState = AddableStates.Intaking;
 
   public Superstructure(
       CommandXboxController driver,
@@ -131,6 +131,7 @@ public class Superstructure {
           switch (addableState) {
             case Jostle -> CurrentStates.Score;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
+            case Intaking -> CurrentStates.ScoreWhileIntaking;
           };
       case Intake -> CurrentStates.Intake;
       case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
@@ -140,6 +141,7 @@ public class Superstructure {
           switch (addableState) {
             case Jostle -> CurrentStates.ScoreAuto;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUpAuto;
+            case Intaking -> CurrentStates.ScoreWhileIntakingAuto;
           };
       case IntakeAuto -> CurrentStates.IntakeAuto;
       case IntakeAndShootAuto -> CurrentStates.ScoreWhileIntakingAuto;
@@ -198,11 +200,14 @@ public class Superstructure {
     shooter.setState(SHOOTER_STATE.IDLE);
     indexer.setState(IndexStates.Idle);
     feeder.setState(FEEDER_STATE.STOP);
+    if (drivetrain.fieldCentric.shouldRaiseIntake()) {
+      intake.setState(IntakeStates.Half);
+    }
   }
 
   private void score() {
-    // drivetrain.setRotationTarget(getRotationForScore());
-    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    drivetrain.setRotationTarget(getRotationForScore());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Jostle);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -217,8 +222,8 @@ public class Superstructure {
   }
 
   private void scoreWithIntakeUp() {
-    // drivetrain.setRotationTarget(getRotationForScore());
-    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    drivetrain.setRotationTarget(getRotationForScore());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -243,9 +248,9 @@ public class Superstructure {
   }
 
   private void scoreWhileIntaking() {
-    // drivetrain.setRotationTarget(getRotationForScore());
-    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Intaking);
+    drivetrain.setRotationTarget(getRotationForScore());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    intake.setState(IntakeStates.Down);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(
@@ -309,7 +314,7 @@ public class Superstructure {
   }
 
   private void scoreWhileIntakingAuto() {
-    intake.setState(IntakeStates.Intaking);
+    intake.setState(IntakeStates.Down);
     shooter.setState(SHOOTER_STATE.SHOOT);
     indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(
@@ -355,17 +360,25 @@ public class Superstructure {
   }
 
   @Logged(importance = Importance.CRITICAL)
+  public boolean driveAtTarget() {
+    return Math.abs(
+            drivetrain
+                .getRotation()
+                .minus(ShooterMath2.currentSolution.robotHeading().plus(Rotation2d.k180deg))
+                .getDegrees())
+        <= 5;
+  }
+
+  @Logged(importance = Importance.CRITICAL)
   public boolean leftAtTarget() {
-    return shooter.isAtLeftTargetVelocity()
-        && shooter.isHoodAtLeftTargetAngle()
-        && ShooterMath2.currentSolution.shooterLeft().inTolerance(drivetrain.getRotation());
+    return shooter.isAtLeftTargetVelocity() && shooter.isHoodAtLeftTargetAngle() && driveAtTarget();
   }
 
   @Logged(importance = Importance.CRITICAL)
   public boolean rightAtTarget() {
     return shooter.isAtRightTargetVelocity()
         && shooter.isHoodAtRightTargetAngle()
-        && ShooterMath2.currentSolution.shooterRight().inTolerance(drivetrain.getRotation());
+        && driveAtTarget();
   }
 
   @Logged(importance = Importance.CRITICAL)
@@ -419,6 +432,7 @@ public class Superstructure {
   }
 
   public enum AddableStates {
+    Intaking(),
     Jostle(),
     IntakeUp(),
   }

@@ -94,17 +94,12 @@ public class ShooterIOCTRE implements ShooterIO {
     hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    hoodConfig.Slot0.kP = 300;
-    hoodConfig.Slot0.kD = 3.5;
-    hoodConfig.Slot0.kG = 0.3;
+    hoodConfig.Slot0.kP = 400;
+    hoodConfig.Slot0.kD = 4;
+    hoodConfig.Slot0.kG = 0.4;
     hoodConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
     hoodConfig.Feedback.SensorToMechanismRatio = 26.666666;
-
-    hoodConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.HOOD_STATOR_CURRENT_LIMIT;
-    hoodConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.HOOD_SUPPLY_CURRENT_LIMIT;
-    hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_leftHood, hoodConfig, 5);
     TalonFXUtil.applyConfigWithRetries(this.m_rightHood, hoodConfig, 5);

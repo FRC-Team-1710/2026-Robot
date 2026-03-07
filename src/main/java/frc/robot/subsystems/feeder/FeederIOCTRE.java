@@ -32,16 +32,13 @@ public class FeederIOCTRE implements FeederIO {
   private final DutyCycleOut m_rightPercentOutput = new DutyCycleOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
-    this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
-    this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_FOLLOWER_MOTOR);
+    this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
+    this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_FOLLOWER_MOTOR);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-
-    config.CurrentLimits.StatorCurrentLimit = 40;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
     TalonFXUtil.applyConfigWithRetries(this.m_feederRight, config, 2);
@@ -62,7 +59,7 @@ public class FeederIOCTRE implements FeederIO {
   }
 
   public void setLeft(double percent) {
-    this.m_feederLeft.setControl(m_leftPercentOutput.withOutput(percent));
+    this.m_feederLeft.setControl(m_leftPercentOutput.withOutput(-percent));
   }
 
   public void setRight(double percent) {
