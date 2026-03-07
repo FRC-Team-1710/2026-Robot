@@ -5,6 +5,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.VisionConstants;
 import java.util.*;
 import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
@@ -51,6 +52,22 @@ public class VisionFuel extends SubsystemBase {
     publishDashboard(robotPose);
   }
 
+  private static double getBoundingBoxCenterX(PhotonTrackedTarget target) {
+    return (target.getMinAreaRectCorners().get(0).x
+            + target.getMinAreaRectCorners().get(1).x
+            + target.getMinAreaRectCorners().get(2).x
+            + target.getMinAreaRectCorners().get(3).x)
+        / 4.0;
+  }
+
+  private static double getBoundingBoxCenterY(PhotonTrackedTarget target) {
+    return (target.getMinAreaRectCorners().get(0).y
+            + target.getMinAreaRectCorners().get(1).y
+            + target.getMinAreaRectCorners().get(2).y
+            + target.getMinAreaRectCorners().get(3).y)
+        / 4.0;
+  }
+
   public static List<Pose2d> estimateSpherePoses(
       Pose2d robotPose, PhotonCamera cam, Transform3d robotToCam) {
     List<Pose2d> results = new ArrayList<>();
@@ -76,22 +93,16 @@ public class VisionFuel extends SubsystemBase {
 
       double yawRad =
           Units.degreesToRadians(
-              (178.37 / 4)
-                  - ((target.getMinAreaRectCorners().get(0).x
-                              + target.getMinAreaRectCorners().get(1).x)
-                          / 2)
-                      / 960
-                      * 178.37
-                      / 2);
+              (VisionConstants.kFOVHorizontal / 2) // Middle align
+                  - getBoundingBoxCenterX(target)
+                      / VisionConstants.kResolutionX
+                      * VisionConstants.kFOVHorizontal);
       double pitchRad =
           -Units.degreesToRadians(
-              (177.74 / 4)
-                  - ((target.getMinAreaRectCorners().get(1).y
-                              + target.getMinAreaRectCorners().get(2).y)
-                          / 2)
-                      / 720
-                      * 177.74
-                      / 2);
+              (VisionConstants.kFOVVertical / 2) // Middle align
+                  - getBoundingBoxCenterY(target)
+                      / VisionConstants.kResolutionY
+                      * VisionConstants.kFOVVertical);
 
       double cosPitch = Math.cos(pitchRad);
       Translation3d rayCamera =

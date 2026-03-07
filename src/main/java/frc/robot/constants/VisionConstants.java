@@ -111,4 +111,10 @@ public class VisionConstants {
   private VisionConstants() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
+
+  // ==================== Camera Configurations ====================
+  public static final double kFOVHorizontal = 178.37; // Field of view in degrees
+  public static final double kFOVVertical = 177.74; // Field of view in degrees
+  public static final int kResolutionX = 640; // Camera resolution in pixels (horizontal)
+  public static final int kResolutionY = 720; // Camera resolution in pixels (vertical)
 }
