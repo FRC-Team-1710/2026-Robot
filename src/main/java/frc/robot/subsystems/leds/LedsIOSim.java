@@ -12,6 +12,7 @@ public class LedsIOSim implements LedsIO {
     this.m_data = 0;
   }
 
+  /** {@inheritDoc} */
   public void update() {
     boolean[] array = new boolean[8];
 
@@ -23,28 +24,35 @@ public class LedsIOSim implements LedsIO {
     Robot.telemetry().log("Led Bits", array);
   }
 
+  /** {@inheritDoc} */
   public void setValue(LED_STATE pState, boolean pValue) {
     int offset = 0;
     switch (pState) {
       case AUTOS:
-        offset = 8;
-        break;
-
-      case BROWNOUT:
         offset = 7;
         break;
 
-      case ATTACKING:
+      case BROWNOUT:
         offset = 6;
         break;
+
+      case ATTACKING:
+        offset = 5;
+        break;
     }
-    this.m_data = this.m_data | (1 << offset);
+
+    if (pValue) {
+      this.m_data |= (1 << offset);
+    } else {
+      this.m_data &= ~(1 << offset);
+    }
   }
 
+  /** {@inheritDoc} */
   public void setFlyWheelCharge(double pPercentage) {
-    int formatedPercent = (int) (30 * pPercentage);
+    int formattedPercent = (int) (30 * pPercentage);
     for (int i = 0; i < 5; i++) {
-      this.m_data = formatedPercent | (1 << i);
+      this.m_data = formattedPercent | (1 << i);
     }
   }
 }

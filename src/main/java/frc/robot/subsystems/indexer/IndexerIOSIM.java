@@ -13,30 +13,30 @@ import frc.robot.utils.MechanismUtil.IndexerVisualSim;
 @Logged
 public class IndexerIOSIM implements IndexerIO {
 
-  private final IndexerVisualSim IndexerMotorAlphaSim;
-  private final IndexerVisualSim IndexerMotorBetaSim;
+  private final IndexerVisualSim m_indexerMotorAlphaSim;
+  private final IndexerVisualSim m_indexerMotorBetaSim;
 
   @SuppressWarnings("unused")
-  private final DCMotor gearbox;
+  private final DCMotor m_gearbox;
 
-  private double speed = 0.0;
+  private double m_speed = 0.0;
 
   public IndexerIOSIM() {
-    gearbox = DCMotor.getKrakenX60(1);
-    this.IndexerMotorAlphaSim = new IndexerVisualSim("Indexer", 0.125);
-    this.IndexerMotorBetaSim = new IndexerVisualSim("Indexer", 0.125);
+    m_gearbox = DCMotor.getKrakenX60(1);
+    this.m_indexerMotorAlphaSim = new IndexerVisualSim("Indexer", 0.125);
+    this.m_indexerMotorBetaSim = new IndexerVisualSim("Indexer", 0.125);
   }
 
   public void setIndexMotor(double speed) {
-    this.speed = speed;
+    this.m_speed = speed;
   }
 
   public void update() {
-    IndexerMotorAlphaSim.updateIndexer(speed * 20);
-    Robot.telemetry().log("Indexer Alpha Speed", speed);
-    SmartDashboard.putData("Indexer Alpha Visual", this.IndexerMotorAlphaSim.getMechanism());
-    IndexerMotorBetaSim.updateIndexer(speed * 20);
-    Robot.telemetry().log("Indexer Beta Speed", speed);
-    SmartDashboard.putData("Indexer Beta Visual", this.IndexerMotorBetaSim.getMechanism());
+    m_indexerMotorAlphaSim.updateIndexer(m_speed * 20);
+    Robot.telemetry().log("Indexer Alpha Speed", m_speed);
+    SmartDashboard.putData("Indexer Alpha Visual", this.m_indexerMotorAlphaSim.getMechanism());
+    m_indexerMotorBetaSim.updateIndexer(m_speed * 20);
+    Robot.telemetry().log("Indexer Beta Speed", m_speed);
+    SmartDashboard.putData("Indexer Beta Visual", this.m_indexerMotorBetaSim.getMechanism());
   }
 }

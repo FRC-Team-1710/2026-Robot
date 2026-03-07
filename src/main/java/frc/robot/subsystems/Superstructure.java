@@ -27,27 +27,38 @@ import frc.robot.utils.shooterMath.ShooterMath2;
 
 @Logged
 public class Superstructure {
-  @NotLogged private CommandXboxController driver;
-  @NotLogged private CommandXboxController mech;
-  @NotLogged private CommandSwerveDrivetrain drivetrain;
-  @NotLogged private Intake intake;
-  @NotLogged private Shooter shooter;
-  @NotLogged private Indexer indexer;
-  @NotLogged private Feeder feeder;
-  @NotLogged private Leds leds;
+  @NotLogged private CommandXboxController m_driver;
+  @NotLogged private CommandXboxController m_mech;
+  @NotLogged private CommandSwerveDrivetrain m_drivetrain;
+  @NotLogged private Intake m_intake;
+  @NotLogged private Shooter m_shooter;
+  @NotLogged private Indexer m_indexer;
+  @NotLogged private Feeder m_feeder;
+  @NotLogged private Leds m_leds;
 
   @Logged(importance = Importance.CRITICAL)
-  private WantedStates wantedState = WantedStates.Default;
+  private WantedStates m_wantedState = WantedStates.Default;
 
   @Logged(importance = Importance.CRITICAL)
-  private CurrentStates currentState = CurrentStates.Idle;
+  private CurrentStates m_currentState = CurrentStates.Idle;
 
   @Logged(importance = Importance.INFO)
-  private boolean didIntake = false;
+  private boolean m_didIntake = false;
 
   @Logged(importance = Importance.CRITICAL)
-  private AddableStates addableState = AddableStates.Jostle;
+  private AddableStates m_addableState = AddableStates.Jostle;
 
+  /**
+   * Constructs the superstructure with all subsystem references.
+   *
+   * @param driver the driver controller
+   * @param mech the mechanism controller
+   * @param drivetrain the swerve drivetrain
+   * @param intake the intake subsystem
+   * @param shooter the shooter subsystem
+   * @param indexer the indexer subsystem
+   * @param feeder the feeder subsystem
+   */
   public Superstructure(
       CommandXboxController driver,
       CommandXboxController mech,
@@ -57,21 +68,22 @@ public class Superstructure {
       Indexer indexer,
       Feeder feeder,
       Leds leds) {
-    this.driver = driver;
-    this.mech = mech;
-    this.drivetrain = drivetrain;
-    this.intake = intake;
-    this.shooter = shooter;
-    this.indexer = indexer;
-    this.feeder = feeder;
-    this.leds = leds;
+    this.m_driver = driver;
+    this.m_mech = mech;
+    this.m_drivetrain = drivetrain;
+    this.m_intake = intake;
+    this.m_shooter = shooter;
+    this.m_indexer = indexer;
+    this.m_feeder = feeder;
+    this.m_leds = leds;
   }
 
+  /** Runs periodic logic for state transitions and subsystem coordination. */
   public void periodic() {
-    shooter.setGoingTowardsAllianceZone(drivetrain.isGoingTowardsAllianceZone());
-    shooter.setDidIntake(didIntake);
+    m_shooter.setGoingTowardsAllianceZone(m_drivetrain.isGoingTowardsAllianceZone());
+    m_shooter.setDidIntake(m_didIntake);
 
-    currentState = handleStateTransitions();
+    m_currentState = handleStateTransitions();
     applyStates();
 
     applyRumble();
@@ -89,8 +101,9 @@ public class Superstructure {
     Robot.telemetry().log("MatchState/IsActive", MatchState.isActive());
   }
 
+  /** Returns whether the current state uses the intake. */
   public boolean currentStateUsesIntake() {
-    return switch (currentState) {
+    return switch (m_currentState) {
       case Score -> true;
       case ScoreWhileIntaking -> true;
       case ScoreWithIntakeUp -> true;
@@ -103,17 +116,19 @@ public class Superstructure {
     };
   }
 
+  /** Returns whether the current state does not use the intake. */
   public boolean currentStateDoesntUseIntake() {
     return !currentStateUsesIntake();
   }
 
+  /** Applies rumble feedback to the mechanism controller based on match state. */
   public void applyRumble() {
     var timeUntilRumble = MatchState.timeTillActive().plus(MatchState.timeTillInactive());
     if (!DriverStation.isAutonomous() && MatchState.autonomousWinnerIsRed.isPresent()) {
       if (!timeUntilRumble.isEquivalent(Seconds.of(0))) {
-        mech.setRumble(RumbleType.kBothRumble, timeUntilRumble.in(Seconds) < 2.5 ? 1 : 0);
+        m_mech.setRumble(RumbleType.kBothRumble, timeUntilRumble.in(Seconds) < 2.5 ? 1 : 0);
       } else {
-        mech.setRumble(RumbleType.kBothRumble, 0);
+        m_mech.setRumble(RumbleType.kBothRumble, 0);
       }
     }
   }
@@ -125,10 +140,10 @@ public class Superstructure {
    */
   @NotLogged
   private CurrentStates handleStateTransitions() {
-    return switch (wantedState) {
+    return switch (m_wantedState) {
       case Default -> CurrentStates.Idle;
       case Shoot ->
-          switch (addableState) {
+          switch (m_addableState) {
             case Jostle -> CurrentStates.Score;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
           };
@@ -137,7 +152,7 @@ public class Superstructure {
       case Climb -> CurrentStates.Climb;
       case DefaultAuto -> CurrentStates.IdleAuto;
       case ShootAuto ->
-          switch (addableState) {
+          switch (m_addableState) {
             case Jostle -> CurrentStates.ScoreAuto;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUpAuto;
           };
@@ -150,7 +165,7 @@ public class Superstructure {
 
   /** Applies the current states to the subsystems */
   private void applyStates() {
-    switch (currentState) {
+    switch (m_currentState) {
       case Idle:
         idle();
         break;
@@ -194,186 +209,195 @@ public class Superstructure {
   }
 
   private void idle() {
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
   }
 
   private void score() {
     // drivetrain.setRotationTarget(getRotationForScore());
     // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Jostle);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_intake.setState(IntakeStates.Jostle);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTargetWithWait()
             ? FEEDER_STATE.FEEDING
             : leftAtTargetWithWait()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void scoreWithIntakeUp() {
     // drivetrain.setRotationTarget(getRotationForScore());
     // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Up);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_intake.setState(IntakeStates.Up);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTargetWithWait()
             ? FEEDER_STATE.FEEDING
             : leftAtTargetWithWait()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void intake() {
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    intake.setState(IntakeStates.Intaking);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
+    m_intake.setState(IntakeStates.Intaking);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
 
-    didIntake = true;
+    m_didIntake = true;
   }
 
   private void scoreWhileIntaking() {
     // drivetrain.setRotationTarget(getRotationForScore());
     // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Intaking);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_intake.setState(IntakeStates.Intaking);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTargetWithWait()
             ? FEEDER_STATE.FEEDING
             : leftAtTargetWithWait()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void climb() {
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
   }
 
   private void idleAuto() {
-    feeder.setState(FEEDER_STATE.STOP);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
   }
 
   private void scoreAuto() {
-    intake.setState(IntakeStates.Jostle);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_intake.setState(IntakeStates.Jostle);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTarget()
             ? FEEDER_STATE.FEEDING
             : leftAtTarget()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void scoreWithIntakeUpAuto() {
-    intake.setState(IntakeStates.Up);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_intake.setState(IntakeStates.Up);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTarget()
             ? FEEDER_STATE.FEEDING
             : leftAtTarget()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void intakeAuto() {
-    intake.setState(IntakeStates.Intaking);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    m_intake.setState(IntakeStates.Intaking);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
 
-    didIntake = true;
+    m_didIntake = true;
   }
 
   private void scoreWhileIntakingAuto() {
-    intake.setState(IntakeStates.Intaking);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_intake.setState(IntakeStates.Intaking);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTarget()
             ? FEEDER_STATE.FEEDING
             : leftAtTarget()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void climbAuto() {
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
   }
 
   private void override() {
-    intake.setState(addableState == AddableStates.IntakeUp ? IntakeStates.Up : IntakeStates.Jostle);
-    indexer.setState(IndexStates.Indexing);
-    feeder.setState(FEEDER_STATE.FEEDING);
+    m_intake.setState(
+        m_addableState == AddableStates.IntakeUp ? IntakeStates.Up : IntakeStates.Jostle);
+    m_indexer.setState(IndexStates.Indexing);
+    m_feeder.setState(FEEDER_STATE.FEEDING);
   }
 
+  /** Returns whether all shooters are at their targets. */
   @Logged(importance = Importance.INFO)
   public boolean allAtTarget() {
     return leftAtTarget() && rightAtTarget();
   }
 
+  /** Returns whether all shooters are at their targets with wait. */
   @Logged(importance = Importance.INFO)
   public boolean allAtTargetWithWait() {
     return leftAtTargetWithWait() && rightAtTargetWithWait();
   }
 
+  /** Returns whether any shooter is at its target. */
   @NotLogged
   public boolean anyAtTarget() {
     return leftAtTarget() || rightAtTarget();
   }
 
+  /** Returns whether any shooter is at its target with wait. */
   @NotLogged
   public boolean anyAtTargetWithWait() {
     return leftAtTargetWithWait() || rightAtTargetWithWait();
   }
 
+  /** Returns whether the left shooter is at its target. */
   @Logged(importance = Importance.CRITICAL)
   public boolean leftAtTarget() {
-    return shooter.isAtLeftTargetVelocity()
-        && shooter.isHoodAtLeftTargetAngle()
-        && ShooterMath2.currentSolution.shooterLeft().inTolerance(drivetrain.getRotation());
+    return m_shooter.isAtLeftTargetVelocity()
+        && m_shooter.isHoodAtLeftTargetAngle()
+        && ShooterMath2.currentSolution.shooterLeft().inTolerance(m_drivetrain.getRotation());
   }
 
+  /** Returns whether the right shooter is at its target. */
   @Logged(importance = Importance.CRITICAL)
   public boolean rightAtTarget() {
-    return shooter.isAtRightTargetVelocity()
-        && shooter.isHoodAtRightTargetAngle()
-        && ShooterMath2.currentSolution.shooterRight().inTolerance(drivetrain.getRotation());
+    return m_shooter.isAtRightTargetVelocity()
+        && m_shooter.isHoodAtRightTargetAngle()
+        && ShooterMath2.currentSolution.shooterRight().inTolerance(m_drivetrain.getRotation());
   }
 
+  /** Returns whether the left shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
   public boolean leftAtTargetWithWait() {
     return leftAtTarget()
         && MatchState.canShoot(ShooterMath2.currentSolution.shooterLeft().tof().in(Seconds));
   }
 
+  /** Returns whether the right shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
   public boolean rightAtTargetWithWait() {
     return rightAtTarget()
@@ -418,6 +442,7 @@ public class Superstructure {
     Override(),
   }
 
+  /** The addable states of superstructure */
   public enum AddableStates {
     Jostle(),
     IntakeUp(),
@@ -427,14 +452,14 @@ public class Superstructure {
    * @param state the wanted state to set
    */
   public void setWantedState(WantedStates state) {
-    wantedState = state;
+    m_wantedState = state;
   }
 
   /**
    * @param state the addable state to set
    */
   public void setAddableState(AddableStates state) {
-    addableState = state;
+    m_addableState = state;
   }
 
   /**
@@ -453,8 +478,9 @@ public class Superstructure {
     return Commands.runOnce(() -> setAddableState(state)).ignoringDisable(true);
   }
 
+  /** Returns the current state of the superstructure. */
   @NotLogged
   public CurrentStates getCurrentState() {
-    return currentState;
+    return m_currentState;
   }
 }

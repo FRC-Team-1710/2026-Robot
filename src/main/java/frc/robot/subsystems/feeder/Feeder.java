@@ -22,12 +22,19 @@ public class Feeder {
 
   @NotLogged private final TimesConsumer m_timesConsumer;
 
+  /**
+   * Constructs a new Feeder.
+   *
+   * @param io the feeder IO implementation
+   * @param consumer the times consumer for dynamic scheduling
+   */
   public Feeder(FeederIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
     this.m_currentState = FEEDER_STATE.STOP;
   }
 
+  /** Runs periodic feeder logic based on the current state. */
   public void periodic() {
     switch (this.m_currentState) {
       case FEEDING_LEFT:
@@ -71,6 +78,11 @@ public class Feeder {
     }
   }
 
+  /**
+   * Sets the current feeder state.
+   *
+   * @param state the feeder state to set
+   */
   public void setState(FEEDER_STATE state) {
     if (m_testing) return;
     if (!this.m_currentState
@@ -81,6 +93,11 @@ public class Feeder {
     this.m_currentState = state;
   }
 
+  /**
+   * Sets the current feeder state for testing mode only.
+   *
+   * @param state the feeder state to set
+   */
   public void setStateTesting(FEEDER_STATE state) {
     if (!m_testing) return;
     if (!this.m_currentState
@@ -91,10 +108,16 @@ public class Feeder {
     this.m_currentState = state;
   }
 
+  /**
+   * Enables or disables testing mode.
+   *
+   * @param testing true to enable testing mode
+   */
   public void setTesting(boolean testing) {
     this.m_testing = testing;
   }
 
+  /** Returns the current feeder state. */
   @NotLogged
   public FEEDER_STATE getState() {
     return this.m_currentState;

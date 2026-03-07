@@ -25,28 +25,28 @@ import org.photonvision.targeting.*;
  */
 public class Vision implements Subsystem {
 
-  private final PhotonCamera camera;
+  private final PhotonCamera m_camera;
 
-  private final PhotonPoseEstimator poseEstimator;
+  private final PhotonPoseEstimator m_poseEstimator;
 
-  private final CommandSwerveDrivetrain drivetrain;
+  private final CommandSwerveDrivetrain m_drivetrain;
 
   // === Vision state calculated each cycle ===
   // These values are updated from PhotonVision and optionally replayed in simulation.
 
-  private Pose2d robotPose = new Pose2d();
+  private Pose2d m_robotPose = new Pose2d();
 
-  private double robotPoseTimestamp = 0.0;
+  private double m_robotPoseTimestamp = 0.0;
 
-  private int tagCount = 0;
+  private int m_tagCount = 0;
 
-  private double avgTagDistance = 0.0;
+  private double m_avgTagDistance = 0.0;
 
-  private double ambiguity = 0.0;
+  private double m_ambiguity = 0.0;
 
   private final String m_logPath;
 
-  private final HootAutoReplay autoReplay;
+  private final HootAutoReplay m_autoReplay;
 
   /**
    * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
@@ -57,37 +57,37 @@ public class Vision implements Subsystem {
 
     m_logPath = cameraName + "/";
 
-    this.drivetrain = drivetrain;
+    this.m_drivetrain = drivetrain;
 
-    camera = new PhotonCamera(cameraName);
+    m_camera = new PhotonCamera(cameraName);
 
-    poseEstimator =
+    m_poseEstimator =
         new PhotonPoseEstimator(
             FieldConstants.kAprilTags, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
 
-    autoReplay =
+    m_autoReplay =
         new HootAutoReplay()
             .withStruct(
                 "PhotonVision/" + cameraName + "/RobotPose",
                 Pose2d.struct,
-                () -> robotPose,
-                val -> robotPose = val.value)
+                () -> m_robotPose,
+                val -> m_robotPose = val.value)
             .withDouble(
                 "PhotonVision/" + cameraName + "/RobotPoseTimestamp",
-                () -> robotPoseTimestamp,
-                val -> robotPoseTimestamp = val.value)
+                () -> m_robotPoseTimestamp,
+                val -> m_robotPoseTimestamp = val.value)
             .withInteger(
                 "PhotonVision/" + cameraName + "/TagCount",
-                () -> tagCount,
-                val -> tagCount = val.value.intValue())
+                () -> m_tagCount,
+                val -> m_tagCount = val.value.intValue())
             .withDouble(
                 "PhotonVision/" + cameraName + "/AvgTagDistance",
-                () -> avgTagDistance,
-                val -> avgTagDistance = val.value)
+                () -> m_avgTagDistance,
+                val -> m_avgTagDistance = val.value)
             .withDouble(
                 "PhotonVision/" + cameraName + "/Ambiguity",
-                () -> ambiguity,
-                val -> ambiguity = val.value)
+                () -> m_ambiguity,
+                val -> m_ambiguity = val.value)
             .withTimestampReplay();
   }
 
@@ -100,7 +100,7 @@ public class Vision implements Subsystem {
       fetchInputs();
     }
 
-    autoReplay.update();
+    m_autoReplay.update();
     processInputs();
   }
 
@@ -112,14 +112,14 @@ public class Vision implements Subsystem {
    */
   private void fetchInputs() {
 
-    PhotonPipelineResult result = camera.getLatestResult();
+    PhotonPipelineResult result = m_camera.getLatestResult();
 
     if (!result.hasTargets()) {
       reset();
       return;
     }
 
-    Optional<EstimatedRobotPose> estimate = poseEstimator.update(result);
+    Optional<EstimatedRobotPose> estimate = m_poseEstimator.update(result);
 
     if (estimate.isEmpty()) {
       reset();
@@ -130,48 +130,48 @@ public class Vision implements Subsystem {
 
     Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
 
-    robotPose = visionEstimate.estimatedPose.toPose2d();
-    robotPoseTimestamp = visionEstimate.timestampSeconds;
-    tagCount = result.getTargets().size();
+    m_robotPose = visionEstimate.estimatedPose.toPose2d();
+    m_robotPoseTimestamp = visionEstimate.timestampSeconds;
+    m_tagCount = result.getTargets().size();
 
-    avgTagDistance =
+    m_avgTagDistance =
         result.getTargets().stream()
             .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
             .average()
             .orElse(0.0);
 
-    ambiguity = result.getBestTarget().getPoseAmbiguity();
+    m_ambiguity = result.getBestTarget().getPoseAmbiguity();
   }
 
   private void processInputs() {
 
-    if (tagCount == 0 || robotPoseTimestamp == 0.0) {
+    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0) {
       return;
     }
     // Reject single-tag solutions with high ambiguity.
     // Multi-tag solutions are inherently more stable.
-    if (tagCount == 1 && ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
+    if (m_tagCount == 1 && m_ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
       return;
     }
     // Dynamically scale measurement
     // More tags = more trust
     // Closer = more trust
     // Larger std dev = less influence in pose estimator.
-    double xyStdDev = VisionConstants.BASE_XY_STD_DEV / tagCount;
-    double thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / tagCount;
+    double xyStdDev = VisionConstants.BASE_XY_STD_DEV / m_tagCount;
+    double thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / m_tagCount;
     // Squared distance scaling penalizes far-away tag estimates heavily,
     // since pose error grows nonlinearly with distance.
-    double distanceScale = Math.pow(avgTagDistance, 2);
+    double distanceScale = Math.pow(m_avgTagDistance, 2);
 
-    Robot.telemetry().log(m_logPath + "AcceptedPose", robotPose, Pose2d.struct);
+    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
 
     xyStdDev *= distanceScale;
     thetaStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
-    drivetrain.addVisionMeasurement(
-        new Pose2d(robotPose.getTranslation(), drivetrain.getRotation()),
-        robotPoseTimestamp,
+    m_drivetrain.addVisionMeasurement(
+        new Pose2d(m_robotPose.getTranslation(), m_drivetrain.getRotation()),
+        m_robotPoseTimestamp,
         VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
@@ -180,30 +180,35 @@ public class Vision implements Subsystem {
    * from being reused.
    */
   private void reset() {
-    robotPose = new Pose2d();
-    robotPoseTimestamp = 0.0;
-    tagCount = 0;
-    avgTagDistance = 0.0;
-    ambiguity = 0.0;
+    m_robotPose = new Pose2d();
+    m_robotPoseTimestamp = 0.0;
+    m_tagCount = 0;
+    m_avgTagDistance = 0.0;
+    m_ambiguity = 0.0;
   }
 
+  /** Returns the estimated robot pose. */
   public Pose2d getRobotPose() {
-    return robotPose;
+    return m_robotPose;
   }
 
+  /** Returns the timestamp of the robot pose estimate. */
   public double getRobotPoseTimestamp() {
-    return robotPoseTimestamp;
+    return m_robotPoseTimestamp;
   }
 
+  /** Returns the number of detected AprilTags. */
   public int getTagCount() {
-    return tagCount;
+    return m_tagCount;
   }
 
+  /** Returns the average distance to detected tags. */
   public double getAvgTagDistance() {
-    return avgTagDistance;
+    return m_avgTagDistance;
   }
 
+  /** Returns the pose ambiguity of the best target. */
   public double getAmbiguity() {
-    return ambiguity;
+    return m_ambiguity;
   }
 }

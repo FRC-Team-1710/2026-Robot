@@ -60,52 +60,57 @@ import java.util.Arrays;
 
 @Logged
 public class RobotContainer {
-  private final CommandXboxController driver = new CommandXboxController(0);
-  private final CommandXboxController mech = new CommandXboxController(1);
+  private final CommandXboxController m_driver = new CommandXboxController(0);
+  private final CommandXboxController m_mech = new CommandXboxController(1);
 
   public FuelSim fuelSim;
 
-  private final AutosChooser autoChooser;
+  private final AutosChooser m_autoChooser;
 
   @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
 
   /* Create subsystems (uses simulated versions when running in simulation) */
   @Logged(importance = Importance.CRITICAL)
-  private final Intake intake;
+  private final Intake m_intake;
 
   @Logged(importance = Importance.CRITICAL)
-  private final Shooter shooter;
+  private final Shooter m_shooter;
 
   @Logged(importance = Importance.CRITICAL)
-  private final Indexer indexer;
+  private final Indexer m_indexer;
 
   @Logged(importance = Importance.CRITICAL)
-  private final Feeder feeder;
+  private final Feeder m_feeder;
 
   @Logged(importance = Importance.CRITICAL)
-  private final Leds leds;
+  private final Leds m_leds;
 
   // Should add logging soon
-  @NotLogged private final Vision[] cameras;
+  @NotLogged private final Vision[] m_cameras;
 
   @Logged(importance = Importance.CRITICAL)
-  private final Superstructure superstructure;
+  private final Superstructure m_superstructure;
 
+  /**
+   * Constructs the robot container, initializing all subsystems and configuring bindings.
+   *
+   * @param consumer the times consumer for dynamic scheduling
+   */
   public RobotContainer(TimesConsumer consumer) {
     drivetrain = TunerConstants.createDrivetrain();
-    drivetrain.setController(driver);
+    drivetrain.setController(m_driver);
 
     switch (Mode.currentMode) {
       case REAL:
-        intake = new Intake(new IntakeIOCTRE(), consumer);
-        shooter = new Shooter(new ShooterIOCTRE(), consumer);
-        feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer =
-            new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIOArduino(), shooter);
+        m_intake = new Intake(new IntakeIOCTRE(), consumer);
+        m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        m_feeder = new Feeder(new FeederIOCTRE(), consumer);
+        m_indexer =
+            new Indexer(new IndexerIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIOArduino(), m_shooter);
 
-        cameras =
+        m_cameras =
             // Create a stream of Vision objects from the camera configs
             Arrays.stream(VisionConstants.kPoseCameraConfigs)
                 // For each config, create a new Vision subsystem with the appropriate arguments
@@ -121,28 +126,29 @@ public class RobotContainer {
         break;
 
       case SIMULATION:
-        intake = new Intake(new IntakeIOSIM(), consumer);
-        shooter = new Shooter(new ShooterIOSIM(), consumer);
-        feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer =
-            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIOSim(), shooter);
-        cameras = new Vision[0];
+        m_intake = new Intake(new IntakeIOSIM(), consumer);
+        m_shooter = new Shooter(new ShooterIOSIM(), consumer);
+        m_feeder = new Feeder(new FeederIOSIM(), consumer);
+        m_indexer =
+            new Indexer(new IndexerIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIOSim(), m_shooter);
+        m_cameras = new Vision[0];
         break;
 
       default:
-        intake = new Intake(new IntakeIO() {}, consumer);
-        shooter = new Shooter(new ShooterIO() {}, consumer);
-        feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer =
-            new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIO() {}, shooter);
-        cameras = new Vision[0];
+        m_intake = new Intake(new IntakeIO() {}, consumer);
+        m_shooter = new Shooter(new ShooterIO() {}, consumer);
+        m_feeder = new Feeder(new FeederIO() {}, consumer);
+        m_indexer =
+            new Indexer(new IndexerIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIO() {}, m_shooter);
+        m_cameras = new Vision[0];
         break;
     }
 
-    superstructure =
-        new Superstructure(driver, mech, drivetrain, intake, shooter, indexer, feeder, leds);
+    m_superstructure =
+        new Superstructure(
+            m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder, m_leds);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
@@ -165,8 +171,8 @@ public class RobotContainer {
           -length / 2,
           length / 2,
           () ->
-              superstructure.getCurrentState() == CurrentStates.Intake
-                  || superstructure.getCurrentState() == CurrentStates.IntakeAuto);
+              m_superstructure.getCurrentState() == CurrentStates.Intake
+                  || m_superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
 
@@ -174,176 +180,186 @@ public class RobotContainer {
 
       fuelSim.enableAirResistance();
 
-      fuelSim.shouldShoot = () -> driver.rightTrigger().getAsBoolean();
+      fuelSim.shouldShoot = () -> m_driver.rightTrigger().getAsBoolean();
 
-      shooter.setFuelSim(fuelSim);
+      m_shooter.setFuelSim(fuelSim);
     }
 
-    autoChooser = new AutosChooser(superstructure, drivetrain, shooter);
+    m_autoChooser = new AutosChooser(m_superstructure, drivetrain, m_shooter);
 
     configureBindings();
   }
 
+  /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
-    driver.a().onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Intaking)));
+    m_driver.a().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)));
 
-    driver
+    m_driver
         .b()
-        .onTrue(Commands.runOnce(() -> indexer.setStateTesting(IndexStates.Indexing)))
-        .onFalse(Commands.runOnce(() -> indexer.setStateTesting(IndexStates.Idle)));
+        .onTrue(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Indexing)))
+        .onFalse(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Idle)));
 
-    driver
+    m_driver
         .x()
-        .onTrue(Commands.runOnce(() -> feeder.setStateTesting(FEEDER_STATE.FEEDING)))
-        .onFalse(Commands.runOnce(() -> feeder.setStateTesting(FEEDER_STATE.STOP)));
+        .onTrue(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.FEEDING)))
+        .onFalse(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.STOP)));
 
-    driver
+    m_driver
         .y()
-        .onTrue(Commands.runOnce(() -> shooter.setStateTesting(SHOOTER_STATE.CORNER)))
-        .onFalse(Commands.runOnce(() -> shooter.setStateTesting(SHOOTER_STATE.IDLE)));
+        .onTrue(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.CORNER)))
+        .onFalse(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.IDLE)));
 
-    driver
+    m_driver
         .rightTrigger()
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  shooter.setStateTesting(SHOOTER_STATE.TESTING);
-                  feeder.setStateTesting(FEEDER_STATE.FEEDING);
-                  indexer.setStateTesting(IndexStates.Indexing);
-                  intake.setStateTesting(IntakeStates.Jostle);
+                  m_shooter.setStateTesting(SHOOTER_STATE.TESTING);
+                  m_feeder.setStateTesting(FEEDER_STATE.FEEDING);
+                  m_indexer.setStateTesting(IndexStates.Indexing);
+                  m_intake.setStateTesting(IntakeStates.Jostle);
                 }))
         .onFalse(
             Commands.runOnce(
                 () -> {
-                  shooter.setStateTesting(SHOOTER_STATE.IDLE);
-                  feeder.setStateTesting(FEEDER_STATE.STOP);
-                  indexer.setStateTesting(IndexStates.Idle);
-                  if (intake.getState() == IntakeStates.Jostle) {
-                    intake.setStateTesting(IntakeStates.Down);
+                  m_shooter.setStateTesting(SHOOTER_STATE.IDLE);
+                  m_feeder.setStateTesting(FEEDER_STATE.STOP);
+                  m_indexer.setStateTesting(IndexStates.Idle);
+                  if (m_intake.getState() == IntakeStates.Jostle) {
+                    m_intake.setStateTesting(IntakeStates.Down);
                   }
                 }));
 
-    driver.povRight().onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Up)));
+    m_driver.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
   }
 
+  /**
+   * Enables or disables testing mode for all subsystems.
+   *
+   * @param testing true to enable testing mode
+   */
   public void setAllSubsystemTesting(boolean testing) {
-    shooter.setTesting(testing);
-    intake.setTesting(testing);
-    indexer.setTesting(testing);
-    feeder.setTesting(testing);
+    m_shooter.setTesting(testing);
+    m_intake.setTesting(testing);
+    m_indexer.setTesting(testing);
+    m_feeder.setTesting(testing);
   }
 
   private void configureBindings() {
-    driver
+    m_driver
         .start()
         .onTrue(
             Commands.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
                 .ignoringDisable(true));
 
-    driver
+    m_driver
         .rightTrigger()
-        .and(driver.leftTrigger().negate())
+        .and(m_driver.leftTrigger().negate())
         .onTrue(
-            superstructure
+            m_superstructure
                 .setWantedStateCommand(WantedStates.Shoot)
-                .alongWith(superstructure.setAddableStateCommand(AddableStates.Jostle)));
+                .alongWith(m_superstructure.setAddableStateCommand(AddableStates.Jostle)));
 
-    driver
+    m_driver
         .leftTrigger()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.Intake));
+        .and(m_driver.rightTrigger().negate())
+        .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Intake));
 
-    driver
+    m_driver
         .leftTrigger()
-        .and(driver.rightTrigger())
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.IntakeAndShoot));
+        .and(m_driver.rightTrigger())
+        .onTrue(m_superstructure.setWantedStateCommand(WantedStates.IntakeAndShoot));
 
-    driver
-        .leftTrigger()
-        .negate()
-        .and(driver.rightTrigger().negate())
-        .onTrue(superstructure.setWantedStateCommand(WantedStates.Default));
-
-    driver
-        .x()
-        .onTrue(
-            superstructure
-                .setWantedStateCommand(WantedStates.Override)
-                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TRENCH))));
-
-    driver
-        .x()
-        .onFalse(
-            superstructure
-                .setWantedStateCommand(WantedStates.Default)
-                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
-
-    driver
-        .a()
-        .onTrue(
-            superstructure
-                .setWantedStateCommand(WantedStates.Override)
-                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.CORNER))));
-
-    driver
-        .a()
-        .onFalse(
-            superstructure
-                .setWantedStateCommand(WantedStates.Default)
-                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
-
-    driver
-        .b()
-        .onTrue(
-            superstructure
-                .setWantedStateCommand(WantedStates.Override)
-                .alongWith(Commands.runOnce(() -> shooter.override(true, SHOOTER_STATE.TOWER))));
-
-    driver
-        .b()
-        .onFalse(
-            superstructure
-                .setWantedStateCommand(WantedStates.Default)
-                .alongWith(Commands.runOnce(() -> shooter.override(false, SHOOTER_STATE.IDLE))));
-
-    driver
+    m_driver
         .leftTrigger()
         .negate()
-        .and(driver.rightTrigger().negate())
-        .and(superstructure::currentStateDoesntUseIntake)
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Down)));
+        .and(m_driver.rightTrigger().negate())
+        .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Default));
 
-    driver
+    m_driver
+        .x()
+        .onTrue(
+            m_superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TRENCH))));
+
+    m_driver
+        .x()
+        .onFalse(
+            m_superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    m_driver
+        .a()
+        .onTrue(
+            m_superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.CORNER))));
+
+    m_driver
+        .a()
+        .onFalse(
+            m_superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    m_driver
+        .b()
+        .onTrue(
+            m_superstructure
+                .setWantedStateCommand(WantedStates.Override)
+                .alongWith(Commands.runOnce(() -> m_shooter.override(true, SHOOTER_STATE.TOWER))));
+
+    m_driver
+        .b()
+        .onFalse(
+            m_superstructure
+                .setWantedStateCommand(WantedStates.Default)
+                .alongWith(Commands.runOnce(() -> m_shooter.override(false, SHOOTER_STATE.IDLE))));
+
+    m_driver
+        .leftTrigger()
+        .negate()
+        .and(m_driver.rightTrigger().negate())
+        .and(m_superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Down)));
+
+    m_driver
         .povRight()
-        .and(superstructure::currentStateUsesIntake)
-        .onTrue(superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+        .and(m_superstructure::currentStateUsesIntake)
+        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.IntakeUp));
 
-    driver
+    m_driver
         .povRight()
-        .and(superstructure::currentStateUsesIntake)
-        .onFalse(superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .and(m_superstructure::currentStateUsesIntake)
+        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
 
-    driver
+    m_driver
         .povRight()
-        .and(superstructure::currentStateDoesntUseIntake)
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+        .and(m_superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Up)));
 
-    mech.rightBumper()
+    m_mech
+        .rightBumper()
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
                 .ignoringDisable(true));
 
-    mech.leftBumper()
+    m_mech
+        .leftBumper()
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
                 .ignoringDisable(true));
   }
 
+  /** Returns the autonomous command to run during autonomous period. */
   @NotLogged
   public Command getAutonomousCommand() {
-    return autoChooser.selectAuto(drivetrain, shooter);
+    return m_autoChooser.selectAuto(drivetrain, m_shooter);
   }
 
+  /** Returns all subsystem info for dynamic scheduling. */
   public SubsystemInfo[] getAllSubsystems() {
     ArrayList<SubsystemInfo> map = new ArrayList<>();
     map.add(
@@ -355,7 +371,7 @@ public class RobotContainer {
     map.add(
         new SubsystemInfo(
             Subsystems.Superstructure,
-            superstructure::periodic,
+            m_superstructure::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 2)));
     map.add(
@@ -367,38 +383,38 @@ public class RobotContainer {
     map.add(
         new SubsystemInfo(
             Subsystems.Shooter,
-            shooter::periodic,
+            m_shooter::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 4 + (60.0 / 4))));
     map.add(
         new SubsystemInfo(
             Subsystems.Feeder,
-            feeder::periodic,
+            m_feeder::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 5 + ((60.0 / 4) * 2))));
     map.add(
         new SubsystemInfo(
             Subsystems.Indexer,
-            indexer::periodic,
+            m_indexer::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 6 + ((60.0 / 4) * 3))));
     map.add(
         new SubsystemInfo(
             Subsystems.Intake,
-            intake::periodic,
+            m_intake::periodic,
             Milliseconds.of(60),
             Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
     map.add(
         new SubsystemInfo(
             Subsystems.Leds,
-            leds::periodic,
+            m_leds::periodic,
             Milliseconds.of(20),
             Milliseconds.of((20.0 / Subsystems.values().length) * 8)));
     return map.toArray(new SubsystemInfo[0]);
   }
 
   private void cycleVision() {
-    for (Vision vision : cameras) {
+    for (Vision vision : m_cameras) {
       vision.periodic();
     }
   }

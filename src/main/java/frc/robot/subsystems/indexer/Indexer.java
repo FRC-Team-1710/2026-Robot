@@ -21,12 +21,12 @@ import java.util.function.BooleanSupplier;
 @Logged
 public class Indexer {
   @Logged(importance = Logged.Importance.CRITICAL)
-  private final IndexerIO io;
+  private final IndexerIO m_io;
 
-  @NotLogged private final TimesConsumer timesConsumer;
+  @NotLogged private final TimesConsumer m_timesConsumer;
 
   @Logged(importance = Logged.Importance.CRITICAL)
-  private IndexStates currentState = IndexStates.Idle;
+  private IndexStates m_currentState = IndexStates.Idle;
 
   @NotLogged private boolean m_testing = false;
 
@@ -35,7 +35,7 @@ public class Indexer {
       new Debouncer(JamDetectionConstants.Indexer.kJamMinimumTime.in(Seconds));
 
   @NotLogged
-  private final Debouncer minimumJamTime =
+  private final Debouncer m_minimumJamTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamDetectionDisabledTime.in(Seconds));
 
   @NotLogged
@@ -43,84 +43,110 @@ public class Indexer {
       new Debouncer(JamDetectionConstants.Indexer.kJamUndoTime.in(Seconds));
 
   @Logged(importance = Logged.Importance.INFO)
-  private boolean wasJammed = false;
+  private boolean m_wasJammed = false;
 
-  @NotLogged private final BooleanSupplier bumpSupplier;
+  @NotLogged private final BooleanSupplier m_bumpSupplier;
 
-  /** Creates a new Index. */
+  /**
+   * Creates a new Indexer.
+   *
+   * @param io the indexer IO implementation
+   * @param consumer the times consumer for dynamic scheduling
+   * @param bumpSupplier supplier for the bump button state
+   */
   public Indexer(IndexerIO io, TimesConsumer consumer, BooleanSupplier bumpSupplier) {
-    this.io = io;
-    this.timesConsumer = consumer;
-    this.bumpSupplier = bumpSupplier;
+    this.m_io = io;
+    this.m_timesConsumer = consumer;
+    this.m_bumpSupplier = bumpSupplier;
   }
 
+  /** Runs periodic indexer logic including jam detection. */
   public void periodic() {
     // This method will be called once per scheduler run
-    io.update();
-    io.setIndexMotor(currentState.speed);
-    if (bumpSupplier.getAsBoolean()) {
+    m_io.update();
+    m_io.setIndexMotor(m_currentState.m_speed);
+    if (m_bumpSupplier.getAsBoolean()) {
       // This is NOT a magic number, it makes it go backwards to hopefully unjam the Fuel
-      io.setIndexMotor(-0.5);
+      m_io.setIndexMotor(-0.5);
     } else {
-      switch (currentState) {
+      switch (m_currentState) {
         case Indexing:
           // IMPORTANT, keep every if statement different!
-          if (minimumJamTime.calculate(true)) {
-            if (m_jamTime.calculate(isJammed()) || wasJammed) {
-              wasJammed = true;
+          if (m_minimumJamTime.calculate(true)) {
+            if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
+              m_wasJammed = true;
               if (m_jamUndoTime.calculate(true)) {
                 m_jamTime.calculate(false);
                 m_jamUndoTime.calculate(false);
-                wasJammed = false;
-                io.setIndexMotor(currentState.speed);
+                m_wasJammed = false;
+                m_io.setIndexMotor(m_currentState.m_speed);
               } else {
-                io.setIndexMotor(IndexStates.Jammed.speed);
+                m_io.setIndexMotor(IndexStates.Jammed.m_speed);
               }
             } else {
               m_jamUndoTime.calculate(false);
-              io.setIndexMotor(currentState.speed);
+              m_io.setIndexMotor(m_currentState.m_speed);
             }
           } else {
             m_jamTime.calculate(false);
             m_jamUndoTime.calculate(false);
-            wasJammed = false;
-            io.setIndexMotor(currentState.speed);
+            m_wasJammed = false;
+            m_io.setIndexMotor(m_currentState.m_speed);
           }
           break;
         default:
           m_jamTime.calculate(false);
-          minimumJamTime.calculate(false);
+          m_minimumJamTime.calculate(false);
           m_jamUndoTime.calculate(false);
-          wasJammed = false;
-          io.setIndexMotor(currentState.speed);
+          m_wasJammed = false;
+          m_io.setIndexMotor(m_currentState.m_speed);
           break;
       }
     }
   }
 
+  /** Returns whether the indexer motor is jammed. */
   @Logged(importance = Logged.Importance.INFO)
   public boolean isJammed() {
-    return io.getIndexMotorCurrent().in(Amps) >= JamDetectionConstants.Indexer.kJamCurrent.in(Amps)
-        && io.getIndexMotorVelocity().in(RotationsPerSecond)
+    return m_io.getIndexMotorCurrent().in(Amps)
+            >= JamDetectionConstants.Indexer.kJamCurrent.in(Amps)
+        && m_io.getIndexMotorVelocity().in(RotationsPerSecond)
             <= JamDetectionConstants.Indexer.kJamSpeedThreshold.in(RotationsPerSecond);
   }
 
+  /**
+   * Sets the current indexer state.
+   *
+   * @param state the indexer state to set
+   */
   public void setState(IndexStates state) {
     if (m_testing) return;
-    if (!currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
-      timesConsumer.accept(Subsystems.Indexer, state.subsystemPeriodicFrequency);
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        state.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Indexer, state.m_subsystemPeriodicFrequency);
     }
-    currentState = state;
+    m_currentState = state;
   }
 
+  /**
+   * Sets the current indexer state for testing mode only.
+   *
+   * @param state the indexer state to set
+   */
   public void setStateTesting(IndexStates state) {
     if (!m_testing) return;
-    if (!currentState.subsystemPeriodicFrequency.isEquivalent(state.subsystemPeriodicFrequency)) {
-      timesConsumer.accept(Subsystems.Indexer, state.subsystemPeriodicFrequency);
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        state.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Indexer, state.m_subsystemPeriodicFrequency);
     }
-    currentState = state;
+    m_currentState = state;
   }
 
+  /**
+   * Enables or disables testing mode.
+   *
+   * @param testing true to enable testing mode
+   */
   public void setTesting(boolean testing) {
     m_testing = testing;
   }
@@ -132,12 +158,12 @@ public class Indexer {
 
     Jammed(Milliseconds.of(60), 0);
 
-    private final Time subsystemPeriodicFrequency;
-    private final double speed;
+    private final Time m_subsystemPeriodicFrequency;
+    private final double m_speed;
 
     IndexStates(Time subsystemPeriodicFrequency, double speed) {
-      this.subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.speed = speed;
+      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
+      this.m_speed = speed;
     }
   }
 }
