@@ -57,11 +57,11 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(m_depot, shooter).get("ZONE1"));
-    addPath(Auto.ZONE3, autoPathing(m_depot, shooter).get("ZONE3"));
-    addPath(Auto.RIGHT_INSIDE, autoPathing(m_depot, shooter).get("RIGHT_INSIDE"));
-    addPath(Auto.LEFT_INSIDE, autoPathing(m_depot, shooter).get("LEFT_INSIDE"));
-    addPath(Auto.IDK, autoPathing(m_depot, shooter).get("IDK"));
+    addPath(Auto.ZONE1, autoPathing(m_depot).get("ZONE1"));
+    addPath(Auto.ZONE3, autoPathing(m_depot).get("ZONE3"));
+    addPath(Auto.RIGHT_INSIDE, autoPathing(m_depot).get("RIGHT_INSIDE"));
+    addPath(Auto.LEFT_INSIDE, autoPathing(m_depot).get("LEFT_INSIDE"));
+    addPath(Auto.ZONE2, autoPathing(m_depot).get("ZONE2"));
 
     SmartDashboard.putBoolean("Auto/Depot?", m_depot);
     // Put preset autos hare//
@@ -142,10 +142,13 @@ public class AutosChooser {
         .andThen(pathBuilder.build(new Path("depot")).onlyIf(() -> depotValue));
   }
 
-  public static HashMap<String, Command> autoPathing(boolean depotPath, Shooter shooter) {
+  public static HashMap<String, Command> autoPathing(boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     listOfPaths.put("RIGHTINSIDE", Commands.sequence(pathBuilder.build(new Path("rightinside"))));
-    listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new Path("outsideracer"))));
+    listOfPaths.put(
+        "LEFT_INSIDE",
+        Commands.sequence(
+            pathBuilder.build(new Path("outsideracer")), pathBuilder.build(new Path("depot"))));
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(
@@ -154,24 +157,20 @@ public class AutosChooser {
     listOfPaths.put(
         "ZONE1",
         Commands.sequence(
-            pathBuilder.build(new Path("zone1cycleleft")),
-            pathBuilder.build(new Path("zone1cycleright"))));
-    listOfPaths.put(
-        "IDK",
-        Commands.sequence(
-            pathBuilder.build(new Path("outsideracer")),
-            pathBuilder.build(new Path("insideracer"))));
+            pathBuilder.build(new Path("zone1cycleleft"))
+            // pathBuilder.build(new Path("zone1cycleright"))
+            ));
+    listOfPaths.put("ZONE2", Commands.sequence(pathBuilder.build(new Path("zone2"))));
 
     return listOfPaths;
   }
 
   public enum Auto {
     NONE(),
-    CUSTOM(),
     ZONE1(),
     ZONE3(),
+    ZONE2(),
     RIGHT_INSIDE(),
     LEFT_INSIDE(),
-    IDK(),
   }
 }
