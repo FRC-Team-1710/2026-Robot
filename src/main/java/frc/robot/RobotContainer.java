@@ -28,10 +28,12 @@ import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
 import frc.robot.subsystems.feeder.FeederIO;
 import frc.robot.subsystems.feeder.FeederIOCTRE;
 import frc.robot.subsystems.feeder.FeederIOSIM;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOCTRE;
 import frc.robot.subsystems.indexer.IndexerIOSIM;
@@ -186,6 +188,61 @@ public class RobotContainer {
     m_autoChooser = new AutosChooser(m_superstructure, drivetrain, m_shooter);
 
     configureBindings();
+  }
+
+  /** Adds testing-specific button bindings for subsystem control. */
+  public void addTestingBindings() {
+    m_driver.a().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)));
+
+    m_driver
+        .b()
+        .onTrue(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Indexing)))
+        .onFalse(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Idle)));
+
+    m_driver
+        .x()
+        .onTrue(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.FEEDING)))
+        .onFalse(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.STOP)));
+
+    m_driver
+        .y()
+        .onTrue(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.CORNER)))
+        .onFalse(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.IDLE)));
+
+    m_driver
+        .rightTrigger()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  m_shooter.setStateTesting(SHOOTER_STATE.TESTING);
+                  m_feeder.setStateTesting(FEEDER_STATE.FEEDING);
+                  m_indexer.setStateTesting(IndexStates.Indexing);
+                  m_intake.setStateTesting(IntakeStates.Jostle);
+                }))
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  m_shooter.setStateTesting(SHOOTER_STATE.IDLE);
+                  m_feeder.setStateTesting(FEEDER_STATE.STOP);
+                  m_indexer.setStateTesting(IndexStates.Idle);
+                  if (m_intake.getState() == IntakeStates.Jostle) {
+                    m_intake.setStateTesting(IntakeStates.Down);
+                  }
+                }));
+
+    m_driver.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
+  }
+
+  /**
+   * Enables or disables testing mode for all subsystems.
+   *
+   * @param testing true to enable testing mode
+   */
+  public void setAllSubsystemTesting(boolean testing) {
+    m_shooter.setTesting(testing);
+    m_intake.setTesting(testing);
+    m_indexer.setTesting(testing);
+    m_feeder.setTesting(testing);
   }
 
   private void configureBindings() {

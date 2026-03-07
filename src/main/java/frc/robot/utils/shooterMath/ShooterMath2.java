@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.epilogue.Epilogue;
+import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -258,75 +260,78 @@ public final class ShooterMath2 {
                 computeTolerances(
                     pivot2, phiComp, phys2.hoodAngle, omega2, phys2.effectiveMaxHood)));
 
-    Robot.telemetry().log("ShotSolution/Heading", currentSolution.robotHeading, Rotation2d.struct);
+    if (Epilogue.shouldLog(Importance.INFO)) {
+      Robot.telemetry()
+          .log("ShotSolution/Heading", currentSolution.robotHeading, Rotation2d.struct);
 
-    Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooterLeft.hoodAngle);
-    Robot.telemetry().log("ShotSolution/Left/Omega", currentSolution.shooterLeft.flywheelOmega);
-    Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooterLeft.tof);
-    Robot.telemetry()
-        .log("ShotSolution/Left/Clamped", currentSolution.shooterLeft.hoodAngleClamped);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/ArrivalConstraint",
-            currentSolution.shooterLeft.arrivalAngleConstrained);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/Tolerances/HeadingToleranceLeft",
-            currentSolution.shooterLeft.tolerances.headingToleranceLeft);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/Tolerances/HeadingToleranceRight",
-            currentSolution.shooterLeft.tolerances.headingToleranceRight);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/Tolerances/HoodToleranceSteep",
-            currentSolution.shooterLeft.tolerances.hoodToleranceSteep);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/Tolerances/HoodToleranceFlat",
-            currentSolution.shooterLeft.tolerances.hoodToleranceFlat);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/Tolerances/FlywheelToleranceFast",
-            currentSolution.shooterLeft.tolerances.flywheelToleranceFast);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Left/Tolerances/FlywheelToleranceSlow",
-            currentSolution.shooterLeft.tolerances.flywheelToleranceSlow);
+      Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooterLeft.hoodAngle);
+      Robot.telemetry().log("ShotSolution/Left/Omega", currentSolution.shooterLeft.flywheelOmega);
+      Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooterLeft.tof);
+      Robot.telemetry()
+          .log("ShotSolution/Left/Clamped", currentSolution.shooterLeft.hoodAngleClamped);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/ArrivalConstraint",
+              currentSolution.shooterLeft.arrivalAngleConstrained);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/Tolerances/HeadingToleranceLeft",
+              currentSolution.shooterLeft.tolerances.headingToleranceLeft);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/Tolerances/HeadingToleranceRight",
+              currentSolution.shooterLeft.tolerances.headingToleranceRight);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/Tolerances/HoodToleranceSteep",
+              currentSolution.shooterLeft.tolerances.hoodToleranceSteep);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/Tolerances/HoodToleranceFlat",
+              currentSolution.shooterLeft.tolerances.hoodToleranceFlat);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/Tolerances/FlywheelToleranceFast",
+              currentSolution.shooterLeft.tolerances.flywheelToleranceFast);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Left/Tolerances/FlywheelToleranceSlow",
+              currentSolution.shooterLeft.tolerances.flywheelToleranceSlow);
 
-    Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
-    Robot.telemetry().log("ShotSolution/Right/Omega", currentSolution.shooterRight.flywheelOmega);
-    Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooterRight.tof);
-    Robot.telemetry()
-        .log("ShotSolution/Right/Clamped", currentSolution.shooterRight.hoodAngleClamped);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/ArrivalConstraint",
-            currentSolution.shooterRight.arrivalAngleConstrained);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/Tolerances/HeadingToleranceLeft",
-            currentSolution.shooterRight.tolerances.headingToleranceLeft);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/Tolerances/HeadingToleranceRight",
-            currentSolution.shooterRight.tolerances.headingToleranceRight);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/Tolerances/HoodToleranceSteep",
-            currentSolution.shooterRight.tolerances.hoodToleranceSteep);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/Tolerances/HoodToleranceFlat",
-            currentSolution.shooterRight.tolerances.hoodToleranceFlat);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/Tolerances/FlywheelToleranceFast",
-            currentSolution.shooterRight.tolerances.flywheelToleranceFast);
-    Robot.telemetry()
-        .log(
-            "ShotSolution/Right/Tolerances/FlywheelToleranceSlow",
-            currentSolution.shooterRight.tolerances.flywheelToleranceSlow);
+      Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
+      Robot.telemetry().log("ShotSolution/Right/Omega", currentSolution.shooterRight.flywheelOmega);
+      Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooterRight.tof);
+      Robot.telemetry()
+          .log("ShotSolution/Right/Clamped", currentSolution.shooterRight.hoodAngleClamped);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/ArrivalConstraint",
+              currentSolution.shooterRight.arrivalAngleConstrained);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/Tolerances/HeadingToleranceLeft",
+              currentSolution.shooterRight.tolerances.headingToleranceLeft);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/Tolerances/HeadingToleranceRight",
+              currentSolution.shooterRight.tolerances.headingToleranceRight);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/Tolerances/HoodToleranceSteep",
+              currentSolution.shooterRight.tolerances.hoodToleranceSteep);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/Tolerances/HoodToleranceFlat",
+              currentSolution.shooterRight.tolerances.hoodToleranceFlat);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/Tolerances/FlywheelToleranceFast",
+              currentSolution.shooterRight.tolerances.flywheelToleranceFast);
+      Robot.telemetry()
+          .log(
+              "ShotSolution/Right/Tolerances/FlywheelToleranceSlow",
+              currentSolution.shooterRight.tolerances.flywheelToleranceSlow);
+    }
   }
 
   /** Ideal field-frame shooting direction and converged TOF for one shooter. */

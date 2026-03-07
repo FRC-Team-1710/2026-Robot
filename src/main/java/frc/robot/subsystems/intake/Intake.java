@@ -44,9 +44,11 @@ public class Intake {
   @Logged(importance = Importance.CRITICAL)
   private final IntakeIO m_io;
 
-  /** Boolean representing if the intake was up durring josteling. */
+  /** Boolean representing if the intake was up during jostling. */
   @Logged(importance = Importance.CRITICAL)
   private boolean m_wasUp = false;
+
+  @NotLogged private boolean m_testing = false;
 
   /** Callback used to request changes to the subsystem periodic frequency. */
   @NotLogged private final TimesConsumer m_timesConsumer;
@@ -239,11 +241,40 @@ public class Intake {
    * @param state the desired {@link IntakeStates} to move into
    */
   public void setState(IntakeStates state) {
+    if (m_testing) return;
     if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         state.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Intake, state.m_subsystemPeriodicFrequency);
     }
     m_currentState = state;
+  }
+
+  /**
+   * Sets the current intake state for testing mode only.
+   *
+   * @param state the intake state to set
+   */
+  public void setStateTesting(IntakeStates state) {
+    if (!m_testing) return;
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        state.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Intake, state.m_subsystemPeriodicFrequency);
+    }
+    m_currentState = state;
+  }
+
+  /**
+   * Enables or disables testing mode.
+   *
+   * @param testing true to enable testing mode
+   */
+  public void setTesting(boolean testing) {
+    m_testing = testing;
+  }
+
+  /** Returns the current intake state. */
+  public IntakeStates getState() {
+    return m_currentState;
   }
 
   public enum IntakeStates {

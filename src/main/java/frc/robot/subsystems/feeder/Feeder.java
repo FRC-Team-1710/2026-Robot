@@ -18,6 +18,8 @@ public class Feeder {
   @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
+  @NotLogged private boolean m_testing = false;
+
   @NotLogged private final TimesConsumer m_timesConsumer;
 
   /**
@@ -82,12 +84,37 @@ public class Feeder {
    * @param state the feeder state to set
    */
   public void setState(FEEDER_STATE state) {
+    if (m_testing) return;
     if (!this.m_currentState
         .getSubsystemPeriodicFrequency()
         .isEquivalent(state.getSubsystemPeriodicFrequency())) {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     this.m_currentState = state;
+  }
+
+  /**
+   * Sets the current feeder state for testing mode only.
+   *
+   * @param state the feeder state to set
+   */
+  public void setStateTesting(FEEDER_STATE state) {
+    if (!m_testing) return;
+    if (!this.m_currentState
+        .getSubsystemPeriodicFrequency()
+        .isEquivalent(state.getSubsystemPeriodicFrequency())) {
+      m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
+    }
+    this.m_currentState = state;
+  }
+
+  /**
+   * Enables or disables testing mode.
+   *
+   * @param testing true to enable testing mode
+   */
+  public void setTesting(boolean testing) {
+    this.m_testing = testing;
   }
 
   /** Returns the current feeder state. */

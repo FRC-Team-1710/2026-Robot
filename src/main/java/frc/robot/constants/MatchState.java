@@ -11,6 +11,9 @@ public class MatchState {
   // TODO: Set to simulate a match environment to test match specific code
   private static final boolean kSimulatePracticeMatch = false;
 
+  /** Used when we want to shoot while our hub is disabled */
+  private static boolean m_ignoreFMS = false;
+
   public static Optional<Boolean> autonomousWinnerIsRed = Optional.empty();
 
   // Mechanical Advantage's estimate
@@ -31,9 +34,13 @@ public class MatchState {
     m_teleopTimer.restart();
   }
 
+  public static void setIgnoreFMS(boolean ignoreFMS) {
+    m_ignoreFMS = ignoreFMS;
+  }
+
   public static boolean canShoot(double tof) {
     // Default to true
-    if (autonomousWinnerIsRed.isEmpty() || !fmsAttached()) {
+    if (autonomousWinnerIsRed.isEmpty() || !fmsAttached() || m_ignoreFMS) {
       return true;
     }
     return timeTillInactive(tof).in(Seconds) > 0;

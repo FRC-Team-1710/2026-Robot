@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
 import frc.robot.constants.Subsystems;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 
@@ -99,10 +98,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
   private final HashMap<Subsystems, Callback> m_subsystemToCallback = new HashMap<>();
 
-  private final HashMap<Subsystems, Long> m_previousSubsystemTimes = new HashMap<>();
-
-  private final ArrayList<String> m_subsystemsRunThisLoop = new ArrayList<>();
-
   /** Constructor for DynamicTimedRobot. */
   protected DynamicTimedRobot() {
     this(kDefaultPeriod);
@@ -179,22 +174,12 @@ public class DynamicTimedRobot extends IterativeRobotBase {
   }
 
   private void runPeriodic(Callback callback) {
-    Robot.telemetry()
-        .log(
-            "Periodics/" + callback.subsystem.toString() + "/TimeBetweenTriggers",
-            RobotController.getFPGATime() - m_previousSubsystemTimes.get(callback.subsystem));
-    m_previousSubsystemTimes.put(callback.subsystem, RobotController.getFPGATime());
-
     if (callback.subsystem == Subsystems.Robot) {
       Robot.telemetry()
           .log("Periodics/Total", RobotController.getFPGATime() - m_previousStartOfPeriodic);
       m_previousStartOfPeriodic = RobotController.getFPGATime();
       Robot.telemetry().log("Periodics/TotalCode", m_totalCodeTime);
       m_totalCodeTime = 0;
-      Robot.telemetry().log("Periodics/SubsystemsRunThisLoop/Size", m_subsystemsRunThisLoop.size());
-      Robot.telemetry()
-          .log("Periodics/SubsystemsRunThisLoop/Values", m_subsystemsRunThisLoop.toString());
-      m_subsystemsRunThisLoop.clear();
     }
 
     var tempTime = RobotController.getFPGATime();
@@ -211,8 +196,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
     callback.expirationTime +=
         callback.period
             + (m_currentTime - callback.expirationTime) / callback.period * callback.period;
-
-    m_subsystemsRunThisLoop.add(callback.subsystem.toString());
   }
 
   /** Ends the main loop in startCompetition(). */
@@ -256,7 +239,6 @@ public class DynamicTimedRobot extends IterativeRobotBase {
             subsystemInfo.offset);
     m_subsystemToCallback.put(subsystemInfo.subsystem, callback);
     m_callbacks.add(callback);
-    m_previousSubsystemTimes.put(subsystemInfo.subsystem, RobotController.getFPGATime());
   }
 
   /**

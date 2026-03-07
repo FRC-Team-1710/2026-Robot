@@ -28,6 +28,8 @@ public class Indexer {
   @Logged(importance = Logged.Importance.CRITICAL)
   private IndexStates m_currentState = IndexStates.Idle;
 
+  @NotLogged private boolean m_testing = false;
+
   @NotLogged
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamMinimumTime.in(Seconds));
@@ -118,11 +120,35 @@ public class Indexer {
    * @param state the indexer state to set
    */
   public void setState(IndexStates state) {
+    if (m_testing) return;
     if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
         state.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Indexer, state.m_subsystemPeriodicFrequency);
     }
     m_currentState = state;
+  }
+
+  /**
+   * Sets the current indexer state for testing mode only.
+   *
+   * @param state the indexer state to set
+   */
+  public void setStateTesting(IndexStates state) {
+    if (!m_testing) return;
+    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
+        state.m_subsystemPeriodicFrequency)) {
+      m_timesConsumer.accept(Subsystems.Indexer, state.m_subsystemPeriodicFrequency);
+    }
+    m_currentState = state;
+  }
+
+  /**
+   * Enables or disables testing mode.
+   *
+   * @param testing true to enable testing mode
+   */
+  public void setTesting(boolean testing) {
+    m_testing = testing;
   }
 
   public enum IndexStates {
