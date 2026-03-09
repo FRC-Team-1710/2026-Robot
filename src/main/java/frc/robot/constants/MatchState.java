@@ -27,7 +27,7 @@ public class MatchState {
   private static final Timer m_teleopTimer = new Timer();
 
   public static boolean isActive() {
-    return timeTillActive().in(Seconds) == 0;
+    return timeTillActive().in(Seconds) <= 0;
   }
 
   public static void startTeleop() {
