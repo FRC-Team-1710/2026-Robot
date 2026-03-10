@@ -7,6 +7,7 @@ package frc.robot.autonomous;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,9 +20,9 @@ import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.HashMap;
 
 /** Add your docs here. */
@@ -30,6 +31,8 @@ public class AutosChooser {
   private static SendableChooser<Auto> autoChooser;
 
   public static FollowPath.Builder pathBuilder;
+
+  private static boolean hasResetRotation = false;
 
   private boolean m_depot;
 
@@ -45,7 +48,7 @@ public class AutosChooser {
                         drivetrain.bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
                 new PIDController(5.0, 0.0, 0.0), // Translation PID
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
-                new PIDController(2.0, 0.0, 0.0) // Cross-track PID
+                new PIDController(1.5, 0.0, 0.0) // Cross-track PID
                 )
             .withShouldFlip(() -> Alliance.redAlliance);
 
@@ -91,16 +94,29 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "Shoot",
         () -> {
-          drivetrain.setAutonomousRequestOverride(true);
-          drivetrain.applyPriorityRequestAuto(
-              drivetrain
-                  .fieldCentric
-                  .withDriveState(DriveStates.ROTATION_LOCK)
-                  .withTargetRotation(ShooterMath2.currentSolution.robotHeading())
-                  .withVelocityX(0) // ensure previous controls aren't affecting auto
-                  .withVelocityY(0)
-                  .withRotationalRate(0));
-          superstructure.setWantedState(WantedStates.ShootAuto);
+          Commands.run(
+                  () -> {
+                    drivetrain.setAutonomousRequestOverride(true);
+                    drivetrain.applyPriorityRequestAuto(
+                        drivetrain
+                            .fieldCentric
+                            .withDriveState(DriveStates.ROTATION_LOCK)
+                            .withTargetRotation(superstructure.getRotationForScore())
+                            .withVelocityX(0) // ensure previous controls aren't affecting auto
+                            .withVelocityY(0)
+                            .withRotationalRate(0));
+                    superstructure.setAddableState(AddableStates.Jostle);
+                    superstructure.setWantedState(WantedStates.ShootAuto);
+                    if (!hasResetRotation && superstructure.driveAtTarget()) {
+                      drivetrain.resetRotation(
+                          drivetrain
+                              .getLatestFrontVisionMeasurement()
+                              .getRotation()
+                              .plus(Rotation2d.k180deg));
+                      // hasResetRotation = true;
+                    }
+                  })
+              .schedule();
         });
 
     FollowPath.registerEventTrigger(
@@ -144,11 +160,10 @@ public class AutosChooser {
 
   public static HashMap<String, Command> autoPathing(boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
-    listOfPaths.put("RIGHTINSIDE", Commands.sequence(pathBuilder.build(new Path("rightinside"))));
-    listOfPaths.put(
-        "LEFT_INSIDE",
-        Commands.sequence(
-            pathBuilder.build(new Path("outsideracer")), pathBuilder.build(new Path("depot"))));
+    var temp = new Path("outsideracer");
+    temp.mirror();
+    listOfPaths.put("RIGHT_INSIDE", Commands.sequence(pathBuilder.build(temp)));
+    listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new Path("outsideracer"))));
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(

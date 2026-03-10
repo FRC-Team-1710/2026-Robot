@@ -62,8 +62,8 @@ public class ShooterIOCTRE implements ShooterIO {
     this.m_leftHood = new TalonFX(CanIdConstants.Shooter.HOOD_LEFT_MOTOR);
     this.m_rightHood = new TalonFX(CanIdConstants.Shooter.HOOD_RIGHT_MOTOR);
 
-    this.m_leftBreamBreaker = new DigitalInput(0);
-    this.m_rightBreamBreaker = new DigitalInput(1);
+    this.m_leftBreamBreaker = new DigitalInput(8);
+    this.m_rightBreamBreaker = new DigitalInput(9);
 
     // Flywheel settings
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();

@@ -105,8 +105,8 @@ public class Shooter {
 
     this.m_shouldOverride = false;
 
-    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
-    SmartDashboard.putNumber("speedTransferEfficiency", 0);
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 35);
+    SmartDashboard.putNumber("speedTransferEfficiency", 0.54375);
   }
 
   public void periodic() {
@@ -340,24 +340,15 @@ public class Shooter {
     }
 
     // Span = from earliest event across both queues to latest
-    double earliest =
-        Math.min(
-            m_timestampQueues.get(0).isEmpty()
-                ? Double.MAX_VALUE
-                : m_timestampQueues.get(0).peekFirst(),
-            m_timestampQueues.get(1).isEmpty()
-                ? Double.MAX_VALUE
-                : m_timestampQueues.get(1).peekFirst());
-    double latest =
-        Math.max(
-            m_timestampQueues.get(0).isEmpty()
-                ? Double.MIN_VALUE
-                : m_timestampQueues.get(0).peekLast(),
-            m_timestampQueues.get(1).isEmpty()
-                ? Double.MIN_VALUE
-                : m_timestampQueues.get(1).peekLast());
-
-    double span = latest - earliest;
+    double span =
+        (Math.max(
+                m_timestampQueues.get(0).isEmpty()
+                    ? Double.MIN_VALUE
+                    : m_timestampQueues.get(0).peekLast(),
+                m_timestampQueues.get(1).isEmpty()
+                    ? Double.MIN_VALUE
+                    : m_timestampQueues.get(1).peekLast()))
+            - 1000;
     this.m_FPS = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
   }
 

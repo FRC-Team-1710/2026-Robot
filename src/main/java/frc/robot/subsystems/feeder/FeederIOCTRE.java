@@ -2,7 +2,7 @@ package frc.robot.subsystems.feeder;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -25,11 +25,9 @@ public class FeederIOCTRE implements FeederIO {
 
   @NotLogged private final BaseStatusSignal[] m_feederFollowerSignals;
 
-  @NotLogged
-  private final DutyCycleOut m_leftPercentOutput = new DutyCycleOut(0).withEnableFOC(true);
+  @NotLogged private final VoltageOut m_leftVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
-  @NotLogged
-  private final DutyCycleOut m_rightPercentOutput = new DutyCycleOut(0).withEnableFOC(true);
+  @NotLogged private final VoltageOut m_rightPercentOutput = new VoltageOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
     this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
@@ -59,10 +57,10 @@ public class FeederIOCTRE implements FeederIO {
   }
 
   public void setLeft(double percent) {
-    this.m_feederLeft.setControl(m_leftPercentOutput.withOutput(-percent));
+    this.m_feederLeft.setControl(m_leftVoltageOutput.withOutput(-12 * percent));
   }
 
   public void setRight(double percent) {
-    this.m_feederRight.setControl(m_rightPercentOutput.withOutput(percent));
+    this.m_feederRight.setControl(m_rightPercentOutput.withOutput(12 * percent));
   }
 }

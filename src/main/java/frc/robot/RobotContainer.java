@@ -98,11 +98,10 @@ public class RobotContainer {
 
     switch (Mode.currentMode) {
       case REAL:
-        intake = new Intake(new IntakeIOCTRE(), consumer);
+        intake = new Intake(new IntakeIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
         shooter = new Shooter(new ShooterIOCTRE(), consumer);
         feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer =
-            new Indexer(new IndexerIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
+        indexer = new Indexer(new IndexerIOCTRE(), consumer);
         leds = new Leds(new LedsIOArduino(), shooter);
 
         cameras =
@@ -114,28 +113,27 @@ public class RobotContainer {
                         new Vision(
                             config.name(),
                             config.robotToCamera(),
-                            drivetrain)) // TODO: Fix this stuff :p
+                            drivetrain,
+                            config.front())) // TODO: Fix this stuff :p
                 // Collect the stream back into an array of Vision subsystems
                 .toArray(Vision[]::new);
 
         break;
 
       case SIMULATION:
-        intake = new Intake(new IntakeIOSIM(), consumer);
+        intake = new Intake(new IntakeIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
         shooter = new Shooter(new ShooterIOSIM(), consumer);
         feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer =
-            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
+        indexer = new Indexer(new IndexerIOSIM(), consumer);
         leds = new Leds(new LedsIOSim(), shooter);
         cameras = new Vision[0];
         break;
 
       default:
-        intake = new Intake(new IntakeIO() {}, consumer);
+        intake = new Intake(new IntakeIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
         shooter = new Shooter(new ShooterIO() {}, consumer);
         feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer =
-            new Indexer(new IndexerIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
+        indexer = new Indexer(new IndexerIO() {}, consumer);
         leds = new Leds(new LedsIO() {}, shooter);
         cameras = new Vision[0];
         break;
@@ -238,6 +236,30 @@ public class RobotContainer {
 
   private void configureBindings() {
     driver
+        .rightStick()
+        .and(driver.leftStick())
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drivetrain.resetRotation(
+                            drivetrain
+                                .getLatestVisionMeasurement()
+                                .getRotation()
+                                .plus(Rotation2d.k180deg)))
+                .ignoringDisable(true));
+
+    driver
+        .rightTrigger()
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    drivetrain.resetRotation(
+                        drivetrain
+                            .getLatestVisionMeasurement()
+                            .getRotation()
+                            .plus(Rotation2d.k180deg))));
+
+    driver
         .start()
         .onTrue(
             Commands.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
@@ -249,7 +271,7 @@ public class RobotContainer {
         .onTrue(
             superstructure
                 .setWantedStateCommand(WantedStates.Shoot)
-                .alongWith(superstructure.setAddableStateCommand(AddableStates.Intaking)));
+                .alongWith(superstructure.setAddableStateCommand(AddableStates.Jostle)));
 
     driver
         .leftTrigger()

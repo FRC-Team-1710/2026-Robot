@@ -80,6 +80,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Logged(importance = Importance.CRITICAL)
   private boolean autonomousRequestOverride = false;
 
+  @NotLogged private Pose2d m_latestFrontVisionMeasurement = new Pose2d();
+  @NotLogged private Pose2d m_latestVisionMeasurement = new Pose2d();
+
   // SysId routines
 
   ///////////////////// Steer ///////////////////////
@@ -280,13 +283,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withVelocityX(MaxSpeed.times(-scaledTranslationInputs.get(0, 0)))
               .withVelocityY(MaxSpeed.times(-scaledTranslationInputs.get(1, 0)))
               .withRotationalRate(
-                  MaxAngularRate.times(
-                      -rescaleRotation(
-                          inputController.getRightX()
-                          // + (inputController.povLeft().getAsBoolean()
-                          //     ? 1
-                          //     : (inputController.povRight().getAsBoolean() ? -1 : 0))
-                          )))
+                  MaxAngularRate.times(-rescaleRotation(inputController.getRightX())))
               .withDriveState(currentState));
     }
 
@@ -294,9 +291,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   public Vector<N2> rescaleTranslation(double x, double y) {
-    Vector<N2> scaledJoyStick = VecBuilder.fill(x, y);
-    scaledJoyStick = MathUtil.applyDeadband(scaledJoyStick, 0.075);
-    return MathUtil.copyDirectionPow(scaledJoyStick, 2);
+    return MathUtil.copyDirectionPow(MathUtil.applyDeadband(VecBuilder.fill(x, y), 0.075), 2);
   }
 
   public double rescaleRotation(double rotation) {
@@ -355,7 +350,34 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
-        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
+        Utils.fpgaToCurrentTime(timestampSeconds),
+        visionMeasurementStdDevs);
+  }
+
+  public void addVisionMeasurement(
+      Pose2d visionRobotPoseMeters,
+      double timestampSeconds,
+      Matrix<N3, N1> visionMeasurementStdDevs,
+      boolean front) {
+    if (front) {
+      m_latestFrontVisionMeasurement = visionRobotPoseMeters;
+    }
+    m_latestVisionMeasurement = visionRobotPoseMeters;
+    super.addVisionMeasurement(
+        new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
+        Utils.fpgaToCurrentTime(timestampSeconds),
+        visionMeasurementStdDevs);
+  }
+
+  @NotLogged
+  public Pose2d getLatestFrontVisionMeasurement() {
+    return m_latestFrontVisionMeasurement;
+  }
+
+  @NotLogged
+  public Pose2d getLatestVisionMeasurement() {
+    return m_latestVisionMeasurement;
   }
 
   @Logged(importance = Importance.INFO)

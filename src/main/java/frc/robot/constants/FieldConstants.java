@@ -25,6 +25,9 @@ public class FieldConstants {
 
   public static final Distance kTrenchWidth = Inches.of(50.34375);
 
+  public static final Distance kMaxHubWidth =
+      Inches.of(58.413).plus(Inches.of(16)); // Add tolerance
+
   public static final Distance kBumpCenterYFromFieldCenter =
       kFieldWidth.div(2).minus(kBumpDistanceFromWall.plus(kBumpWidth.div(2)));
   public static final Distance kTrenchCenterYFromFieldCenter =
@@ -114,7 +117,9 @@ public class FieldConstants {
 
   public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
 
-  public static final Distance kRobotLength = Inches.of(46); // TODO: check measurement
+  public static final Distance kRobotLength = Inches.of(46);
+
+  //   public static final
 
   // Add a new value and automatically adds it to the auto chooser
   public static HashMap<String, Translation2d> AutoConstants() {
