@@ -146,6 +146,7 @@ public class Superstructure {
           switch (m_addableState) {
             case Jostle -> CurrentStates.Score;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
+            case Intaking -> CurrentStates.ScoreWhileIntaking;
           };
       case Intake -> CurrentStates.Intake;
       case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
@@ -155,6 +156,7 @@ public class Superstructure {
           switch (m_addableState) {
             case Jostle -> CurrentStates.ScoreAuto;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUpAuto;
+            case Intaking -> CurrentStates.ScoreWhileIntakingAuto;
           };
       case IntakeAuto -> CurrentStates.IntakeAuto;
       case IntakeAndShootAuto -> CurrentStates.ScoreWhileIntakingAuto;
@@ -175,11 +177,20 @@ public class Superstructure {
       case ScoreWithIntakeUp:
         scoreWithIntakeUp();
         break;
+      case Shoot:
+        shoot();
+        break;
+      case ShootWithIntakeUp:
+        shootWithIntakeUp();
+        break;
       case Intake:
         intake();
         break;
       case ScoreWhileIntaking:
         scoreWhileIntaking();
+        break;
+      case ShootWhileIntaking:
+        // shootWhileIntaking();
         break;
       case Climb:
         climb();
@@ -225,16 +236,18 @@ public class Superstructure {
   }
 
   private void idle() {
-    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    m_intake.setState(IntakeStates.Up);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
-    m_indexer.setState(IndexStates.Idle);
-    m_feeder.setState(FEEDER_STATE.STOP);
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
+    shooter.setState(SHOOTER_STATE.IDLE);
+    indexer.setState(IndexStates.Idle);
+    feeder.setState(FEEDER_STATE.STOP);
+    if (drivetrain.fieldCentric.shouldRaiseIntake()) {
+      intake.setState(IntakeStates.Half);
+    }
   }
 
   private void score() {
-    // drivetrain.setRotationTarget(getRotationForScore());
-    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    drivetrain.setRotationTarget(getRotationForScore());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -244,12 +257,49 @@ public class Superstructure {
   }
 
   private void scoreWithIntakeUp() {
-    // drivetrain.setRotationTarget(getRotationForScore());
-    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    m_intake.setState(IntakeStates.Up);
-    m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(computeFeederStateWithWait());
+    drivetrain.setRotationTarget(getRotationForScore());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTargetWithWait()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTargetWithWait()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+
+    didIntake = false;
+  }
+
+  private void shoot() {
+    drivetrain.setRotationTarget(getRotationForShoot());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    intake.setState(IntakeStates.Jostle);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTargetWithWait()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTargetWithWait()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+
+    didIntake = false;
+  }
+
+  private void shootWithIntakeUp() {
+    drivetrain.setRotationTarget(getRotationForShoot());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    intake.setState(IntakeStates.Up);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTargetWithWait()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTargetWithWait()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -265,9 +315,9 @@ public class Superstructure {
   }
 
   private void scoreWhileIntaking() {
-    // drivetrain.setRotationTarget(getRotationForScore());
-    // drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    m_intake.setState(IntakeStates.Intaking);
+    drivetrain.setRotationTarget(getRotationForScore());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    m_intake.setState(IntakeStates.Down);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
     m_feeder.setState(computeFeederStateWithWait());
@@ -318,7 +368,7 @@ public class Superstructure {
   }
 
   private void scoreWhileIntakingAuto() {
-    m_intake.setState(IntakeStates.Intaking);
+    m_intake.setState(IntakeStates.Down);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
     m_feeder.setState(computeFeederState());
@@ -364,20 +414,32 @@ public class Superstructure {
     return leftAtTargetWithWait() || rightAtTargetWithWait();
   }
 
+  @Logged(importance = Importance.CRITICAL)
+  public boolean driveAtTarget() {
+    return Math.abs(
+            drivetrain.getRotation().minus(drivetrain.fieldCentric.rotationTarget).getDegrees())
+        <= 5;
+  }
+
+  @Logged(importance = Importance.CRITICAL)
+  public boolean driveAtTarget() {
+    return Math.abs(
+            drivetrain.getRotation().minus(drivetrain.fieldCentric.rotationTarget).getDegrees())
+        <= 5;
+  }
+
   /** Returns whether the left shooter is at its target. */
   @Logged(importance = Importance.CRITICAL)
   public boolean leftAtTarget() {
-    return m_shooter.isAtLeftTargetVelocity()
-        && m_shooter.isHoodAtLeftTargetAngle()
-        && ShooterMath2.currentSolution.shooterLeft().inTolerance(m_drivetrain.getRotation());
+    return shooter.isAtLeftTargetVelocity() && shooter.isHoodAtLeftTargetAngle() && driveAtTarget();
   }
 
   /** Returns whether the right shooter is at its target. */
   @Logged(importance = Importance.CRITICAL)
   public boolean rightAtTarget() {
-    return m_shooter.isAtRightTargetVelocity()
-        && m_shooter.isHoodAtRightTargetAngle()
-        && ShooterMath2.currentSolution.shooterRight().inTolerance(m_drivetrain.getRotation());
+    return shooter.isAtRightTargetVelocity()
+        && shooter.isHoodAtRightTargetAngle()
+        && driveAtTarget();
   }
 
   /** Returns whether the left shooter is at its target with wait. */
@@ -395,8 +457,13 @@ public class Superstructure {
   }
 
   @NotLogged
-  private Rotation2d getRotationForScore() {
+  public Rotation2d getRotationForScore() {
     return ShooterMath2.currentSolution.robotHeading().plus(Rotation2d.k180deg);
+  }
+
+  @NotLogged
+  public Rotation2d getRotationForShoot() {
+    return Rotation2d.kZero;
   }
 
   /** The wanted states of superstructure */
@@ -420,8 +487,11 @@ public class Superstructure {
     Idle(),
     Score(),
     ScoreWithIntakeUp(),
+    Shoot(),
+    ShootWithIntakeUp(),
     Intake(),
     ScoreWhileIntaking(),
+    ShootWhileIntaking(),
     Climb(),
     IdleAuto(),
     ScoreAuto(),
@@ -434,6 +504,7 @@ public class Superstructure {
 
   /** The addable states of superstructure */
   public enum AddableStates {
+    Intaking(),
     Jostle(),
     IntakeUp(),
   }

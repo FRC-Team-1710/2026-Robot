@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import java.util.function.BooleanSupplier;
 
 /**
  * The Intake subsystem coordinates the intake mechanism: roller control and deployment (arm)
@@ -86,15 +87,18 @@ public class Intake {
   @Logged(importance = Importance.INFO)
   private boolean m_wasStuck = false;
 
+  @NotLogged private final BooleanSupplier m_bumpSupplier;
+
   /**
    * Constructs an Intake subsystem.
    *
    * @param io the hardware/simulation IO implementation used to read sensors and command motors
    * @param consumer callback used to request subsystem periodic frequency changes
    */
-  public Intake(IntakeIO io, TimesConsumer consumer) {
+  public Intake(IntakeIO io, TimesConsumer consumer, BooleanSupplier bumpSupplier) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
+    this.m_bumpSupplier = bumpSupplier;
 
     this.m_currentState = IntakeStates.Up;
   }
@@ -107,40 +111,43 @@ public class Intake {
   public void periodic() {
     // This method will be called once per scheduler run
     m_io.update();
-
-    // Set the rollers with jam logic
-    switch (m_currentState) {
-      case Intaking:
-        // IMPORTANT, keep every if statement different!
-        if (m_minimumJamTime.calculate(true)) {
-          if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
-            m_wasJammed = true;
-            if (m_jamUndoTime.calculate(true)) {
-              m_jamTime.calculate(false);
-              m_jamUndoTime.calculate(false);
-              m_wasJammed = false;
-              m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
+    if (m_bumpSupplier.getAsBoolean()) {
+      m_io.setIntakeMotor(-IntakeStates.Intaking.rollerSpeed);
+    } else {
+      // Set the rollers with jam logic
+      switch (m_currentState) {
+        case Intaking:
+          // IMPORTANT, keep every if statement different!
+          if (m_minimumJamTime.calculate(true)) {
+            if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
+              m_wasJammed = true;
+              if (m_jamUndoTime.calculate(true)) {
+                m_jamTime.calculate(false);
+                m_jamUndoTime.calculate(false);
+                m_wasJammed = false;
+                m_io.setIntakeMotor(m_currentState.rollerSpeed);
+              } else {
+                m_io.setIntakeMotor(IntakeStates.Jammed.rollerSpeed);
+              }
             } else {
-              m_io.setIntakeMotor(IntakeStates.Jammed.m_rollerSpeed);
+              m_jamUndoTime.calculate(false);
+              m_io.setIntakeMotor(m_currentState.rollerSpeed);
             }
           } else {
+            m_jamTime.calculate(false);
             m_jamUndoTime.calculate(false);
-            m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
+            m_wasJammed = false;
+            m_io.setIntakeMotor(m_currentState.rollerSpeed);
           }
-        } else {
+          break;
+        default:
           m_jamTime.calculate(false);
+          m_minimumJamTime.calculate(false);
           m_jamUndoTime.calculate(false);
           m_wasJammed = false;
-          m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
-        }
-        break;
-      default:
-        m_jamTime.calculate(false);
-        m_minimumJamTime.calculate(false);
-        m_jamUndoTime.calculate(false);
-        m_wasJammed = false;
-        m_io.setIntakeMotor(m_currentState.m_rollerSpeed);
-        break;
+          m_io.setIntakeMotor(m_currentState.rollerSpeed);
+          break;
+      }
     }
 
     switch (m_currentState) {
@@ -279,8 +286,9 @@ public class Intake {
 
   public enum IntakeStates {
     Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.5),
+    Half(Milliseconds.of(60), Rotations.of(0.145), 0, 1, 0.5),
     Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.5),
-    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.15), 1, 1.5, 1),
+    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 1, 1.5, 1),
     Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),
     Intaking(Milliseconds.of(20), Degrees.of(0), 1, 1, 0.5);
 

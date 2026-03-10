@@ -29,9 +29,6 @@ public final class ShooterConstants {
   public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
   public static final int FLYWHEEL_STATOR_CURRENT_LIMIT = 80;
 
-  public static final int HOOD_SUPPLY_CURRENT_LIMIT = 20;
-  public static final int HOOD_STATOR_CURRENT_LIMIT = 20;
-
   // ==================== Motion Magic (Speed Limits) ====================
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 300.0;
   public static final double MOTION_MAGIC_ACCELERATION = 150.0;

@@ -46,14 +46,22 @@ public class Vision implements Subsystem {
 
   private final String m_logPath;
 
-  private final HootAutoReplay m_autoReplay;
+  private final HootAutoReplay autoReplay;
+
+  private final boolean m_front;
 
   /**
    * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
    * @param robotToCamera Transform from robot center to camera (meters, radians)
    * @param drivetrain Reference to drivetrain for pose fusion
    */
-  public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
+  public Vision(
+      String cameraName,
+      Transform3d robotToCamera,
+      CommandSwerveDrivetrain drivetrain,
+      boolean front) {
+
+    m_front = front;
 
     m_logPath = cameraName + "/";
 
@@ -169,10 +177,8 @@ public class Vision implements Subsystem {
     thetaStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
-    m_drivetrain.addVisionMeasurement(
-        new Pose2d(m_robotPose.getTranslation(), m_drivetrain.getRotation()),
-        m_robotPoseTimestamp,
-        VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+    drivetrain.addVisionMeasurement(
+        robotPose, robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev), m_front);
   }
 
   /**
