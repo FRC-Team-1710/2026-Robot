@@ -65,6 +65,14 @@ public class FuelPosition {
     return Timer.getFPGATimestamp() - lastSeenTimestamp;
   }
 
+  /**
+   * Seconds since this ball was last observed, using a cached timestamp to avoid extra Timer reads
+   * when expiring multiple tracks.
+   */
+  public double getAge(double now) {
+    return now - lastSeenTimestamp;
+  }
+
   @Override
   public String toString() {
     return String.format(

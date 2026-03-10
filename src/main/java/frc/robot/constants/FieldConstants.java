@@ -41,6 +41,7 @@ public class FieldConstants {
 
   static {
     try {
+
       if (Mode.currentMode == Mode.currentMode.SIMULATION) {
         kAprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
       } else {
