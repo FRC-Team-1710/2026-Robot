@@ -103,11 +103,14 @@ public class RobotContainer {
 
     switch (Mode.currentMode) {
       case REAL:
-        intake = new Intake(new IntakeIOCTRE(), consumer, () -> driver.leftBumper().getAsBoolean());
-        shooter = new Shooter(new ShooterIOCTRE(), consumer);
-        feeder = new Feeder(new FeederIOCTRE(), consumer);
-        indexer = new Indexer(new IndexerIOCTRE(), consumer);
-        leds = new Leds(new LedsIOArduino(), shooter);
+        m_intake =
+            new Intake(new IntakeIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
+        m_feeder = new Feeder(new FeederIOCTRE(), consumer);
+        m_indexer =
+            new Indexer(
+                new IndexerIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIOArduino(), m_shooter);
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -126,22 +129,27 @@ public class RobotContainer {
         break;
 
       case SIMULATION:
-        intake = new Intake(new IntakeIOSIM(), consumer);
-        shooter = new Shooter(new ShooterIOSIM(), consumer);
-        feeder = new Feeder(new FeederIOSIM(), consumer);
-        indexer =
-            new Indexer(new IndexerIOSIM(), consumer, () -> driver.leftBumper().getAsBoolean());
-        leds = new Leds(new LedsIOSim(), shooter);
-        cameras = new Vision[0];
+        m_intake =
+            new Intake(new IntakeIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_shooter = new Shooter(new ShooterIOSIM(), consumer);
+        m_feeder = new Feeder(new FeederIOSIM(), consumer);
+        m_indexer =
+            new Indexer(
+                new IndexerIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIOSim(), m_shooter);
+        m_cameras = new Vision[0];
         break;
 
       default:
-        intake = new Intake(new IntakeIO() {}, consumer, () -> driver.leftBumper().getAsBoolean());
-        shooter = new Shooter(new ShooterIO() {}, consumer);
-        feeder = new Feeder(new FeederIO() {}, consumer);
-        indexer = new Indexer(new IndexerIO() {}, consumer);
-        leds = new Leds(new LedsIO() {}, shooter);
-        cameras = new Vision[0];
+        m_intake =
+            new Intake(new IntakeIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_shooter = new Shooter(new ShooterIO() {}, consumer);
+        m_feeder = new Feeder(new FeederIO() {}, consumer);
+        m_indexer =
+            new Indexer(
+                new IndexerIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_leds = new Leds(new LedsIO() {}, m_shooter);
+        m_cameras = new Vision[0];
         break;
     }
 
@@ -191,10 +199,10 @@ public class RobotContainer {
 
   /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
-    driver
+    m_driver
         .a()
-        .onTrue(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Intaking)))
-        .onFalse(Commands.runOnce(() -> intake.setStateTesting(IntakeStates.Down)));
+        .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)))
+        .onFalse(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Down)));
 
     m_driver
         .b()
@@ -248,9 +256,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driver
+    m_driver
         .rightStick()
-        .and(driver.leftStick())
+        .and(m_driver.leftStick())
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -261,7 +269,7 @@ public class RobotContainer {
                                 .plus(Rotation2d.k180deg)))
                 .ignoringDisable(true));
 
-    driver
+    m_driver
         .rightTrigger()
         .onTrue(
             Commands.runOnce(
@@ -272,7 +280,7 @@ public class RobotContainer {
                             .getRotation()
                             .plus(Rotation2d.k180deg))));
 
-    driver
+    m_driver
         .start()
         .onTrue(
             Commands.runOnce(() -> drivetrain.resetRotation(Rotation2d.kZero))
@@ -351,30 +359,30 @@ public class RobotContainer {
         .and(m_superstructure::currentStateDoesntUseIntake)
         .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Down)));
 
-    driver
+    m_driver
         .povRight()
-        .and(superstructure::currentStateDoesntUseIntake)
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeStates.Up)));
+        .and(m_superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Up)));
 
-    driver
+    m_driver
         .povRight()
         .and(m_superstructure::currentStateUsesIntake)
         .onTrue(m_superstructure.setAddableStateCommand(AddableStates.IntakeUp));
 
     m_driver
         .povRight()
-        .and(superstructure::currentStateUsesIntake)
-        .onFalse(superstructure.setAddableStateCommand(AddableStates.Intaking));
+        .and(m_superstructure::currentStateUsesIntake)
+        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
 
-    driver
+    m_driver
         .povLeft()
-        .and(superstructure::currentStateUsesIntake)
-        .onTrue(superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .and(m_superstructure::currentStateUsesIntake)
+        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
 
-    driver
+    m_driver
         .povLeft()
-        .and(superstructure::currentStateUsesIntake)
-        .onFalse(superstructure.setAddableStateCommand(AddableStates.Intaking));
+        .and(m_superstructure::currentStateUsesIntake)
+        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
 
     m_mech
         .rightBumper()
