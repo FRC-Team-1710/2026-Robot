@@ -236,18 +236,18 @@ public class Superstructure {
   }
 
   private void idle() {
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    shooter.setState(SHOOTER_STATE.IDLE);
-    indexer.setState(IndexStates.Idle);
-    feeder.setState(FEEDER_STATE.STOP);
-    if (drivetrain.fieldCentric.shouldRaiseIntake()) {
-      intake.setState(IntakeStates.Half);
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
+    if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
+      m_intake.setState(IntakeStates.Half);
     }
   }
 
   private void score() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    m_drivetrain.setRotationTarget(getRotationForScore());
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -257,44 +257,44 @@ public class Superstructure {
   }
 
   private void scoreWithIntakeUp() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Up);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_drivetrain.setRotationTarget(getRotationForScore());
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    m_intake.setState(IntakeStates.Up);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTargetWithWait()
             ? FEEDER_STATE.FEEDING
             : leftAtTargetWithWait()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void shoot() {
-    drivetrain.setRotationTarget(getRotationForShoot());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Jostle);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_drivetrain.setRotationTarget(getRotationForShoot());
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    m_intake.setState(IntakeStates.Jostle);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTargetWithWait()
             ? FEEDER_STATE.FEEDING
             : leftAtTargetWithWait()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
-    didIntake = false;
+    m_didIntake = false;
   }
 
   private void shootWithIntakeUp() {
-    drivetrain.setRotationTarget(getRotationForShoot());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    intake.setState(IntakeStates.Up);
-    shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    feeder.setState(
+    m_drivetrain.setRotationTarget(getRotationForShoot());
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    m_intake.setState(IntakeStates.Up);
+    m_shooter.setState(SHOOTER_STATE.SHOOT);
+    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(
         allAtTargetWithWait()
             ? FEEDER_STATE.FEEDING
             : leftAtTargetWithWait()
@@ -315,8 +315,8 @@ public class Superstructure {
   }
 
   private void scoreWhileIntaking() {
-    drivetrain.setRotationTarget(getRotationForScore());
-    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    m_drivetrain.setRotationTarget(getRotationForScore());
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Down);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -417,28 +417,23 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   public boolean driveAtTarget() {
     return Math.abs(
-            drivetrain.getRotation().minus(drivetrain.fieldCentric.rotationTarget).getDegrees())
-        <= 5;
-  }
-
-  @Logged(importance = Importance.CRITICAL)
-  public boolean driveAtTarget() {
-    return Math.abs(
-            drivetrain.getRotation().minus(drivetrain.fieldCentric.rotationTarget).getDegrees())
+            m_drivetrain.getRotation().minus(m_drivetrain.fieldCentric.rotationTarget).getDegrees())
         <= 5;
   }
 
   /** Returns whether the left shooter is at its target. */
   @Logged(importance = Importance.CRITICAL)
   public boolean leftAtTarget() {
-    return shooter.isAtLeftTargetVelocity() && shooter.isHoodAtLeftTargetAngle() && driveAtTarget();
+    return m_shooter.isAtLeftTargetVelocity()
+        && m_shooter.isHoodAtLeftTargetAngle()
+        && driveAtTarget();
   }
 
   /** Returns whether the right shooter is at its target. */
   @Logged(importance = Importance.CRITICAL)
   public boolean rightAtTarget() {
-    return shooter.isAtRightTargetVelocity()
-        && shooter.isHoodAtRightTargetAngle()
+    return m_shooter.isAtRightTargetVelocity()
+        && m_shooter.isHoodAtRightTargetAngle()
         && driveAtTarget();
   }
 
