@@ -38,6 +38,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
+import frc.robot.utils.VisionUtil.VisionMeasurement;
 import frc.robot.utils.shooterMath.ShooterMath2;
 import java.util.function.Supplier;
 
@@ -361,6 +362,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Utils.fpgaToCurrentTime(timestampSeconds),
         visionMeasurementStdDevs);
     m_shouldAcceptNextVisionMeasurementRotation = false;
+  }
+
+  public void addVisionMeasurement(VisionMeasurement visionMeasurement) {
+    super.addVisionMeasurement(
+        visionMeasurement.robotPose(),
+        visionMeasurement.timestamp(),
+        visionMeasurement.visionStdDev());
   }
 
   public void setShouldAcceptNextVisionMeasurementRotation(boolean shouldAccept) {

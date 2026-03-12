@@ -15,10 +15,14 @@ package frc.robot.utils;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 
@@ -50,6 +54,9 @@ public class VisionUtil {
 
   public static final double MA_AMBIGUITY =
       0.3; // Maximum allowed ambiguity for single-tag measurements
+
+  public static final record VisionMeasurement(
+      Pose2d robotPose, double timestamp, Matrix<N3, N1> visionStdDev) {}
 
   public static Transform2d getTagOffset(
       Transform3d cameraToTag, Transform3d visionStdDev, Transform2d desiredOffset) {
