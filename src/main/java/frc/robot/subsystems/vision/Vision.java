@@ -10,6 +10,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
+import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -47,6 +48,9 @@ public class Vision implements Subsystem {
   private final String m_logPath;
 
   private final HootAutoReplay m_autoReplay;
+
+  private final Set<Integer> rejectTagIds =
+      Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
 
   /**
    * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
@@ -112,13 +116,20 @@ public class Vision implements Subsystem {
   private void fetchInputs() {
 
     PhotonPipelineResult result = m_camera.getLatestResult();
-
-    if (!result.hasTargets()) {
+    // Filtering based on the rejected tags
+    PhotonPipelineResult filteredResult =
+        new PhotonPipelineResult(
+            result.metadata,
+            result.getTargets().stream()
+                .filter(t -> !rejectTagIds.contains(t.getFiducialId()))
+                .toList(),
+            result.getMultiTagResult().isPresent() ? result.getMultiTagResult() : Optional.empty());
+    if (!filteredResult.hasTargets()) {
       reset();
       return;
     }
 
-    Optional<EstimatedRobotPose> estimate = m_poseEstimator.update(result);
+    Optional<EstimatedRobotPose> estimate = m_poseEstimator.update(filteredResult);
 
     if (estimate.isEmpty()) {
       reset();
@@ -131,15 +142,15 @@ public class Vision implements Subsystem {
 
     m_robotPose = visionEstimate.estimatedPose.toPose2d();
     m_robotPoseTimestamp = visionEstimate.timestampSeconds;
-    m_tagCount = result.getTargets().size();
+    m_tagCount = filteredResult.getTargets().size();
 
     m_avgTagDistance =
-        result.getTargets().stream()
+        filteredResult.getTargets().stream()
             .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
             .average()
             .orElse(0.0);
 
-    m_ambiguity = result.getBestTarget().getPoseAmbiguity();
+    m_ambiguity = filteredResult.getBestTarget().getPoseAmbiguity();
   }
 
   private void processInputs() {
