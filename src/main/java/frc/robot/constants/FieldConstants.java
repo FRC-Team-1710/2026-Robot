@@ -26,7 +26,9 @@ public class FieldConstants {
   public static final Distance kTrenchWidth = Inches.of(50.34375);
 
   public static final Distance kMaxHubWidth =
-      Inches.of(58.413).plus(Inches.of(16)); // Add tolerance
+      Inches.of(58.413)
+          .plus(Inches.of(24)); // Add tolerance to account for ball diameter and shooter separation
+  public static final Distance kMaxHubDistanceFromDS = Inches.of(215.4186745);
 
   public static final Distance kBumpCenterYFromFieldCenter =
       kFieldWidth.div(2).minus(kBumpDistanceFromWall.plus(kBumpWidth.div(2)));
@@ -119,7 +121,10 @@ public class FieldConstants {
 
   public static final Distance kRobotLength = Inches.of(46);
 
-  //   public static final
+  public static final Translation2d kHubCornerNeutralZone1 =
+      new Translation2d(kMaxHubDistanceFromDS, kFieldWidth.div(2).plus(kMaxHubWidth.div(2)));
+  public static final Translation2d kHubCornerNeutralZone2 =
+      new Translation2d(kMaxHubDistanceFromDS, kFieldWidth.div(2).minus(kMaxHubWidth.div(2)));
 
   // Add a new value and automatically adds it to the auto chooser
   public static HashMap<String, Translation2d> AutoConstants() {

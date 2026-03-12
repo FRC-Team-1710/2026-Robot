@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -185,5 +187,25 @@ public class MathUtils {
 
   private static double angularDistance(double a, double b) {
     return Math.abs(((a - b + 180) % 360 + 360) % 360 - 180);
+  }
+
+  public static Translation2d getClosest(Translation2d target, Translation2d... points) {
+    Translation2d closest = points[0];
+    double minDist = target.getDistance(points[0]);
+
+    for (int i = 1; i < points.length; i++) {
+      double dist = target.getDistance(points[i]);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = points[i];
+      }
+    }
+    return closest;
+  }
+
+  public static Translation2d opposite(Translation2d point) {
+    return new Translation2d(
+        FieldConstants.kFieldLength.in(Meters) - point.getX(),
+        FieldConstants.kFieldWidth.in(Meters) - point.getY());
   }
 }

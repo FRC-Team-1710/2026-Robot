@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.MatchState;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
@@ -23,6 +25,7 @@ import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.MathUtils;
 import frc.robot.utils.shooterMath.ShooterMath2;
 
 @Logged
@@ -128,11 +131,24 @@ public class Superstructure {
     return switch (wantedState) {
       case Default -> CurrentStates.Idle;
       case Shoot ->
-          switch (addableState) {
-            case Jostle -> CurrentStates.Score;
-            case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
-            case Intaking -> CurrentStates.ScoreWhileIntaking;
-          };
+          ((!Alliance.redAlliance
+                      && drivetrain.getPose().getX()
+                          >= FieldConstants.kBumpDistanceFromDS.in(Meters))
+                  || (Alliance.redAlliance
+                      && drivetrain.getPose().getX()
+                          <= FieldConstants.kFieldLength
+                              .minus(FieldConstants.kBumpDistanceFromDS)
+                              .in(Meters)))
+              ? switch (addableState) {
+                case Jostle -> CurrentStates.Shoot;
+                case IntakeUp -> CurrentStates.ShootWithIntakeUp;
+                case Intaking -> CurrentStates.ShootWhileIntaking;
+              }
+              : switch (addableState) {
+                case Jostle -> CurrentStates.Score;
+                case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
+                case Intaking -> CurrentStates.ScoreWhileIntaking;
+              };
       case Intake -> CurrentStates.Intake;
       case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
       case Climb -> CurrentStates.Climb;
@@ -175,7 +191,7 @@ public class Superstructure {
         scoreWhileIntaking();
         break;
       case ShootWhileIntaking:
-        // shootWhileIntaking();
+        shootWhileIntaking();
         break;
       case Climb:
         climb();
@@ -251,13 +267,13 @@ public class Superstructure {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Jostle);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(
-        allAtTargetWithWait()
+        allAtTarget()
             ? FEEDER_STATE.FEEDING
-            : leftAtTargetWithWait()
+            : leftAtTarget()
                 ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -267,13 +283,13 @@ public class Superstructure {
     drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     intake.setState(IntakeStates.Up);
     shooter.setState(SHOOTER_STATE.SHOOT);
-    indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
     feeder.setState(
-        allAtTargetWithWait()
+        allAtTarget()
             ? FEEDER_STATE.FEEDING
-            : leftAtTargetWithWait()
+            : leftAtTarget()
                 ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -300,6 +316,22 @@ public class Superstructure {
             : leftAtTargetWithWait()
                 ? FEEDER_STATE.FEEDING_LEFT
                 : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+
+    didIntake = false;
+  }
+
+  private void shootWhileIntaking() {
+    drivetrain.setRotationTarget(getRotationForShoot());
+    drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    intake.setState(IntakeStates.Down);
+    shooter.setState(SHOOTER_STATE.SHOOT);
+    indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
+    feeder.setState(
+        allAtTarget()
+            ? FEEDER_STATE.FEEDING
+            : leftAtTarget()
+                ? FEEDER_STATE.FEEDING_LEFT
+                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
 
     didIntake = false;
   }
@@ -438,7 +470,31 @@ public class Superstructure {
 
   @NotLogged
   public Rotation2d getRotationForShoot() {
-    return Rotation2d.kZero;
+    return !Alliance.redAlliance
+        ? (drivetrain.getPose().getY() <= FieldConstants.kHubCornerNeutralZone1.getY()
+                && drivetrain.getPose().getY() >= FieldConstants.kHubCornerNeutralZone2.getY()
+            ? drivetrain
+                .getPose()
+                .getTranslation()
+                .minus(
+                    MathUtils.getClosest(
+                        drivetrain.getPose().getTranslation(),
+                        FieldConstants.kHubCornerNeutralZone1,
+                        FieldConstants.kHubCornerNeutralZone2))
+                .getAngle()
+            : Rotation2d.kZero)
+        : (drivetrain.getPose().getY() <= FieldConstants.kHubCornerNeutralZone1.getY()
+                && drivetrain.getPose().getY() >= FieldConstants.kHubCornerNeutralZone2.getY()
+            ? drivetrain
+                .getPose()
+                .getTranslation()
+                .minus(
+                    MathUtils.getClosest(
+                        drivetrain.getPose().getTranslation(),
+                        MathUtils.opposite(FieldConstants.kHubCornerNeutralZone1),
+                        MathUtils.opposite(FieldConstants.kHubCornerNeutralZone2)))
+                .getAngle()
+            : Rotation2d.k180deg);
   }
 
   /** The wanted states of superstructure */
