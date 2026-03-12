@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
-import java.util.function.BooleanSupplier;
 
 @Logged
 public class Indexer {
@@ -45,19 +44,15 @@ public class Indexer {
   @Logged(importance = Logged.Importance.INFO)
   private boolean m_wasJammed = false;
 
-  @NotLogged private final BooleanSupplier m_bumpSupplier;
-
   /**
    * Creates a new Indexer.
    *
    * @param io the indexer IO implementation
    * @param consumer the times consumer for dynamic scheduling
-   * @param bumpSupplier supplier for the bump button state
    */
-  public Indexer(IndexerIO io, TimesConsumer consumer, BooleanSupplier bumpSupplier) {
+  public Indexer(IndexerIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
-    this.m_bumpSupplier = bumpSupplier;
   }
 
   /** Runs periodic indexer logic including jam detection. */
@@ -65,43 +60,38 @@ public class Indexer {
     // This method will be called once per scheduler run
     m_io.update();
     m_io.setIndexMotor(m_currentState.m_speed);
-    if (m_bumpSupplier.getAsBoolean()) {
-      // This is NOT a magic number, it makes it go backwards to hopefully unjam the Fuel
-      m_io.setIndexMotor(-0.5);
-    } else {
-      switch (m_currentState) {
-        case Indexing:
-          // IMPORTANT, keep every if statement different!
-          if (m_minimumJamTime.calculate(true)) {
-            if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
-              m_wasJammed = true;
-              if (m_jamUndoTime.calculate(true)) {
-                m_jamTime.calculate(false);
-                m_jamUndoTime.calculate(false);
-                m_wasJammed = false;
-                m_io.setIndexMotor(m_currentState.m_speed);
-              } else {
-                m_io.setIndexMotor(IndexStates.Jammed.m_speed);
-              }
-            } else {
+    switch (m_currentState) {
+      case Indexing:
+        // IMPORTANT, keep every if statement different!
+        if (m_minimumJamTime.calculate(true)) {
+          if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
+            m_wasJammed = true;
+            if (m_jamUndoTime.calculate(true)) {
+              m_jamTime.calculate(false);
               m_jamUndoTime.calculate(false);
+              m_wasJammed = false;
               m_io.setIndexMotor(m_currentState.m_speed);
+            } else {
+              m_io.setIndexMotor(IndexStates.Jammed.m_speed);
             }
           } else {
-            m_jamTime.calculate(false);
             m_jamUndoTime.calculate(false);
-            m_wasJammed = false;
             m_io.setIndexMotor(m_currentState.m_speed);
           }
-          break;
-        default:
+        } else {
           m_jamTime.calculate(false);
-          m_minimumJamTime.calculate(false);
           m_jamUndoTime.calculate(false);
           m_wasJammed = false;
           m_io.setIndexMotor(m_currentState.m_speed);
-          break;
-      }
+        }
+        break;
+      default:
+        m_jamTime.calculate(false);
+        m_minimumJamTime.calculate(false);
+        m_jamUndoTime.calculate(false);
+        m_wasJammed = false;
+        m_io.setIndexMotor(m_currentState.m_speed);
+        break;
     }
   }
 

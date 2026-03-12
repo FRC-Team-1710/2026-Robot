@@ -20,7 +20,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -41,16 +40,19 @@ public class CustomFieldCentric implements SwerveRequest {
   @Logged(importance = Importance.CRITICAL)
   public Rotation2d rotationTarget = Rotation2d.kZero;
 
+  @Logged(importance = Importance.INFO)
+  public Rotation2d bumpRotationTarget = Rotation2d.kZero;
+
   @Logged(importance = Importance.DEBUG)
   public Pose2d currentBumpLocation = Pose2d.kZero;
 
-  @Logged(importance = Importance.CRITICAL)
+  @Logged(importance = Importance.INFO)
   public LinearVelocity xVelocity = MetersPerSecond.of(0);
 
-  @Logged(importance = Importance.CRITICAL)
+  @Logged(importance = Importance.INFO)
   public LinearVelocity yVelocity = MetersPerSecond.of(0);
 
-  @Logged(importance = Importance.CRITICAL)
+  @Logged(importance = Importance.INFO)
   public AngularVelocity angularVelocity = RadiansPerSecond.of(0);
 
   @NotLogged private final Pigeon2 gyro;
@@ -93,17 +95,17 @@ public class CustomFieldCentric implements SwerveRequest {
           .withSteerRequestType(SteerRequestType.Position);
 
   /* Logging vars */
-  @Logged(importance = Importance.INFO)
+  @Logged(importance = Importance.CRITICAL)
   private boolean stillGoingOverBump = false;
 
-  @Logged(importance = Importance.INFO)
+  @Logged(importance = Importance.CRITICAL)
   private boolean towardsBump = false;
 
   @Logged(importance = Importance.INFO)
   private double m_lastLoopTime = 0;
 
-  @Logged(importance = Importance.INFO)
-  private Pose2d m_poseLookingForBump = Pose2d.kZero;
+  @Logged(importance = Importance.CRITICAL)
+  private ChassisSpeeds wantedSpeeds = new ChassisSpeeds();
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
@@ -120,36 +122,28 @@ public class CustomFieldCentric implements SwerveRequest {
     long loopStartTime = RobotController.getFPGATime();
     if (currentDriveState != RequestStates.ROTATION_LOCK
         && DrivetrainAutomationConstants.BumpDetection.kAutoBumpAlignment) {
-      if (Math.hypot(
-                  Math.abs(xVelocity.in(MetersPerSecond)), Math.abs(yVelocity.in(MetersPerSecond)))
-              >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeedRequest.in(
-                  MetersPerSecond)
-          && (Math.hypot(
-                      Math.abs(xVelocity.in(MetersPerSecond)),
-                      Math.abs(yVelocity.in(MetersPerSecond)))
-                  >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeed.in(MetersPerSecond)
-              || currentDriveState == RequestStates.BUMP_ASSIST)) {
-        m_poseLookingForBump =
-            new Pose2d(
-                    parameters.currentPose.getTranslation(),
-                    new Rotation2d(xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond))
-                        .plus(Rotation2d.kCCW_90deg))
-                .plus(new Transform2d(0, -2.5, Rotation2d.kZero));
-        stillGoingOverBump =
-            stillGoingOverBump(
-                parameters.currentPose.getTranslation(),
-                gyro.getPitch().getValue(),
-                gyro.getRoll().getValue());
+      if (Math.hypot( // Inputs large enough
+              Math.abs(xVelocity.in(MetersPerSecond)), Math.abs(yVelocity.in(MetersPerSecond)))
+          >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeedRequest.in(MetersPerSecond)) {
         towardsBump =
             towardsBump(
                 new Pose2d(
                     parameters.currentPose.getTranslation(),
                     new Rotation2d(xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond))
                         .plus(Rotation2d.kCW_90deg)));
-        if (towardsBump || (currentDriveState == RequestStates.BUMP_ASSIST && stillGoingOverBump)) {
+        if (towardsBump) {
           currentDriveState = RequestStates.BUMP_ASSIST;
         } else {
-          currentDriveState = RequestStates.DRIVER_CONTROLLED;
+          stillGoingOverBump =
+              stillGoingOverBump(
+                  parameters.currentPose.getTranslation(),
+                  gyro.getPitch().getValue(),
+                  gyro.getRoll().getValue());
+          if (currentDriveState == RequestStates.BUMP_ASSIST && stillGoingOverBump) {
+            currentDriveState = RequestStates.BUMP_ASSIST;
+          } else {
+            currentDriveState = RequestStates.DRIVER_CONTROLLED;
+          }
         }
       } else {
         currentDriveState = RequestStates.DRIVER_CONTROLLED;
@@ -166,52 +160,39 @@ public class CustomFieldCentric implements SwerveRequest {
       shouldResetRotationPID = false;
     }
 
-    ChassisSpeeds wantedSpeeds;
-
     switch (currentDriveState) {
       case BUMP_ASSIST:
-        // Snap to closest Pi/2 (90 degrees)
-        double currentRadians = parameters.currentPose.getRotation().getRadians();
-        double targetSnapRadians = 0;
-        if (currentRadians >= (Math.PI / 4) && currentRadians <= (Math.PI * 3 / 4)) {
-          targetSnapRadians = Math.PI / 2;
-        } else if (currentRadians <= -(Math.PI / 4) && currentRadians >= -(Math.PI * 3 / 4)) {
-          targetSnapRadians = -Math.PI / 2;
-        } else if (currentRadians <= -(Math.PI * 3 / 4) || currentRadians >= (Math.PI * 3 / 4)) {
-          targetSnapRadians = Math.PI;
-        }
-
-        rotationLockPID.setGoal(targetSnapRadians);
-
-        maxBumpSpeed = getMaxSpeedForBump(parameters.currentPose).in(MetersPerSecond);
+        bumpRotationTarget =
+            Rotation2d.fromDegrees(
+                MathUtils.snapAngle(parameters.currentPose.getRotation().getDegrees()));
+        rotationLockPID.setGoal(bumpRotationTarget.getRadians());
 
         wantedSpeeds =
             new ChassisSpeeds(
-                xVelocity,
+                MetersPerSecond.of(
+                    MathUtil.clamp(
+                        xVelocity.in(MetersPerSecond),
+                        -DrivetrainAutomationConstants.BumpDetection.kBumpFast.in(MetersPerSecond),
+                        DrivetrainAutomationConstants.BumpDetection.kBumpFast.in(MetersPerSecond))),
                 yVelocity
                     .times(DrivetrainAutomationConstants.kDriverTranslationOverrideMultiplier)
                     .plus(
                         MetersPerSecond.of(
-                            MathUtil.clamp(
-                                yAssistPID.calculate(
-                                    parameters.currentPose.getY(), currentBumpLocation.getY()),
-                                -maxBumpSpeed,
-                                maxBumpSpeed))),
+                            yAssistPID.calculate(
+                                parameters.currentPose.getY(), currentBumpLocation.getY()))),
                 angularVelocity
                     .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
                     .plus(
                         RadiansPerSecond.of(
                             MathUtil.clamp(
-                                rotationLockPID.calculate(currentRadians),
+                                rotationLockPID.calculate(
+                                    parameters.currentPose.getRotation().getRadians()),
                                 -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
                                 DrivetrainAutomationConstants.kRotationPIDMax.in(
                                     RadiansPerSecond)))));
         break;
       case ROTATION_LOCK:
         rotationLockPID.setGoal(rotationTarget.getRadians());
-
-        SmartDashboard.putNumber(
-            "RotationLockSetpointRadians", rotationLockPID.getSetpoint().position);
 
         wantedSpeeds =
             new ChassisSpeeds(
@@ -256,30 +237,30 @@ public class CustomFieldCentric implements SwerveRequest {
         FieldConstants.Bump.BumpLocation.getClosest(robotWantedVelocityHeading.getTranslation());
     currentBumpLocation = new Pose2d(targetBump.average, Rotation2d.kZero);
     return MathUtils.willPenetrateLine(
-            robotWantedVelocityHeading, targetBump.translationOutside, targetBump.translationInside)
-        && (currentBumpLocation
-                .getTranslation()
-                .getDistance(robotWantedVelocityHeading.getTranslation())
-            < 2.5);
+        robotWantedVelocityHeading, targetBump.translationOutside, targetBump.translationInside);
+    // && (currentBumpLocation
+    //         .getTranslation()
+    //         .getDistance(robotWantedVelocityHeading.getTranslation())
+    //     < 2.5);
   }
 
-  /** Uses the pose to determine the max speed on the bump depending on its current position */
-  private LinearVelocity getMaxSpeedForBump(Pose2d currentPose) {
-    // If on same half as current alliance
-    return ((currentPose.getX() > FieldConstants.kFieldLength.div(2).in(Meters)
-                && Alliance.redAlliance)
-            || (currentPose.getX() < FieldConstants.kFieldLength.div(2).in(Meters)
-                && !Alliance.redAlliance))
-        // If in alliance zone
-        ? (((currentPose.getX() < FieldConstants.kBumpDistanceFromDS.in(Meters))
-                || (currentPose.getX()
-                    > FieldConstants.kFieldLength
-                        .minus(FieldConstants.kBumpDistanceFromDS)
-                        .in(Meters)))
-            ? DrivetrainAutomationConstants.BumpDetection.kBumpFast
-            : DrivetrainAutomationConstants.BumpDetection.kBumpSlow)
-        : DrivetrainAutomationConstants.BumpDetection.kBumpFast;
-  }
+  // /* Uses the pose to determine the max speed on the bump depending on its current position */
+  // private LinearVelocity getMaxSpeedForBump(Pose2d currentPose) {
+  //   // If on same half as current alliance
+  //   return ((currentPose.getX() > FieldConstants.kFieldLength.div(2).in(Meters)
+  //               && Alliance.redAlliance)
+  //           || (currentPose.getX() < FieldConstants.kFieldLength.div(2).in(Meters)
+  //               && !Alliance.redAlliance))
+  //       // If in alliance zone
+  //       ? (((currentPose.getX() < FieldConstants.kBumpDistanceFromDS.in(Meters))
+  //               || (currentPose.getX()
+  //                   > FieldConstants.kFieldLength
+  //                       .minus(FieldConstants.kBumpDistanceFromDS)
+  //                       .in(Meters)))
+  //           ? DrivetrainAutomationConstants.BumpDetection.kBumpFast
+  //           : DrivetrainAutomationConstants.BumpDetection.kBumpSlow)
+  //       : DrivetrainAutomationConstants.BumpDetection.kBumpFast;
+  // }
 
   /** Uses the pose to determine if it's going towards the alliance zone */
   public boolean isGoingToAllianceZone(Pose2d currentPose) {
@@ -287,6 +268,15 @@ public class CustomFieldCentric implements SwerveRequest {
             && Alliance.redAlliance)
         || (currentPose.getX() < FieldConstants.kFieldLength.div(3).in(Meters)
             && !Alliance.redAlliance);
+  }
+
+  @NotLogged
+  public boolean shouldRaiseIntake() {
+    return currentDriveState == RequestStates.BUMP_ASSIST
+        && (bumpRotationTarget.getDegrees()
+                == DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake1.getDegrees()
+            || bumpRotationTarget.getDegrees()
+                == DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake2.getDegrees());
   }
 
   /**

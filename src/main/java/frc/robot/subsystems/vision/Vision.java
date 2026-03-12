@@ -54,7 +54,6 @@ public class Vision implements Subsystem {
    * @param drivetrain Reference to drivetrain for pose fusion
    */
   public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
-
     m_logPath = cameraName + "/";
 
     this.m_drivetrain = drivetrain;
@@ -170,9 +169,7 @@ public class Vision implements Subsystem {
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
     m_drivetrain.addVisionMeasurement(
-        new Pose2d(m_robotPose.getTranslation(), m_drivetrain.getRotation()),
-        m_robotPoseTimestamp,
-        VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
   /**

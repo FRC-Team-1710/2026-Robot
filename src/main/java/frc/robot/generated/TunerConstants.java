@@ -72,7 +72,9 @@ public class TunerConstants {
                   .withStatorCurrentLimitEnable(true));
   private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
   // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
-  private static final Pigeon2Configuration pigeonConfigs = null;
+  private static final Pigeon2Configuration pigeonConfigs =
+      new Pigeon2Configuration()
+          .withGyroTrim(new GyroTrimConfigs().withGyroScalarZ(1 + (11.8 / 360 / 10)));
 
   // CAN bus that the devices are located on;
   // All swerve devices must share the same CAN bus
@@ -80,9 +82,9 @@ public class TunerConstants {
 
   // Theoretical free speed (m/s) at 12 V applied output;
   // This needs to be tuned to your individual robot
-  public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.54);
+  public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.4);
 
-  public static final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(2);
+  public static final AngularVelocity kMaxAngularRate = RotationsPerSecond.of(1.5);
 
   public static Distance RobotLength = Inches.of(27);
 
@@ -90,7 +92,7 @@ public class TunerConstants {
   // This may need to be tuned to your individual robot
   private static final double kCoupleRatio = 3.2;
 
-  private static final double kDriveGearRatio = 5.27 / 1;
+  private static final double kDriveGearRatio = 7.03 / 1;
   private static final double kSteerGearRatio = 26 / 1;
   private static final Distance kWheelRadius = Inches.of(2);
 
@@ -142,7 +144,7 @@ public class TunerConstants {
   private static final int kFrontLeftDriveMotorId = CanIdConstants.Swerve.FRONT_LEFT_DRIVE;
   private static final int kFrontLeftSteerMotorId = CanIdConstants.Swerve.FRONT_LEFT_STEER;
   private static final int kFrontLeftEncoderId = CanIdConstants.Swerve.FRONT_LEFT_ENCODER;
-  private static final Angle kFrontLeftEncoderOffset = Degrees.of(-149.41);
+  private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.081298828125 + 0.5);
   private static final boolean kFrontLeftSteerMotorInverted = false;
   private static final boolean kFrontLeftEncoderInverted = false;
 
@@ -153,7 +155,7 @@ public class TunerConstants {
   private static final int kFrontRightDriveMotorId = CanIdConstants.Swerve.FRONT_RIGHT_DRIVE;
   private static final int kFrontRightSteerMotorId = CanIdConstants.Swerve.FRONT_RIGHT_STEER;
   private static final int kFrontRightEncoderId = CanIdConstants.Swerve.FRONT_RIGHT_ENCODER;
-  private static final Angle kFrontRightEncoderOffset = Degrees.of(287.31);
+  private static final Angle kFrontRightEncoderOffset = Rotations.of(-0.1962890625);
   private static final boolean kFrontRightSteerMotorInverted = false;
   private static final boolean kFrontRightEncoderInverted = false;
 
@@ -164,7 +166,7 @@ public class TunerConstants {
   private static final int kBackLeftDriveMotorId = CanIdConstants.Swerve.BACK_LEFT_DRIVE;
   private static final int kBackLeftSteerMotorId = CanIdConstants.Swerve.BACK_LEFT_STEER;
   private static final int kBackLeftEncoderId = CanIdConstants.Swerve.BACK_LEFT_ENCODER;
-  private static final Angle kBackLeftEncoderOffset = Degrees.of(83.41);
+  private static final Angle kBackLeftEncoderOffset = Rotations.of(-0.260986328125 + 0.5);
   private static final boolean kBackLeftSteerMotorInverted = false;
   private static final boolean kBackLeftEncoderInverted = false;
 
@@ -175,7 +177,7 @@ public class TunerConstants {
   private static final int kBackRightDriveMotorId = CanIdConstants.Swerve.BACK_RIGHT_DRIVE;
   private static final int kBackRightSteerMotorId = CanIdConstants.Swerve.BACK_RIGHT_STEER;
   private static final int kBackRightEncoderId = CanIdConstants.Swerve.BACK_RIGHT_ENCODER;
-  private static final Angle kBackRightEncoderOffset = Degrees.of(146.43);
+  private static final Angle kBackRightEncoderOffset = Rotations.of(0.41357421875);
   private static final boolean kBackRightSteerMotorInverted = false;
   private static final boolean kBackRightEncoderInverted = false;
 

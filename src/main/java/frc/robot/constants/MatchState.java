@@ -119,13 +119,8 @@ public class MatchState {
       }
     }
 
-    if (autonomousWinnerIsRed.isEmpty()) {
-      // Assume active to not disable robot performance if auto winner is unknown
-      return Seconds.of(999);
-    }
-
     // Already inactive or no FMS
-    return Seconds.of(0);
+    return Seconds.of(999);
   }
 
   @SuppressWarnings("unused")

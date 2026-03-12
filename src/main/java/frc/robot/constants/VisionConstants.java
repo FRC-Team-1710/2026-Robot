@@ -41,7 +41,7 @@ public class VisionConstants {
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
 
-  public static record PoseCameraConfig(String name, Transform3d robotToCamera) {}
+  public static record PoseCameraConfig(String name, Transform3d robotToCamera, boolean front) {}
 
   /**
    * Defines a single vision pose camera configuration.
@@ -59,7 +59,7 @@ public class VisionConstants {
                 Units.inchesToMeters(7.769),
                 Units.inchesToMeters(13.341),
                 Units.inchesToMeters(7.995)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(175.0)))),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(175.0))), true),
     new PoseCameraConfig(
         "FrontRight",
         new Transform3d(
@@ -67,7 +67,7 @@ public class VisionConstants {
                 Units.inchesToMeters(7.769),
                 Units.inchesToMeters(-13.341),
                 Units.inchesToMeters(7.995)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(185.0)))),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(185.0))), true),
     new PoseCameraConfig(
         "BackLeft",
         new Transform3d(
@@ -78,7 +78,7 @@ public class VisionConstants {
             new Rotation3d(
                 Math.toRadians(180),
                 Math.toRadians(180),
-                Math.toRadians(-90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
+                Math.toRadians(-90.0))), false), // TODO: Change 0.0 pitch to 25 degrees in version 2
     new PoseCameraConfig(
         "BackRight",
         new Transform3d(
@@ -89,7 +89,7 @@ public class VisionConstants {
             new Rotation3d(
                 Math.toRadians(180),
                 Math.toRadians(180),
-                Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2
+                Math.toRadians(90.0))), false), // TODO: Change 0.0 pitch to 25 degrees in version 2
   };
 
   public static record FuelCameraConfig(String name, Transform3d robotToCamera) {}
