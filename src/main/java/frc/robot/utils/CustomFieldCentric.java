@@ -89,8 +89,8 @@ public class CustomFieldCentric implements SwerveRequest {
   public RequestStates currentDriveState = RequestStates.DRIVER_CONTROLLED;
 
   @NotLogged
-  private final SwerveRequest.ApplyFieldSpeeds driveRequest =
-      new SwerveRequest.ApplyFieldSpeeds()
+  private final SwerveRequest.FieldCentric driveRequest =
+      new SwerveRequest.FieldCentric()
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
           .withSteerRequestType(SteerRequestType.Position);
 
@@ -212,7 +212,12 @@ public class CustomFieldCentric implements SwerveRequest {
 
     m_lastLoopTime = RobotController.getFPGATime() - loopStartTime;
 
-    return driveRequest.withSpeeds(wantedSpeeds).apply(parameters, modulesToApply);
+    return driveRequest
+        .withVelocityX(wantedSpeeds.vxMetersPerSecond)
+        .withVelocityY(wantedSpeeds.vyMetersPerSecond)
+        .withRotationalRate(wantedSpeeds.omegaRadiansPerSecond)
+        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
+        .apply(parameters, modulesToApply);
   }
 
   /**

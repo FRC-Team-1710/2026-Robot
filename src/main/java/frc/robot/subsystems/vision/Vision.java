@@ -155,7 +155,7 @@ public class Vision implements Subsystem {
 
   private void processInputs() {
 
-    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0) {
+    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0 || m_robotPose == Pose2d.kZero) {
       return;
     }
     // Reject single-tag solutions with high ambiguity.

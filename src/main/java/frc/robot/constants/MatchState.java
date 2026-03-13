@@ -12,7 +12,7 @@ public class MatchState {
   private static final boolean kSimulatePracticeMatch = false;
 
   /** Used when we want to shoot while our hub is disabled */
-  private static boolean m_ignoreFMS = true; // TODO:
+  private static final boolean m_ignoreFMS = true; // TODO:
 
   public static Optional<Boolean> autonomousWinnerIsRed = Optional.empty();
 
