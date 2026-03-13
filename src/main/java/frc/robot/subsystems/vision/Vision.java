@@ -169,6 +169,11 @@ public class Vision implements Subsystem {
     // Larger std dev = less influence in pose estimator.
     double xyStdDev = VisionConstants.BASE_XY_STD_DEV / m_tagCount;
     double thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / m_tagCount;
+
+    if (m_tagCount == 1) {
+      xyStdDev *= 2.0; // Single tag is less reliable, so start with higher std dev
+      thetaStdDev *= 2.0;
+    }
     // Squared distance scaling penalizes far-away tag estimates heavily,
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);

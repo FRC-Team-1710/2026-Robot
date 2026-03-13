@@ -25,7 +25,7 @@ public class VisionConstants {
    * Maximum acceptable ambiguity for AprilTag detections (0.0 = perfect, 1.0 = completely
    * ambiguous)
    */
-  public static final double MAX_TAG_AMBIGUITY = 0.7;
+  public static final double MAX_TAG_AMBIGUITY = 0.6;
 
   // ==================== Trust Level Limits ====================
 
