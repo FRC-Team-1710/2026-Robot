@@ -51,8 +51,6 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   private AddableStates m_addableState = AddableStates.Jostle;
 
-  private AddableStates addableState = AddableStates.Intaking;
-
   /**
    * Constructs the superstructure with all subsystem references.
    *
@@ -135,6 +133,8 @@ public class Superstructure {
       } else {
         m_mech.setRumble(RumbleType.kBothRumble, 0);
       }
+    } else if (!MatchState.autonomousWinnerIsRed.isPresent()) {
+      m_mech.setRumble(RumbleType.kBothRumble, 1);
     }
   }
 
@@ -156,12 +156,12 @@ public class Superstructure {
                           <= FieldConstants.kFieldLength
                               .minus(FieldConstants.kBumpDistanceFromDS)
                               .in(Meters)))
-              ? switch (addableState) {
+              ? switch (m_addableState) {
                 case Jostle -> CurrentStates.Shoot;
                 case IntakeUp -> CurrentStates.ShootWithIntakeUp;
                 case Intaking -> CurrentStates.ShootWhileIntaking;
               }
-              : switch (addableState) {
+              : switch (m_addableState) {
                 case Jostle -> CurrentStates.Score;
                 case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
                 case Intaking -> CurrentStates.ScoreWhileIntaking;
@@ -202,7 +202,7 @@ public class Superstructure {
         shootWithIntakeUp();
         break;
       case Intake:
-        m_intake();
+        intake();
         break;
       case ScoreWhileIntaking:
         scoreWhileIntaking();
@@ -311,7 +311,7 @@ public class Superstructure {
     m_didIntake = false;
   }
 
-  private void m_intake() {
+  private void intake() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.IDLE);

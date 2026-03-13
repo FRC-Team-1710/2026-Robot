@@ -111,8 +111,8 @@ public class Shooter {
 
     this.m_shouldOverride = false;
 
-    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 35);
-    SmartDashboard.putNumber("speedTransferEfficiency", 0.54375);
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 40);
+    SmartDashboard.putNumber("speedTransferEfficiency", 0.541);
   }
 
   /** Runs periodic shooter logic including target tracking and fuel counting. */

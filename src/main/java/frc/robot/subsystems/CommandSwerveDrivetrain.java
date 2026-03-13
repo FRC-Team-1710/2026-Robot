@@ -273,6 +273,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           Alliance.redAlliance
               ? kRedAlliancePerspectiveRotation
               : kBlueAlliancePerspectiveRotation);
+
       m_hasAppliedOperatorPerspective = true;
     }
 
@@ -355,12 +356,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
-        m_shouldAcceptNextVisionMeasurementRotation
-            ? visionRobotPoseMeters
-            : new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
+        new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
         Utils.fpgaToCurrentTime(timestampSeconds),
         visionMeasurementStdDevs);
-    m_shouldAcceptNextVisionMeasurementRotation = false;
+    if (m_shouldAcceptNextVisionMeasurementRotation) {
+      m_shouldAcceptNextVisionMeasurementRotation = false;
+      resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
+    }
   }
 
   public void setShouldAcceptNextVisionMeasurementRotation(boolean shouldAccept) {
