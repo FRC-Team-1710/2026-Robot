@@ -160,7 +160,7 @@ public class Vision implements Subsystem {
     }
     // Reject single-tag solutions with high ambiguity.
     // Multi-tag solutions are inherently more stable.
-    if (m_tagCount == 1 && m_ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
+    if (m_tagCount == 1 || m_ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
       return;
     }
     // Dynamically scale measurement
