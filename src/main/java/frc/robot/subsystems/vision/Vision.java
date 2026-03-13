@@ -117,19 +117,20 @@ public class Vision implements Subsystem {
 
     PhotonPipelineResult result = m_camera.getLatestResult();
     // Filtering based on the rejected tags
-    PhotonPipelineResult filteredResult =
-        new PhotonPipelineResult(
-            result.metadata,
-            result.getTargets().stream()
-                .filter(t -> !rejectTagIds.contains(t.getFiducialId()))
-                .toList(),
-            result.getMultiTagResult().isPresent() ? result.getMultiTagResult() : Optional.empty());
-    if (!filteredResult.hasTargets()) {
+    // PhotonPipelineResult filteredResult =
+    //     new PhotonPipelineResult(
+    //         result.metadata,
+    //         result.getTargets().stream()
+    //             .filter(t -> !rejectTagIds.contains(t.getFiducialId()))
+    //             .toList(),
+    //         result.getMultiTagResult().isPresent() ? result.getMultiTagResult() :
+    // Optional.empty());
+    if (!result.hasTargets()) {
       reset();
       return;
     }
 
-    Optional<EstimatedRobotPose> estimate = m_poseEstimator.update(filteredResult);
+    Optional<EstimatedRobotPose> estimate = m_poseEstimator.update(result);
 
     if (estimate.isEmpty()) {
       reset();
@@ -142,15 +143,15 @@ public class Vision implements Subsystem {
 
     m_robotPose = visionEstimate.estimatedPose.toPose2d();
     m_robotPoseTimestamp = visionEstimate.timestampSeconds;
-    m_tagCount = filteredResult.getTargets().size();
+    m_tagCount = result.getTargets().size();
 
     m_avgTagDistance =
-        filteredResult.getTargets().stream()
+        result.getTargets().stream()
             .mapToDouble(t -> t.getBestCameraToTarget().getTranslation().getNorm())
             .average()
             .orElse(0.0);
 
-    m_ambiguity = filteredResult.getBestTarget().getPoseAmbiguity();
+    m_ambiguity = result.getBestTarget().getPoseAmbiguity();
   }
 
   private void processInputs() {
