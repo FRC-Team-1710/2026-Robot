@@ -35,16 +35,14 @@ public class MatchState {
     return timeTillActive().in(Seconds) == 0;
   }
 
-  /**
-   * Starts or restarts the teleoperated period timer.
-   */
+  /** Starts or restarts the teleoperated period timer. */
   public static void startTeleop() {
     m_teleopTimer.restart();
   }
 
   /**
-   * Determines whether the robot is allowed to shoot, taking into account
-   * flight time and the current match state.
+   * Determines whether the robot is allowed to shoot, taking into account flight time and the
+   * current match state.
    *
    * @param tof The time of flight of the shot in seconds.
    * @return true if the robot can shoot, false otherwise.
@@ -120,9 +118,9 @@ public class MatchState {
   /**
    * Returns the time until the match becomes inactive.
    *
-   * <p>When FMS is attached but the autonomous winner is unknown, this method returns
-   * a large sentinel value to indicate that the match should be treated as active.
-   * When there is no FMS or the match is already inactive, this method returns zero.
+   * <p>When FMS is attached but the autonomous winner is unknown, this method returns a large
+   * sentinel value to indicate that the match should be treated as active. When there is no FMS or
+   * the match is already inactive, this method returns zero.
    *
    * @param tof The time of flight of the shot in seconds.
    * @return Time until inactive.
@@ -182,9 +180,7 @@ public class MatchState {
     autonomousWinnerIsRed = Optional.of(redAlliance);
   }
 
-  /**
-   * Updates the autonomous winner based on the game-specific message from the FMS.
-   */
+  /** Updates the autonomous winner based on the game-specific message from the FMS. */
   public static void updateAutonomousWinner() {
     String gameData = DriverStation.getGameSpecificMessage();
     if (gameData.length() > 0) {
