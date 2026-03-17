@@ -111,7 +111,8 @@ public class Shooter {
 
     this.m_shouldOverride = false;
 
-    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 0);
+    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 40);
+    SmartDashboard.putNumber("speedTransferEfficiency", 0.541);
   }
 
   /** Runs periodic shooter logic including target tracking and fuel counting. */
@@ -148,7 +149,10 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtLeftTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterLeft().inTolerance(this.getLeftVelocity()))
+        ? (ShooterMath2.currentSolution
+            .shooterLeft()
+            .flywheelOmega()
+            .isNear(this.getLeftVelocity(), RotationsPerSecond.of(20)))
         : true;
   }
 
@@ -156,7 +160,10 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtLeftTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterLeft().inTolerance(this.getLeftHoodPosition()))
+        ? (ShooterMath2.currentSolution
+            .shooterLeft()
+            .hoodAngle()
+            .isNear(this.getLeftHoodPosition(), Degrees.of(3)))
         : true;
   }
 
@@ -164,7 +171,10 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtRightTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterRight().inTolerance(this.getRightVelocity()))
+        ? (ShooterMath2.currentSolution
+            .shooterRight()
+            .flywheelOmega()
+            .isNear(this.getRightVelocity(), RotationsPerSecond.of(20)))
         : true;
   }
 
@@ -172,7 +182,10 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtRightTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution.shooterRight().inTolerance(this.getRightHoodPosition()))
+        ? (ShooterMath2.currentSolution
+            .shooterRight()
+            .hoodAngle()
+            .isNear(this.getRightHoodPosition(), Degrees.of(3)))
         : true;
   }
 
@@ -378,24 +391,15 @@ public class Shooter {
     }
 
     // Span = from earliest event across both queues to latest
-    double earliest =
-        Math.min(
-            m_timestampQueues.get(0).isEmpty()
-                ? Double.MAX_VALUE
-                : m_timestampQueues.get(0).peekFirst(),
-            m_timestampQueues.get(1).isEmpty()
-                ? Double.MAX_VALUE
-                : m_timestampQueues.get(1).peekFirst());
-    double latest =
-        Math.max(
-            m_timestampQueues.get(0).isEmpty()
-                ? Double.MIN_VALUE
-                : m_timestampQueues.get(0).peekLast(),
-            m_timestampQueues.get(1).isEmpty()
-                ? Double.MIN_VALUE
-                : m_timestampQueues.get(1).peekLast());
-
-    double span = latest - earliest;
+    double span =
+        (Math.max(
+                m_timestampQueues.get(0).isEmpty()
+                    ? Double.MIN_VALUE
+                    : m_timestampQueues.get(0).peekLast(),
+                m_timestampQueues.get(1).isEmpty()
+                    ? Double.MIN_VALUE
+                    : m_timestampQueues.get(1).peekLast()))
+            - 1000;
     this.m_fps = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
   }
 

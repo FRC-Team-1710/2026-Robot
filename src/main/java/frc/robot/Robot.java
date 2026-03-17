@@ -140,9 +140,7 @@ public class Robot extends DynamicTimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {
-    MatchState.setIgnoreFMS(SmartDashboard.getBoolean("MatchState/IgnoreFMS", true));
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void simulationPeriodic() {

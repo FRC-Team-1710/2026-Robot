@@ -10,6 +10,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
+import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -48,13 +49,15 @@ public class Vision implements Subsystem {
 
   private final HootAutoReplay m_autoReplay;
 
+  private final Set<Integer> rejectTagIds =
+      Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
+
   /**
    * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
    * @param robotToCamera Transform from robot center to camera (meters, radians)
    * @param drivetrain Reference to drivetrain for pose fusion
    */
   public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
-
     m_logPath = cameraName + "/";
 
     this.m_drivetrain = drivetrain;
@@ -113,7 +116,15 @@ public class Vision implements Subsystem {
   private void fetchInputs() {
 
     PhotonPipelineResult result = m_camera.getLatestResult();
-
+    // Filtering based on the rejected tags
+    // PhotonPipelineResult filteredResult =
+    //     new PhotonPipelineResult(
+    //         result.metadata,
+    //         result.getTargets().stream()
+    //             .filter(t -> !rejectTagIds.contains(t.getFiducialId()))
+    //             .toList(),
+    //         result.getMultiTagResult().isPresent() ? result.getMultiTagResult() :
+    // Optional.empty());
     if (!result.hasTargets()) {
       reset();
       return;
@@ -145,7 +156,7 @@ public class Vision implements Subsystem {
 
   private void processInputs() {
 
-    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0) {
+    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0 || m_robotPose == Pose2d.kZero) {
       return;
     }
     // Reject single-tag solutions with high ambiguity.
@@ -159,6 +170,11 @@ public class Vision implements Subsystem {
     // Larger std dev = less influence in pose estimator.
     double xyStdDev = VisionConstants.BASE_XY_STD_DEV / m_tagCount;
     double thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / m_tagCount;
+
+    if (m_tagCount == 1) {
+      xyStdDev *= 2.0; // Single tag is less reliable, so start with higher std dev
+      thetaStdDev *= 2.0;
+    }
     // Squared distance scaling penalizes far-away tag estimates heavily,
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);
@@ -170,9 +186,7 @@ public class Vision implements Subsystem {
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
     m_drivetrain.addVisionMeasurement(
-        new Pose2d(m_robotPose.getTranslation(), m_drivetrain.getRotation()),
-        m_robotPoseTimestamp,
-        VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
   }
 
   /**

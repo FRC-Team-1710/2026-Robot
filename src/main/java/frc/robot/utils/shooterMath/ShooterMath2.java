@@ -1,7 +1,5 @@
 package frc.robot.utils.shooterMath;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -21,7 +19,6 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.utils.MathUtils;
 
 public final class ShooterMath2 {
   /**
@@ -33,7 +30,8 @@ public final class ShooterMath2 {
   private static double m_preferredMinArrivalAngleRad = Math.toRadians(45.0);
 
   /** Efficiency of speed transfer from flywheel to ball. */
-  private static final double kSpeedTransferEfficiency = 0.5; // 1.0 = No slip
+  // Soon to be k, need to tune first
+  private static double m_speedTransferEfficiency = 0.5; // 1.0 = No slip
 
   /** Ball diameter: 5.91 in → meters. */
   private static final double kBallDiameterMeters = 5.91 * 0.0254;
@@ -58,8 +56,8 @@ public final class ShooterMath2 {
       kBottomWheelRadiusMeters + (kBallDiameterMeters - kCompressionMeters) / 2.0;
 
   /** Ball exit speed per unit flywheel. */
-  private static final double kSpeedPerOmega =
-      kSpeedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
+  private static double kSpeedPerOmega =
+      m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
 
   /** Minimum mechanical hood angle (radians) — steepest shot. */
   private static final double kMinHoodAngleRad = Math.toRadians(ShooterConstants.HOOD_MIN);
@@ -75,30 +73,6 @@ public final class ShooterMath2 {
 
   /** Time-of-flight epsilon for the solver (seconds). */
   private static final double kTofEpsilonSeconds = 1e-7;
-
-  /** Finite-difference step for tolerance computation (radians / rad·s⁻¹). */
-  private static final double kFdAngle = 1e-4;
-
-  private static final double kFdOmega = 0.1;
-
-  /**
-   * Per-parameter shooting tolerances for a single shooter.
-   *
-   * @param headingToleranceLeft Robot can rotate CCW by this much.
-   * @param headingToleranceRight Robot can rotate CW by this much.
-   * @param hoodToleranceSteep Hood can decrease (go steeper) by this much.
-   * @param hoodToleranceFlat Hood can increase (go flatter) by this much. Already bounded by the
-   *     arrival-angle constraint.
-   * @param flywheelToleranceFast Flywheel ω can increase by this much.
-   * @param flywheelToleranceSlow Flywheel ω can decrease by this much.
-   */
-  public record ShooterTolerances(
-      Angle headingToleranceLeft,
-      Angle headingToleranceRight,
-      Angle hoodToleranceSteep,
-      Angle hoodToleranceFlat,
-      AngularVelocity flywheelToleranceFast,
-      AngularVelocity flywheelToleranceSlow) {}
 
   /**
    * Complete solution for a single shooter.
@@ -116,32 +90,7 @@ public final class ShooterMath2 {
       AngularVelocity flywheelOmega,
       Time tof,
       boolean hoodAngleClamped,
-      boolean arrivalAngleConstrained,
-      ShooterTolerances tolerances) {
-    /** Robot angle in tolerances */
-    public boolean inTolerance(Rotation2d robotAngle) {
-      return MathUtils.inRange(
-          robotAngle.getRadians(),
-          currentSolution.robotHeading.getRadians() - tolerances.hoodToleranceSteep.in(Radians),
-          currentSolution.robotHeading.getRadians() + tolerances.hoodToleranceFlat.in(Radians));
-    }
-
-    /** Hood angle in tolerances */
-    public boolean inTolerance(Angle hoodAngle) {
-      return MathUtils.inRange(
-          hoodAngle.in(Radians),
-          hoodAngle.minus(tolerances.hoodToleranceSteep).in(Radians),
-          hoodAngle.plus(tolerances.hoodToleranceFlat).in(Radians));
-    }
-
-    /** Flywheel omega in tolerances */
-    public boolean inTolerance(AngularVelocity flywheelOmega) {
-      return MathUtils.inRange(
-          flywheelOmega.in(RadiansPerSecond),
-          flywheelOmega.minus(tolerances.flywheelToleranceSlow).in(RadiansPerSecond),
-          flywheelOmega.plus(tolerances.flywheelToleranceFast).in(RadiansPerSecond));
-    }
-  }
+      boolean arrivalAngleConstrained) {}
 
   /**
    * Combined solution for two fixed-direction shooters sharing one drive-base heading.
@@ -163,32 +112,8 @@ public final class ShooterMath2 {
   public static DualShooterSolution currentSolution =
       new DualShooterSolution(
           Rotation2d.kZero,
-          new ShooterSolution(
-              Radians.of(0),
-              RadiansPerSecond.of(0),
-              Seconds.of(1),
-              false,
-              false,
-              new ShooterTolerances(
-                  Degrees.of(0),
-                  Degrees.of(0),
-                  Degrees.of(0),
-                  Degrees.of(0),
-                  DegreesPerSecond.of(0),
-                  DegreesPerSecond.of(0))),
-          new ShooterSolution(
-              Radians.of(0),
-              RadiansPerSecond.of(0),
-              Seconds.of(1),
-              false,
-              false,
-              new ShooterTolerances(
-                  Degrees.of(0),
-                  Degrees.of(0),
-                  Degrees.of(0),
-                  Degrees.of(0),
-                  DegreesPerSecond.of(0),
-                  DegreesPerSecond.of(0))));
+          new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false, false),
+          new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false, false));
 
   /** The current robot pose for the dual shooter system. */
   public static Pose2d currentPose = new Pose2d();
@@ -206,6 +131,9 @@ public final class ShooterMath2 {
   public static void calculate(Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
     m_preferredMinArrivalAngleRad =
         Math.toRadians(SmartDashboard.getNumber("preferredMinArrivalAngleDeg", 0));
+    m_speedTransferEfficiency = SmartDashboard.getNumber("speedTransferEfficiency", 0);
+    kSpeedPerOmega =
+        m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
 
     m_targetCenter =
         Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue;
@@ -248,17 +176,13 @@ public final class ShooterMath2 {
                 RadiansPerSecond.of(omega1),
                 Seconds.of(phys1.tof),
                 phys1.hoodClamped,
-                phys1.arrivalConstrained,
-                computeTolerances(
-                    pivot1, phiComp, phys1.hoodAngle, omega1, phys1.effectiveMaxHood)),
+                phys1.arrivalConstrained),
             new ShooterSolution(
                 Radians.of(phys2.hoodAngle),
                 RadiansPerSecond.of(omega2),
                 Seconds.of(phys2.tof),
                 phys2.hoodClamped,
-                phys2.arrivalConstrained,
-                computeTolerances(
-                    pivot2, phiComp, phys2.hoodAngle, omega2, phys2.effectiveMaxHood)));
+                phys2.arrivalConstrained));
 
     if (Epilogue.shouldLog(Importance.INFO)) {
       Robot.telemetry()
@@ -273,30 +197,6 @@ public final class ShooterMath2 {
           .log(
               "ShotSolution/Left/ArrivalConstraint",
               currentSolution.shooterLeft.arrivalAngleConstrained);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Left/Tolerances/HeadingToleranceLeft",
-              currentSolution.shooterLeft.tolerances.headingToleranceLeft);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Left/Tolerances/HeadingToleranceRight",
-              currentSolution.shooterLeft.tolerances.headingToleranceRight);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Left/Tolerances/HoodToleranceSteep",
-              currentSolution.shooterLeft.tolerances.hoodToleranceSteep);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Left/Tolerances/HoodToleranceFlat",
-              currentSolution.shooterLeft.tolerances.hoodToleranceFlat);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Left/Tolerances/FlywheelToleranceFast",
-              currentSolution.shooterLeft.tolerances.flywheelToleranceFast);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Left/Tolerances/FlywheelToleranceSlow",
-              currentSolution.shooterLeft.tolerances.flywheelToleranceSlow);
 
       Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
       Robot.telemetry().log("ShotSolution/Right/Omega", currentSolution.shooterRight.flywheelOmega);
@@ -307,30 +207,6 @@ public final class ShooterMath2 {
           .log(
               "ShotSolution/Right/ArrivalConstraint",
               currentSolution.shooterRight.arrivalAngleConstrained);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Right/Tolerances/HeadingToleranceLeft",
-              currentSolution.shooterRight.tolerances.headingToleranceLeft);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Right/Tolerances/HeadingToleranceRight",
-              currentSolution.shooterRight.tolerances.headingToleranceRight);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Right/Tolerances/HoodToleranceSteep",
-              currentSolution.shooterRight.tolerances.hoodToleranceSteep);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Right/Tolerances/HoodToleranceFlat",
-              currentSolution.shooterRight.tolerances.hoodToleranceFlat);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Right/Tolerances/FlywheelToleranceFast",
-              currentSolution.shooterRight.tolerances.flywheelToleranceFast);
-      Robot.telemetry()
-          .log(
-              "ShotSolution/Right/Tolerances/FlywheelToleranceSlow",
-              currentSolution.shooterRight.tolerances.flywheelToleranceSlow);
     }
   }
 
@@ -477,186 +353,6 @@ public final class ShooterMath2 {
       tof = newT;
     }
     return new PhysicsResult(hood, speed, hCl, arrCl, effMax, tof);
-  }
-
-  /**
-   * Computes per-parameter tolerances via finite differences around the nominal solution point.
-   *
-   * @param pivot Bottom flywheel center in field frame.
-   * @param phi Field-frame shooting direction (rad).
-   * @param hoodAngle Nominal mechanical hood angle (rad).
-   * @param omega Nominal flywheel ω (rad/s).
-   * @param effectiveMaxHood Upper hood bound after arrival constraint (rad).
-   */
-  private static ShooterTolerances computeTolerances(
-      Translation3d pivot, double phi, double hoodAngle, double omega, double effectiveMaxHood) {
-
-    final double v = omega * kSpeedPerOmega;
-    final double theta = Math.PI / 2.0 - hoodAngle;
-    final double cP = Math.cos(phi), sP = Math.sin(phi);
-
-    Translation3d exitNom = exitPoint(pivot, hoodAngle, phi);
-    double[] nom = landingOffset(exitNom, v, theta, phi);
-
-    // If the nominal trajectory can't reach the target, return zero tolerances.
-    if (nom == null)
-      return new ShooterTolerances(
-          Degrees.of(0),
-          Degrees.of(0),
-          Degrees.of(0),
-          Degrees.of(0),
-          DegreesPerSecond.of(0),
-          DegreesPerSecond.of(0));
-
-    // ------------------------------------------------------------------
-    // Shrunk-hexagon clearances:
-    //   c = (distance from centroid to hexagon edge in direction d) − ball_radius
-    // The ball center must stay within this shrunk hexagon.
-    // ------------------------------------------------------------------
-    double cFar =
-        Math.max(0, edgeDistance(cP, sP) - kBallRadiusMeters); // forward (away from shooter)
-    double cNear =
-        Math.max(0, edgeDistance(-cP, -sP) - kBallRadiusMeters); // backward (toward shooter)
-    double cLeft = Math.max(0, edgeDistance(-sP, cP) - kBallRadiusMeters); // CCW side
-    double cRight = Math.max(0, edgeDistance(sP, -cP) - kBallRadiusMeters); // CW side
-
-    // ------------------------------------------------------------------
-    // HEADING TOLERANCE
-    //
-    // Rotating CCW (φ → φ+dφ) displaces the landing point to the left.
-    // Rotating CW  (φ → φ−dφ) displaces the landing point to the right.
-    //
-    // Lateral sensitivity (m per rad):
-    //   left  = dot(off − nom, left_dir)  / dφ   where left_dir  = (−sP,  cP)
-    //   right = dot(off − nom, right_dir) / dφ   where right_dir = ( sP, −cP)
-    // ------------------------------------------------------------------
-    double[] offPhiL =
-        landingOffset(exitPoint(pivot, hoodAngle, phi + kFdAngle), v, theta, phi + kFdAngle);
-    double[] offPhiR =
-        landingOffset(exitPoint(pivot, hoodAngle, phi - kFdAngle), v, theta, phi - kFdAngle);
-
-    // Left sensitivity: positive when ball goes left as phi increases
-    double sensL =
-        offPhiL == null
-            ? 1.0
-            : (-(offPhiL[0] - nom[0]) * sP + (offPhiL[1] - nom[1]) * cP) / kFdAngle;
-    // Right sensitivity: positive when ball goes right as phi decreases
-    double sensR =
-        offPhiR == null
-            ? 1.0
-            : ((offPhiR[0] - nom[0]) * sP - (offPhiR[1] - nom[1]) * cP) / kFdAngle;
-
-    double headingTolLeft = cLeft / Math.max(sensL, 1e-9);
-    double headingTolRight = cRight / Math.max(sensR, 1e-9);
-
-    // ------------------------------------------------------------------
-    // HOOD TOLERANCE
-    //
-    // Steeper (hood decreases by dA): exit point shifts, θ increases.
-    // Flatter (hood increases by dA): exit point shifts, θ decreases.
-    //
-    // Along-barrel sensitivity (m per rad of hood change):
-    //   steep_sens = dot(off − nom, fwd_dir) / dA
-    //   flat_sens  = dot(off − nom, fwd_dir) / dA
-    //
-    // Positive → ball lands further (limited by cFar).
-    // Negative → ball lands shorter (limited by cNear).
-    //
-    // Flywheel speed is held constant; only the hood moves.
-    // ------------------------------------------------------------------
-    double steepHood = Math.max(kMinHoodAngleRad, hoodAngle - kFdAngle);
-    double flatHood = Math.min(effectiveMaxHood, hoodAngle + kFdAngle);
-
-    double[] offSteep =
-        landingOffset(exitPoint(pivot, steepHood, phi), v, Math.PI / 2.0 - steepHood, phi);
-    double[] offFlat =
-        landingOffset(exitPoint(pivot, flatHood, phi), v, Math.PI / 2.0 - flatHood, phi);
-
-    double sensSteep =
-        offSteep == null
-            ? 0.0
-            : ((offSteep[0] - nom[0]) * cP + (offSteep[1] - nom[1]) * sP) / kFdAngle;
-    double sensFlat =
-        offFlat == null
-            ? 0.0
-            : ((offFlat[0] - nom[0]) * cP + (offFlat[1] - nom[1]) * sP) / kFdAngle;
-
-    double hoodTolSteep = alongTolerance(sensSteep, cFar, cNear);
-    double hoodTolFlat = alongTolerance(sensFlat, cFar, cNear);
-
-    // Clamp to mechanical range and arrival-angle constraint
-    hoodTolSteep = clamp(hoodTolSteep, 0, hoodAngle - kMinHoodAngleRad);
-    hoodTolFlat = clamp(hoodTolFlat, 0, effectiveMaxHood - hoodAngle);
-
-    // ------------------------------------------------------------------
-    // FLYWHEEL TOLERANCE
-    //
-    // Faster (ω → ω+dω): ball travels further.
-    // Slower (ω → ω−dω): ball travels shorter.
-    //
-    // Hood is held constant; only exit speed changes.
-    // ------------------------------------------------------------------
-    double dV = kFdOmega * kSpeedPerOmega;
-
-    double[] offFast = landingOffset(exitNom, v + dV, theta, phi);
-    double[] offSlow = landingOffset(exitNom, v - dV, theta, phi);
-
-    double sensFast =
-        offFast == null
-            ? 0.0
-            : ((offFast[0] - nom[0]) * cP + (offFast[1] - nom[1]) * sP) / kFdOmega;
-    double sensSlow =
-        offSlow == null
-            ? 0.0
-            : ((offSlow[0] - nom[0]) * cP + (offSlow[1] - nom[1]) * sP)
-                / (-kFdOmega); // per rad/s of reduction
-
-    double flywheelTolFast = Math.max(0, alongTolerance(sensFast, cFar, cNear));
-    double flywheelTolSlow = Math.max(0, alongTolerance(sensSlow, cFar, cNear));
-
-    return new ShooterTolerances(
-        Radians.of(headingTolLeft),
-        Radians.of(headingTolRight),
-        Radians.of(hoodTolSteep),
-        Radians.of(hoodTolFlat),
-        RadiansPerSecond.of(flywheelTolFast),
-        RadiansPerSecond.of(flywheelTolSlow));
-  }
-
-  /**
-   * Given a forward/backward sensitivity (m per unit of parameter change, positive = toward the far
-   * edge, negative = toward the near edge) and the two clearances, returns the tolerance for that
-   * direction.
-   */
-  private static double alongTolerance(double sens, double cFar, double cNear) {
-    if (Math.abs(sens) < 1e-9) return Double.MAX_VALUE; // effectively insensitive
-    return (sens >= 0) ? cFar / sens : cNear / (-sens);
-  }
-
-  /**
-   * Computes the ball's landing offset [dx, dy] from the target centroid (in field frame) for a
-   * given exit condition, at Z = target height.
-   *
-   * @return {@code [dx, dy]} in meters, or {@code null} if the target height is unreachable with
-   *     the given exit speed and angle.
-   */
-  private static double[] landingOffset(
-      Translation3d exitPos, double v, double launchAngle, double phi) {
-
-    double vz = v * Math.sin(launchAngle);
-    double disc = vz * vz - 2.0 * kG * (m_targetCenter.getZ() - exitPos.getZ());
-    if (disc < 0) return null;
-
-    double T = (vz + Math.sqrt(disc)) / kG;
-    if (T <= 0) {
-      T = (vz - Math.sqrt(disc)) / kG;
-      if (T <= 0) return null;
-    }
-
-    return new double[] {
-      exitPos.getX() + v * Math.cos(launchAngle) * Math.cos(phi) * T - m_targetCenter.getX(),
-      exitPos.getY() + v * Math.cos(launchAngle) * Math.sin(phi) * T - m_targetCenter.getY()
-    };
   }
 
   /**

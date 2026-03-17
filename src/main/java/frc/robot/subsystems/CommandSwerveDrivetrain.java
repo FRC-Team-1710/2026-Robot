@@ -80,6 +80,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Logged(importance = Importance.CRITICAL)
   private boolean m_autonomousRequestOverride = false;
 
+  @NotLogged private boolean m_shouldAcceptNextVisionMeasurementRotation = false;
+
   // SysId routines
 
   ///////////////////// Steer ///////////////////////
@@ -271,6 +273,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           Alliance.redAlliance
               ? kRedAlliancePerspectiveRotation
               : kBlueAlliancePerspectiveRotation);
+
       m_hasAppliedOperatorPerspective = true;
     }
 
@@ -283,13 +286,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withVelocityX(m_maxSpeed.times(-scaledTranslationInputs.get(0, 0)))
               .withVelocityY(m_maxSpeed.times(-scaledTranslationInputs.get(1, 0)))
               .withRotationalRate(
-                  m_maxAngularRate.times(
-                      -rescaleRotation(
-                          m_inputController.getRightX()
-                          // + (inputController.povLeft().getAsBoolean()
-                          //     ? 1
-                          //     : (inputController.povRight().getAsBoolean() ? -1 : 0))
-                          )))
+                  m_maxAngularRate.times(-rescaleRotation(m_inputController.getRightX())))
               .withDriveState(m_currentState));
     }
 
@@ -298,9 +295,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /** Rescales the translation input vector with deadband and power curve. */
   public Vector<N2> rescaleTranslation(double x, double y) {
-    Vector<N2> scaledJoyStick = VecBuilder.fill(x, y);
-    scaledJoyStick = MathUtil.applyDeadband(scaledJoyStick, 0.075);
-    return MathUtil.copyDirectionPow(scaledJoyStick, 2);
+    return MathUtil.copyDirectionPow(MathUtil.applyDeadband(VecBuilder.fill(x, y), 0.075), 2);
   }
 
   /** Rescales the rotation input with deadband. */
@@ -361,7 +356,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
-        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
+        Utils.fpgaToCurrentTime(timestampSeconds),
+        visionMeasurementStdDevs);
+    if (m_shouldAcceptNextVisionMeasurementRotation) {
+      m_shouldAcceptNextVisionMeasurementRotation = false;
+      resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
+    }
+  }
+
+  public void setShouldAcceptNextVisionMeasurementRotation(boolean shouldAccept) {
+    this.m_shouldAcceptNextVisionMeasurementRotation = shouldAccept;
   }
 
   @Logged(importance = Importance.INFO)

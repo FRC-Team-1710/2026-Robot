@@ -103,11 +103,11 @@ public class RobotContainer {
 
     switch (Mode.currentMode) {
       case REAL:
-        m_intake = new Intake(new IntakeIOCTRE(), consumer);
+        m_intake =
+            new Intake(new IntakeIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
         m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
         m_feeder = new Feeder(new FeederIOCTRE(), consumer);
-        m_indexer =
-            new Indexer(new IndexerIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
         m_leds = new Leds(new LedsIOArduino(), m_shooter);
 
         m_cameras =
@@ -126,21 +126,21 @@ public class RobotContainer {
         break;
 
       case SIMULATION:
-        m_intake = new Intake(new IntakeIOSIM(), consumer);
+        m_intake =
+            new Intake(new IntakeIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
         m_shooter = new Shooter(new ShooterIOSIM(), consumer);
         m_feeder = new Feeder(new FeederIOSIM(), consumer);
-        m_indexer =
-            new Indexer(new IndexerIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_indexer = new Indexer(new IndexerIOSIM(), consumer);
         m_leds = new Leds(new LedsIOSim(), m_shooter);
         m_cameras = new Vision[0];
         break;
 
       default:
-        m_intake = new Intake(new IntakeIO() {}, consumer);
+        m_intake =
+            new Intake(new IntakeIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
         m_shooter = new Shooter(new ShooterIO() {}, consumer);
         m_feeder = new Feeder(new FeederIO() {}, consumer);
-        m_indexer =
-            new Indexer(new IndexerIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
+        m_indexer = new Indexer(new IndexerIO() {}, consumer);
         m_leds = new Leds(new LedsIO() {}, m_shooter);
         m_cameras = new Vision[0];
         break;
@@ -192,7 +192,10 @@ public class RobotContainer {
 
   /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
-    m_driver.a().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)));
+    m_driver
+        .a()
+        .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)))
+        .onFalse(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Down)));
 
     m_driver
         .b()
@@ -246,6 +249,19 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    m_driver
+        .rightStick()
+        .and(m_driver.leftStick())
+        .onTrue(
+            Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
+                .ignoringDisable(true));
+
+    m_driver
+        .rightTrigger()
+        .onTrue(
+            Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
+                .ignoringDisable(true));
+
     m_driver
         .start()
         .onTrue(
@@ -327,18 +343,28 @@ public class RobotContainer {
 
     m_driver
         .povRight()
+        .and(m_superstructure::currentStateDoesntUseIntake)
+        .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Up)));
+
+    m_driver
+        .povRight()
         .and(m_superstructure::currentStateUsesIntake)
         .onTrue(m_superstructure.setAddableStateCommand(AddableStates.IntakeUp));
 
     m_driver
         .povRight()
         .and(m_superstructure::currentStateUsesIntake)
-        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
 
     m_driver
-        .povRight()
-        .and(m_superstructure::currentStateDoesntUseIntake)
-        .onTrue(Commands.runOnce(() -> m_intake.setState(IntakeStates.Up)));
+        .povLeft()
+        .and(m_superstructure::currentStateUsesIntake)
+        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
+
+    m_driver
+        .povLeft()
+        .and(m_superstructure::currentStateUsesIntake)
+        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
 
     m_mech
         .rightBumper()
