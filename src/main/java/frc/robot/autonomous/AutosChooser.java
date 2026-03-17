@@ -35,6 +35,13 @@ public class AutosChooser {
 
   private boolean m_depot;
 
+  /**
+   * Creates a new AutosChooser that configures autonomous paths and related event triggers.
+   *
+   * @param superstructure the superstructure subsystem used to manage high-level robot states
+   * @param drivetrain the swerve drivetrain subsystem used for autonomous path following
+   * @param shooter the shooter subsystem used during autonomous shooting routines
+   */
   public AutosChooser(
       Superstructure superstructure, CommandSwerveDrivetrain drivetrain, Shooter shooter) {
     pathBuilder =
@@ -117,7 +124,7 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "EndShoot",
         () -> {
-          Commands.waitUntil(() -> shooter.getFPS() < -1)
+          Commands.waitUntil(() -> shooter.getFPS() <= 0.0)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
