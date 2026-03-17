@@ -27,7 +27,7 @@ public class FeederIOCTRE implements FeederIO {
 
   @NotLogged private final VoltageOut m_leftVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
-  @NotLogged private final VoltageOut m_rightPercentOutput = new VoltageOut(0).withEnableFOC(true);
+  @NotLogged private final VoltageOut m_rightVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
     this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
@@ -64,6 +64,6 @@ public class FeederIOCTRE implements FeederIO {
 
   /** {@inheritDoc} */
   public void setRight(double percent) {
-    this.m_feederRight.setControl(m_rightPercentOutput.withOutput(12 * percent));
+    this.m_feederRight.setControl(m_rightVoltageOutput.withOutput(12 * percent));
   }
 }
