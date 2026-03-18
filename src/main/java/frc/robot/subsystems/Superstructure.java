@@ -328,10 +328,7 @@ public class Superstructure {
 
   private void intakeWithVision() {
     m_drivetrain.setRotationTarget(
-        m_drivetrain
-            .getPose()
-            .getRotation()
-            .minus(new Rotation2d(m_drivetrain.getFuelTargetYaw())));
+        m_drivetrain.getPose().getRotation().plus(new Rotation2d(m_drivetrain.getFuelTargetYaw())));
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.IDLE);

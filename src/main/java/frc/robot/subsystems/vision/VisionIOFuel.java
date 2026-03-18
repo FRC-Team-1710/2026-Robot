@@ -51,6 +51,9 @@ public class VisionIOFuel implements Subsystem {
   }
 
   public PhotonTrackedTarget getLargestTarget() {
+    if (m_largestTarget == null) {
+      return new PhotonTrackedTarget();
+    }
     return m_largestTarget;
   }
 }

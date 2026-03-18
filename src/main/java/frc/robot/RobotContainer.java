@@ -242,6 +242,10 @@ public class RobotContainer {
                 }));
 
     m_driver.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
+    m_driver
+        .povDown()
+        .onTrue(
+            Commands.runOnce(() -> m_superstructure.setWantedState(WantedStates.IntakeWithVision)));
   }
 
   /**
