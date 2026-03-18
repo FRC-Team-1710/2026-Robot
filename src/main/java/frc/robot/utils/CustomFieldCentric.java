@@ -28,6 +28,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.constants.AccelerationLimits;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.FieldConstants;
@@ -105,7 +106,12 @@ public class CustomFieldCentric implements SwerveRequest {
   private double m_lastLoopTime = 0;
 
   @Logged(importance = Importance.CRITICAL)
-  private ChassisSpeeds wantedSpeeds = new ChassisSpeeds();
+  private ChassisSpeeds m_wantedSpeeds = new ChassisSpeeds();
+
+  @Logged(importance = Importance.CRITICAL)
+  private ChassisSpeeds m_wantedSpeedsAfterLimiting = new ChassisSpeeds();
+
+  @NotLogged private long loopStartTime = 0;
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
@@ -119,7 +125,7 @@ public class CustomFieldCentric implements SwerveRequest {
   @SuppressWarnings("unused")
   public StatusCode apply(
       SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply) {
-    long loopStartTime = RobotController.getFPGATime();
+    loopStartTime = RobotController.getFPGATime();
     if (currentDriveState != RequestStates.ROTATION_LOCK
         && DrivetrainAutomationConstants.BumpDetection.kAutoBumpAlignment) {
       if (Math.hypot( // Inputs large enough
@@ -167,7 +173,7 @@ public class CustomFieldCentric implements SwerveRequest {
                 MathUtils.snapAngle(parameters.currentPose.getRotation().getDegrees()));
         rotationLockPID.setGoal(bumpRotationTarget.getRadians());
 
-        wantedSpeeds =
+        m_wantedSpeeds =
             new ChassisSpeeds(
                 MetersPerSecond.of(
                     MathUtil.clamp(
@@ -194,7 +200,7 @@ public class CustomFieldCentric implements SwerveRequest {
       case ROTATION_LOCK:
         rotationLockPID.setGoal(rotationTarget.getRadians());
 
-        wantedSpeeds =
+        m_wantedSpeeds =
             new ChassisSpeeds(
                 xVelocity,
                 yVelocity,
@@ -206,16 +212,25 @@ public class CustomFieldCentric implements SwerveRequest {
                                 parameters.currentPose.getRotation().getRadians()))));
         break;
       default:
-        wantedSpeeds = new ChassisSpeeds(xVelocity, yVelocity, angularVelocity);
+        m_wantedSpeeds = new ChassisSpeeds(xVelocity, yVelocity, angularVelocity);
         break;
     }
 
     m_lastLoopTime = RobotController.getFPGATime() - loopStartTime;
+    m_wantedSpeedsAfterLimiting =
+        ChassisSpeeds.fromRobotRelativeSpeeds(
+            AccelerationLimits.calculateForward(
+                AccelerationLimits.calculateTilt(
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        m_wantedSpeeds, parameters.currentPose.getRotation()),
+                    parameters.currentChassisSpeed),
+                parameters.currentChassisSpeed),
+            parameters.currentPose.getRotation());
 
     return driveRequest
-        .withVelocityX(wantedSpeeds.vxMetersPerSecond)
-        .withVelocityY(wantedSpeeds.vyMetersPerSecond)
-        .withRotationalRate(wantedSpeeds.omegaRadiansPerSecond)
+        .withVelocityX(m_wantedSpeedsAfterLimiting.vxMetersPerSecond)
+        .withVelocityY(m_wantedSpeedsAfterLimiting.vyMetersPerSecond)
+        .withRotationalRate(m_wantedSpeedsAfterLimiting.omegaRadiansPerSecond)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
         .apply(parameters, modulesToApply);
   }
