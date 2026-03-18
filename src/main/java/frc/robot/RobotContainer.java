@@ -152,7 +152,7 @@ public class RobotContainer {
         break;
     }
 
-    drivetrain.setFuelTargetSupplier(m_fuelCamera.yawToLargestTarget);
+    drivetrain.setFuelTargetSupplier(m_fuelCamera::getLargestTargetYaw);
 
     m_superstructure =
         new Superstructure(
@@ -242,10 +242,6 @@ public class RobotContainer {
                 }));
 
     m_driver.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
-    m_driver
-        .povDown()
-        .onTrue(
-            Commands.runOnce(() -> m_superstructure.setWantedState(WantedStates.IntakeWithVision)));
   }
 
   /**
@@ -261,6 +257,10 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    m_driver
+        .povDown()
+        .onTrue(m_superstructure.setWantedStateCommand(WantedStates.IntakeWithVision));
+
     m_driver
         .rightStick()
         .and(m_driver.leftStick())
