@@ -112,7 +112,7 @@ public class RobotContainer {
         m_feeder = new Feeder(new FeederIOCTRE(), consumer);
         m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
         m_leds = new Leds(new LedsIOArduino(), m_shooter);
-        m_fuelCamera = new VisionIOFuel("FuelCamera");
+        m_fuelCamera = new VisionIOFuel("FuelCamera", drivetrain::getRotation);
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -137,7 +137,7 @@ public class RobotContainer {
         m_indexer = new Indexer(new IndexerIOSIM(), consumer);
         m_leds = new Leds(new LedsIOSim(), m_shooter);
         m_cameras = new Vision[0];
-        m_fuelCamera = new VisionIOFuel("FuelCamera");
+        m_fuelCamera = new VisionIOFuel("FuelCamera", drivetrain::getRotation);
         break;
 
       default:
@@ -148,15 +148,21 @@ public class RobotContainer {
         m_indexer = new Indexer(new IndexerIO() {}, consumer);
         m_leds = new Leds(new LedsIO() {}, m_shooter);
         m_cameras = new Vision[0];
-        m_fuelCamera = new VisionIOFuel("FuelCamera");
+        m_fuelCamera = new VisionIOFuel("FuelCamera", drivetrain::getRotation);
         break;
     }
 
-    drivetrain.setFuelTargetSupplier(m_fuelCamera::getLargestTargetYaw);
-
     m_superstructure =
         new Superstructure(
-            m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder, m_leds);
+            m_driver,
+            m_mech,
+            drivetrain,
+            m_intake,
+            m_shooter,
+            m_indexer,
+            m_feeder,
+            m_leds,
+            m_fuelCamera::getLatestRotationTarget);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {

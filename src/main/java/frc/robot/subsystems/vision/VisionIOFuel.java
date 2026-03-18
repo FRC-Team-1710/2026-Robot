@@ -1,14 +1,16 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.List;
+import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionIOFuel extends SubsystemBase {
-  @NotLogged private PhotonCamera m_fuelCamera;
+  @NotLogged private final PhotonCamera m_fuelCamera;
 
   @NotLogged private PhotonPipelineResult m_latestResult;
 
@@ -16,10 +18,13 @@ public class VisionIOFuel extends SubsystemBase {
 
   @NotLogged private PhotonTrackedTarget m_largestTarget;
 
-  // public DoubleSupplier yawToLargestTarget = () -> getLargestTarget().getYaw();
+  @NotLogged private Rotation2d m_rotationTarget = Rotation2d.kZero;
 
-  public VisionIOFuel(String cameraName) {
+  @NotLogged private final Supplier<Rotation2d> m_robotRotationSupplier;
+
+  public VisionIOFuel(String cameraName, Supplier<Rotation2d> rotationSupplier) {
     m_fuelCamera = new PhotonCamera(cameraName);
+    m_robotRotationSupplier = rotationSupplier;
   }
 
   @Override
@@ -47,22 +52,14 @@ public class VisionIOFuel extends SubsystemBase {
             m_largestTarget = cluster;
           }
         }
-      } else {
-        m_largestTarget = null;
+
+        m_rotationTarget =
+            m_robotRotationSupplier.get().plus(Rotation2d.fromDegrees(m_largestTarget.getYaw()));
       }
-    } else {
-      m_largestTarget = null;
     }
   }
 
-  // public PhotonTrackedTarget getLargestTarget() {
-  //   if (m_largestTarget == null) {
-  //     return new PhotonTrackedTarget();
-  //   }
-  //   return m_largestTarget;
-  // }
-
-  public double getLargestTargetYaw() {
-    return m_largestTarget == null ? 0 : m_largestTarget.getYaw();
+  public Rotation2d getLatestRotationTarget() {
+    return m_rotationTarget;
   }
 }
