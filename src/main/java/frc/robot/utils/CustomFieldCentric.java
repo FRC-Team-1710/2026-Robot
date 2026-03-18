@@ -119,6 +119,12 @@ public class CustomFieldCentric implements SwerveRequest {
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
 
     SmartDashboard.putData(rotationLockPID);
+
+    SmartDashboard.putNumber("AccelForward", 0);
+    SmartDashboard.putNumber("AccelFront", 0);
+    SmartDashboard.putNumber("AccelBack", 0);
+    SmartDashboard.putNumber("AccelLeft", 0);
+    SmartDashboard.putNumber("AccelRight", 0);
   }
 
   @Override
@@ -223,7 +229,11 @@ public class CustomFieldCentric implements SwerveRequest {
                 AccelerationLimits.calculateTilt(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
                         m_wantedSpeeds, parameters.currentPose.getRotation()),
-                    parameters.currentChassisSpeed),
+                    // Pass in previous loop's speeds
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        m_wantedSpeedsAfterLimiting, parameters.currentPose.getRotation())),
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    m_wantedSpeedsAfterLimiting, parameters.currentPose.getRotation()),
                 parameters.currentChassisSpeed),
             parameters.currentPose.getRotation());
 
