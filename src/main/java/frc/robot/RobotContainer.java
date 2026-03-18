@@ -52,6 +52,7 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOFuel;
 import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
@@ -89,6 +90,8 @@ public class RobotContainer {
   // Should add logging soon
   @NotLogged private final Vision[] m_cameras;
 
+  @NotLogged private final VisionIOFuel m_fuelCamera;
+
   @Logged(importance = Importance.CRITICAL)
   private final Superstructure m_superstructure;
 
@@ -109,6 +112,7 @@ public class RobotContainer {
         m_feeder = new Feeder(new FeederIOCTRE(), consumer);
         m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
         m_leds = new Leds(new LedsIOArduino(), m_shooter);
+        m_fuelCamera = new VisionIOFuel("FuelCamera");
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -133,6 +137,7 @@ public class RobotContainer {
         m_indexer = new Indexer(new IndexerIOSIM(), consumer);
         m_leds = new Leds(new LedsIOSim(), m_shooter);
         m_cameras = new Vision[0];
+        m_fuelCamera = new VisionIOFuel("FuelCamera");
         break;
 
       default:
@@ -143,8 +148,11 @@ public class RobotContainer {
         m_indexer = new Indexer(new IndexerIO() {}, consumer);
         m_leds = new Leds(new LedsIO() {}, m_shooter);
         m_cameras = new Vision[0];
+        m_fuelCamera = new VisionIOFuel("FuelCamera");
         break;
     }
+
+    drivetrain.setFuelTargetSupplier(m_fuelCamera.yawToLargestTarget);
 
     m_superstructure =
         new Superstructure(
