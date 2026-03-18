@@ -113,6 +113,7 @@ public class Superstructure {
       case ScoreWhileIntakingAuto -> true;
       case ScoreWithIntakeUpAuto -> true;
       case Intake -> true;
+      case IntakeWithVision -> true;
       case IntakeAuto -> true;
       case Override -> true;
       default -> false;
@@ -167,6 +168,7 @@ public class Superstructure {
                 case Intaking -> CurrentStates.ScoreWhileIntaking;
               };
       case Intake -> CurrentStates.Intake;
+      case IntakeWithVision -> CurrentStates.IntakeWithVision;
       case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
       case Climb -> CurrentStates.Climb;
       case DefaultAuto -> CurrentStates.IdleAuto;
@@ -203,6 +205,9 @@ public class Superstructure {
         break;
       case Intake:
         intake();
+        break;
+      case IntakeWithVision:
+        intakeWithVision();
         break;
       case ScoreWhileIntaking:
         scoreWhileIntaking();
@@ -313,6 +318,21 @@ public class Superstructure {
 
   private void intake() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
+    m_intake.setState(IntakeStates.Intaking);
+    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_indexer.setState(IndexStates.Idle);
+    m_feeder.setState(FEEDER_STATE.STOP);
+
+    m_didIntake = true;
+  }
+
+  private void intakeWithVision() {
+    m_drivetrain.setRotationTarget(
+        m_drivetrain
+            .getPose()
+            .getRotation()
+            .minus(new Rotation2d(m_drivetrain.getFuelTargetYaw())));
+    m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.IDLE);
     m_indexer.setState(IndexStates.Idle);
@@ -530,6 +550,7 @@ public class Superstructure {
     Default(),
     Shoot(),
     Intake(),
+    IntakeWithVision(),
     IntakeAndShoot(),
     Climb(),
     DefaultAuto(),
@@ -548,6 +569,7 @@ public class Superstructure {
     Shoot(),
     ShootWithIntakeUp(),
     Intake(),
+    IntakeWithVision(),
     ScoreWhileIntaking(),
     ShootWhileIntaking(),
     Climb(),

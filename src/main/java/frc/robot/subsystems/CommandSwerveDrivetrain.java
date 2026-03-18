@@ -39,6 +39,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.shooterMath.ShooterMath2;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -81,6 +82,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private boolean m_autonomousRequestOverride = false;
 
   @NotLogged private boolean m_shouldAcceptNextVisionMeasurementRotation = false;
+
+  @Logged(importance = Importance.INFO)
+  private DoubleSupplier m_yawToLargestTarget;
 
   // SysId routines
 
@@ -369,6 +373,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     this.m_shouldAcceptNextVisionMeasurementRotation = shouldAccept;
   }
 
+  /** Set the fuel target supplier for drivetrain readings. */
+  public void setFuelTargetSupplier(DoubleSupplier fuelTargetSupplier) {
+    this.m_yawToLargestTarget = fuelTargetSupplier;
+  }
+
   @Logged(importance = Importance.INFO)
   public boolean isGoingTowardsAllianceZone() {
     return fieldCentric.isGoingToAllianceZone(getPose());
@@ -449,6 +458,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Set the {@link DriveStates#ROTATION_LOCK} target */
   public void setRotationTarget(Rotation2d target) {
     fieldCentric.withTargetRotation(target);
+  }
+
+  /** Gets the yaw to the fuel target with the largest area */
+  public double getFuelTargetYaw() {
+    if (m_yawToLargestTarget != null) {
+      return m_yawToLargestTarget.getAsDouble();
+    }
+    return 0.0;
   }
 
   /** Sets the current drive state. */
