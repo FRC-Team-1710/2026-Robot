@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -71,12 +72,15 @@ public class AutosChooser {
     addPath(Auto.RIGHT_INSIDE, autoPathing(m_depot).get("RIGHT_INSIDE"));
     addPath(Auto.LEFT_INSIDE, autoPathing(m_depot).get("LEFT_INSIDE"));
     addPath(Auto.ZONE2, autoPathing(m_depot).get("ZONE2"));
+    addPath(Auto.MIDDLE, autoPathing(m_depot).get("MIDDLE"));
 
     SmartDashboard.putBoolean("Auto/Depot?", m_depot);
     // Put preset autos hare//
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
     // SmartDashboard.putData("Auto/Actions", actions);
+
+    Timer timer = new Timer();
 
     for (WantedStates state : WantedStates.values()) {
       if (state.name().contains("Auto")) {
@@ -124,7 +128,8 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "EndShoot",
         () -> {
-          Commands.waitUntil(() -> shooter.getFPS() <= 0.0)
+          timer.start();
+          Commands.waitUntil(() -> timer.get() == 7)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
@@ -171,6 +176,7 @@ public class AutosChooser {
         Commands.sequence(
             pathBuilder.build(new Path("zone3cycleright")),
             pathBuilder.build(new Path("zone3cycleleft"))));
+    listOfPaths.put("MIDDLE", Commands.sequence(pathBuilder.build(new Path("sweep"))));
     listOfPaths.put(
         "ZONE1",
         Commands.sequence(
@@ -189,5 +195,6 @@ public class AutosChooser {
     ZONE2(),
     RIGHT_INSIDE(),
     LEFT_INSIDE(),
+    MIDDLE()
   }
 }
