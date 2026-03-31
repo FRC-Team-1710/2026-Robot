@@ -462,6 +462,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /** Gets the yaw to the fuel target with the largest area */
   public double getFuelTargetYaw() {
+    Robot.telemetry().log("yaw", m_yawToLargestTarget.getAsDouble());
     if (m_yawToLargestTarget != null) {
       return m_yawToLargestTarget.getAsDouble();
     }

@@ -2,16 +2,17 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.VisionConstants;
 import java.util.List;
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-public class VisionIOFuel implements Subsystem {
-  @NotLogged private PhotonCamera m_fuelCamera;
+public class VisionIOFuel extends SubsystemBase {
+  @NotLogged private final PhotonCamera m_fuelCamera;
 
   @NotLogged private List<PhotonPipelineResult> m_latestResult;
 
@@ -21,10 +22,13 @@ public class VisionIOFuel implements Subsystem {
   @NotLogged private PhotonTrackedTarget m_bestTarget;
   @Logged public double bestCost = 0.0;
 
-  public DoubleSupplier yawToLargestTarget = () -> getLargestTarget().getYaw();
+  @NotLogged private Rotation2d m_rotationTarget = Rotation2d.kZero;
 
-  public VisionIOFuel(String cameraName) {
+  @NotLogged private final Supplier<Rotation2d> m_robotRotationSupplier;
+
+  public VisionIOFuel(String cameraName, Supplier<Rotation2d> rotationSupplier) {
     m_fuelCamera = new PhotonCamera(cameraName);
+    m_robotRotationSupplier = rotationSupplier;
   }
 
   @Override
@@ -77,11 +81,15 @@ public class VisionIOFuel implements Subsystem {
             / Math.pow(Math.cos(Math.toRadians(target.getPitch())), 2);
   }
 
-  public PhotonTrackedTarget getLargestTarget() {
-    if (m_largestTarget == null) {
+  public Rotation2d getLatestRotationTarget() {
+    return m_rotationTarget;
+  }
+
+  public PhotonTrackedTarget getBestTarget() {
+    if (m_bestTarget == null) {
       return new PhotonTrackedTarget();
     }
-    return m_largestTarget;
+    return m_bestTarget;
   }
 
   public PhotonTrackedTarget getBestTarget() {

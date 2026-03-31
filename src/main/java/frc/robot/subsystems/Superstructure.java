@@ -27,17 +27,19 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.MathUtils;
 import frc.robot.utils.shooterMath.ShooterMath2;
+import java.util.function.Supplier;
 
 @Logged
 public class Superstructure {
-  @NotLogged private CommandXboxController m_driver;
-  @NotLogged private CommandXboxController m_mech;
-  @NotLogged private CommandSwerveDrivetrain m_drivetrain;
-  @NotLogged private Intake m_intake;
-  @NotLogged private Shooter m_shooter;
-  @NotLogged private Indexer m_indexer;
-  @NotLogged private Feeder m_feeder;
-  @NotLogged private Leds m_leds;
+  @NotLogged private final CommandXboxController m_driver;
+  @NotLogged private final CommandXboxController m_mech;
+  @NotLogged private final CommandSwerveDrivetrain m_drivetrain;
+  @NotLogged private final Intake m_intake;
+  @NotLogged private final Shooter m_shooter;
+  @NotLogged private final Indexer m_indexer;
+  @NotLogged private final Feeder m_feeder;
+  @NotLogged private final Leds m_leds;
+  @NotLogged private final Supplier<Rotation2d> m_fuelRotationTarget;
 
   @Logged(importance = Importance.CRITICAL)
   private WantedStates m_wantedState = WantedStates.Default;
@@ -70,7 +72,8 @@ public class Superstructure {
       Shooter m_shooter,
       Indexer m_indexer,
       Feeder m_feeder,
-      Leds leds) {
+      Leds leds,
+      Supplier<Rotation2d> fuelRotationTarget) {
     this.m_driver = driver;
     this.m_mech = mech;
     this.m_drivetrain = m_drivetrain;
@@ -79,6 +82,7 @@ public class Superstructure {
     this.m_indexer = m_indexer;
     this.m_feeder = m_feeder;
     this.m_leds = leds;
+    this.m_fuelRotationTarget = fuelRotationTarget;
   }
 
   /** Runs periodic logic for state transitions and subsystem coordination. */
@@ -327,8 +331,7 @@ public class Superstructure {
   }
 
   private void intakeWithVision() {
-    m_drivetrain.setRotationTarget(
-        m_drivetrain.getPose().getRotation().plus(new Rotation2d(m_drivetrain.getFuelTargetYaw())));
+    m_drivetrain.setRotationTarget(m_fuelRotationTarget.get());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.IDLE);
