@@ -91,11 +91,4 @@ public class VisionIOFuel extends SubsystemBase {
     }
     return m_bestTarget;
   }
-
-  public PhotonTrackedTarget getBestTarget() {
-    if (m_bestTarget == null) {
-      return new PhotonTrackedTarget();
-    }
-    return m_bestTarget;
-  }
 }
