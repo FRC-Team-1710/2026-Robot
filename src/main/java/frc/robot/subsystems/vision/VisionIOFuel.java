@@ -18,7 +18,6 @@ public class VisionIOFuel extends SubsystemBase {
 
   @NotLogged private List<PhotonTrackedTarget> m_trackedTargets;
 
-  @NotLogged private PhotonTrackedTarget m_largestTarget;
   @NotLogged private PhotonTrackedTarget m_bestTarget;
   @Logged public double bestCost = 0.0;
 
@@ -48,20 +47,11 @@ public class VisionIOFuel extends SubsystemBase {
     // Gather largest target/cluster of fuel and store all targets
     if (!m_latestResult.isEmpty()) {
       m_trackedTargets = m_latestResult.get(0).getTargets();
-      double area = 0;
       double lowestCost = Double.MAX_VALUE;
       for (PhotonTrackedTarget cluster : m_trackedTargets) {
-        if (cluster.getArea() > area) {
-          area = cluster.getArea();
-          m_largestTarget = cluster;
-        }
-
-        // Finding the best target based on a cost function
-        double currentCost = findCost(cluster);
-        if (currentCost < lowestCost) {
-          lowestCost = currentCost;
+        if (findCost(cluster) < lowestCost) {
+          lowestCost = findCost(cluster);
           m_bestTarget = cluster;
-          this.bestCost = currentCost;
         }
       }
     }
@@ -82,7 +72,7 @@ public class VisionIOFuel extends SubsystemBase {
   }
 
   public Rotation2d getLatestRotationTarget() {
-    return m_rotationTarget;
+    return m_robotRotationSupplier.get().plus(Rotation2d.fromDegrees(m_bestTarget.getYaw()));
   }
 
   public PhotonTrackedTarget getBestTarget() {
