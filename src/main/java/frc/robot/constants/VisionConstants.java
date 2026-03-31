@@ -41,6 +41,20 @@ public class VisionConstants {
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
 
+  // ==================== Basic Camera Stats ====================
+  /** The horizontal field of view of the camera (degrees) */
+  public static final double FUEL_CAMERA_FOV_H = 58.0;
+
+  /** The vertical field of view of the camera (degrees) */
+  public static final double FUEL_CAMERA_FOV_V = 44.0;
+
+  // ==== Cost function weights for Fuel Camera (-1.0, 1.0) ====
+  public static final double FUEL_CAMERA_COST_WEIGHT_1 = 1.0;
+  public static final double FUEL_CAMERA_COST_WEIGHT_2 = 1.0;
+  public static final double FUEL_CAMERA_COST_WEIGHT_3 = 1.0;
+
+  public static final double FUEL_CAMERA_MAX_DISTANCE = 25.0; // degrees
+
   public static record PoseCameraConfig(String name, Transform3d robotToCamera, boolean front) {}
 
   /**

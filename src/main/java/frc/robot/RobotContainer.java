@@ -90,7 +90,8 @@ public class RobotContainer {
   // Should add logging soon
   @NotLogged private final Vision[] m_cameras;
 
-  @NotLogged private final VisionIOFuel m_fuelCamera;
+  @Logged(importance = Importance.CRITICAL)
+  private final VisionIOFuel m_fuelCamera;
 
   @Logged(importance = Importance.CRITICAL)
   private final Superstructure m_superstructure;
@@ -455,5 +456,6 @@ public class RobotContainer {
     for (Vision vision : m_cameras) {
       vision.periodic();
     }
+    m_fuelCamera.periodic();
   }
 }
