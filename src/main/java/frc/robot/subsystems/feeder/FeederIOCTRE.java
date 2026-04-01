@@ -16,54 +16,38 @@ import frc.robot.utils.TalonFXUtil;
 public class FeederIOCTRE implements FeederIO {
 
   @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_feederLeft;
-
-  @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_feederRight;
+  private final TalonFX m_feederMotor;
 
   @NotLogged private final BaseStatusSignal[] m_feederSignals;
-
-  @NotLogged private final BaseStatusSignal[] m_feederFollowerSignals;
 
   @NotLogged private final VoltageOut m_leftVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   @NotLogged private final VoltageOut m_rightVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
-    this.m_feederRight = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
-    this.m_feederLeft = new TalonFX(CanIdConstants.Feeder.FEEDER_FOLLOWER_MOTOR);
+    this.m_feederMotor = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    TalonFXUtil.applyConfigWithRetries(this.m_feederLeft, config, 2);
-    TalonFXUtil.applyConfigWithRetries(this.m_feederRight, config, 2);
+    TalonFXUtil.applyConfigWithRetries(this.m_feederMotor, config, 2);
 
-    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederLeft);
-    m_feederFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_feederRight);
+    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederMotor);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederSignals);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederFollowerSignals);
 
-    m_feederLeft.optimizeBusUtilization();
-    m_feederRight.optimizeBusUtilization();
+    m_feederMotor.optimizeBusUtilization();
   }
 
   /** {@inheritDoc} */
   public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_feederSignals);
-    BaseStatusSignal.refreshAll(m_feederFollowerSignals);
   }
 
   /** {@inheritDoc} */
-  public void setLeft(double percent) {
-    this.m_feederLeft.setControl(m_leftVoltageOutput.withOutput(-12 * percent));
-  }
-
-  /** {@inheritDoc} */
-  public void setRight(double percent) {
-    this.m_feederRight.setControl(m_rightVoltageOutput.withOutput(12 * percent));
+  public void set(double percent) {
+    this.m_feederMotor.setControl(m_leftVoltageOutput.withOutput(-12 * percent));
   }
 }
