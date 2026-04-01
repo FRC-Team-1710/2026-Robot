@@ -11,9 +11,11 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import edu.wpi.first.epilogue.Logged;
@@ -40,6 +42,9 @@ public class IntakeIOCTRE implements IntakeIO {
   private final TalonFX m_intakeMotor;
 
   @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_intakeFollowerMotor;
+
+  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
   @NotLogged private final DynamicMotionMagicVoltage m_deploymentRequest;
@@ -52,13 +57,15 @@ public class IntakeIOCTRE implements IntakeIO {
   /** Cached status signals for the intake TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_intakeSignals;
 
-  /** Cached status signals for the deployment TalonFX used to sample sensor values. */
+  @NotLogged private final BaseStatusSignal[] m_intakeFollowerSignals;
+
   @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
   @NotLogged private final BaseStatusSignal m_deploymentSetpointVelocitySignal;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
+    m_intakeFollowerMotor = new TalonFX(CanIdConstants.Intake.INTAKE_FOLLOWER_MOTOR);
     m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR, TunerConstants.kCANBus);
 
     m_deploymentRequest = new DynamicMotionMagicVoltage(0, 0, 0).withSlot(0).withEnableFOC(true);
@@ -72,6 +79,10 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
     m_intakeMotor.getConfigurator().apply(m_motorConfig);
+    m_intakeFollowerMotor.getConfigurator().apply(m_motorConfig);
+
+    m_intakeFollowerMotor.setControl(
+        new Follower(CanIdConstants.Intake.INTAKE_MOTOR, MotorAlignmentValue.Opposed));
 
     // set slot 0 gains
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
@@ -95,17 +106,21 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.getClosedLoopReference().getValue();
 
     m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
+    m_intakeFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_intakeFollowerMotor);
     m_deploymentSignals = TalonFXUtil.getBasicStatusSignals(m_deploymentMotor);
 
     m_deploymentSetpointVelocitySignal = m_deploymentMotor.getClosedLoopReferenceSlope();
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeSignals);
 
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeFollowerSignals);
+
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSetpointVelocitySignal);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSignals);
 
     m_intakeMotor.optimizeBusUtilization();
+    m_intakeFollowerMotor.optimizeBusUtilization();
     m_deploymentMotor.optimizeBusUtilization();
   }
 
@@ -115,6 +130,7 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   public void update() {
     BaseStatusSignal.refreshAll(m_intakeSignals);
+    BaseStatusSignal.refreshAll(m_intakeFollowerSignals);
     BaseStatusSignal.refreshAll(m_deploymentSetpointVelocitySignal);
     BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
@@ -159,7 +175,11 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   @NotLogged
   public AngularVelocity getRollerVelocity() {
-    return m_intakeMotor.getRotorVelocity().getValue();
+    return m_intakeMotor
+        .getRotorVelocity()
+        .getValue()
+        .plus(m_intakeFollowerMotor.getRotorVelocity().getValue())
+        .div(2);
   }
 
   /**
@@ -167,7 +187,11 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   @NotLogged
   public Current getRollerCurrent() {
-    return m_intakeMotor.getStatorCurrent().getValue();
+    return m_intakeMotor
+        .getStatorCurrent()
+        .getValue()
+        .plus(m_intakeFollowerMotor.getStatorCurrent().getValue())
+        .div(2);
   }
 
   /**
@@ -175,6 +199,10 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   @NotLogged
   public Current getDeploymentCurrent() {
-    return m_deploymentMotor.getStatorCurrent().getValue();
+    return m_deploymentMotor
+        .getStatorCurrent()
+        .getValue()
+        .plus(m_intakeFollowerMotor.getStatorCurrent().getValue())
+        .div(2);
   }
 }
