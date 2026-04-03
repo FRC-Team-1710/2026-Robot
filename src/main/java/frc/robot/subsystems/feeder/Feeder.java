@@ -36,20 +36,23 @@ public class Feeder {
 
   /** Runs periodic feeder logic based on the current state. */
   public void periodic() {
+    double output = this.m_currentState.m_velocity;
+
     switch (this.m_currentState) {
       case FEEDING_LEFT:
-        this.m_io.setLeft(this.m_currentState.m_velocity);
-        this.m_io.setRight(0.0);
+        // Single-motor feeder: preserve FSM structure while applying a single feed output.
+        output = this.m_currentState.m_velocity;
         break;
       case FEEDING_RIGHT:
-        this.m_io.setLeft(0.0);
-        this.m_io.setRight(this.m_currentState.m_velocity);
+        // Single-motor feeder: preserve FSM structure while applying a single feed output.
+        output = this.m_currentState.m_velocity;
         break;
       default:
-        this.m_io.setLeft(this.m_currentState.m_velocity);
-        this.m_io.setRight(this.m_currentState.m_velocity);
+        output = this.m_currentState.m_velocity;
         break;
     }
+
+    this.m_io.setFeeder(output);
 
     this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
   }

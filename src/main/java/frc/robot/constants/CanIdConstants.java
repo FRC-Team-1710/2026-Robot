@@ -50,6 +50,5 @@ public class CanIdConstants {
   /** Constants for feeder */
   public static class Feeder {
     public static final int FEEDER_MOTOR = 60;
-    public static final int FEEDER_FOLLOWER_MOTOR = 61;
   }
 }
