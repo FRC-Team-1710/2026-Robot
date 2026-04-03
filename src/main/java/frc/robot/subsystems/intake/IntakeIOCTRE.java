@@ -181,11 +181,11 @@ public class IntakeIOCTRE implements IntakeIO {
   }
 
   /**
-   * @return the rotor/angular velocity of the intake follower motor.
+   * @return the angular velocity of the intake follower motor.
    */
   @NotLogged
   public AngularVelocity getFollowerVelocity() {
-    return m_intakeMotorFollower.getRotorVelocity().getValue();
+    return m_intakeMotorFollower.getVelocity().getValue();
   }
 
   /**
