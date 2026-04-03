@@ -126,6 +126,7 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   public void update() {
     BaseStatusSignal.refreshAll(m_intakeSignals);
+    BaseStatusSignal.refreshAll(m_intakeFollowerSignals);
     BaseStatusSignal.refreshAll(m_deploymentSetpointVelocitySignal);
     BaseStatusSignal.refreshAll(m_deploymentSignals);
   }
