@@ -37,7 +37,10 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class IntakeIOCTRE implements IntakeIO {
   @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_intakeMotor;
+  private final TalonFX m_intakeMotor; // LEFT MOTOR
+
+  @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_intakeMotorFollower; // RIGHT MOTOR
 
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
@@ -52,6 +55,8 @@ public class IntakeIOCTRE implements IntakeIO {
   /** Cached status signals for the intake TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_intakeSignals;
 
+  @NotLogged private final BaseStatusSignal[] m_intakeFollowerSignals;
+
   /** Cached status signals for the deployment TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
 
@@ -59,6 +64,7 @@ public class IntakeIOCTRE implements IntakeIO {
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
+    m_intakeMotorFollower = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR_FOLLOWER);
     m_deploymentMotor = new TalonFX(CanIdConstants.Intake.DEPLOYMENT_MOTOR, TunerConstants.kCANBus);
 
     m_deploymentRequest = new DynamicMotionMagicVoltage(0, 0, 0).withSlot(0).withEnableFOC(true);
@@ -72,6 +78,7 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
     m_intakeMotor.getConfigurator().apply(m_motorConfig);
+    m_intakeMotorFollower.getConfigurator().apply(m_motorConfig);
 
     // set slot 0 gains
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
@@ -87,6 +94,7 @@ public class IntakeIOCTRE implements IntakeIO {
 
     m_motorConfig.Feedback.SensorToMechanismRatio = 50;
     m_motorConfig.Slot0 = m_slot0Configs;
+    m_motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     m_deploymentMotor.getConfigurator().apply(m_motorConfig);
 
@@ -95,17 +103,20 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.getClosedLoopReference().getValue();
 
     m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
+    m_intakeFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotorFollower);
     m_deploymentSignals = TalonFXUtil.getBasicStatusSignals(m_deploymentMotor);
 
     m_deploymentSetpointVelocitySignal = m_deploymentMotor.getClosedLoopReferenceSlope();
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_intakeFollowerSignals);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSetpointVelocitySignal);
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, m_deploymentSignals);
 
     m_intakeMotor.optimizeBusUtilization();
+    m_intakeMotorFollower.optimizeBusUtilization();
     m_deploymentMotor.optimizeBusUtilization();
   }
 
@@ -152,6 +163,7 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   public void setIntakeMotor(double speed) {
     m_intakeMotor.setControl(new DutyCycleOut(speed));
+    m_intakeMotorFollower.setControl(new DutyCycleOut(-speed));
   }
 
   /**
@@ -163,11 +175,27 @@ public class IntakeIOCTRE implements IntakeIO {
   }
 
   /**
+   * @return the rotor/angular velocity of the intake follower motor.
+   */
+  @NotLogged
+  public AngularVelocity getFollowerVelocity() {
+    return m_intakeMotorFollower.getRotorVelocity().getValue();
+  }
+
+  /**
    * @return the stator current draw of the intake roller motor.
    */
   @NotLogged
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent().getValue();
+  }
+
+  /**
+   * @return the stator current draw of the intake follower motor.
+   */
+  @NotLogged
+  public Current getFollowerCurrent() {
+    return m_intakeMotorFollower.getStatorCurrent().getValue();
   }
 
   /**
