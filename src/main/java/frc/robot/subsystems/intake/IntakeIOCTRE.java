@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -55,6 +56,7 @@ public class IntakeIOCTRE implements IntakeIO {
   /** Cached status signals for the intake TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_intakeSignals;
 
+  /** Cached status signals for the intake follower TalonFX used to sample sensor values. */
   @NotLogged private final BaseStatusSignal[] m_intakeFollowerSignals;
 
   /** Cached status signals for the deployment TalonFX used to sample sensor values. */
@@ -101,6 +103,9 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.setPosition(0.29);
 
     m_deploymentMotor.getClosedLoopReference().getValue();
+
+    m_intakeMotorFollower.setControl(
+        new Follower(CanIdConstants.Intake.INTAKE_MOTOR, true));
 
     m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
     m_intakeFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotorFollower);
@@ -163,8 +168,7 @@ public class IntakeIOCTRE implements IntakeIO {
    * @param speed motor output in the range [-1.0, 1.0]
    */
   public void setIntakeMotor(double speed) {
-    m_intakeMotor.setControl(new DutyCycleOut(speed));
-    m_intakeMotorFollower.setControl(new DutyCycleOut(-speed));
+    m_intakeMotor.setControl(m_intakeRequest.withOutput(speed));
   }
 
   /**
