@@ -22,12 +22,45 @@ public interface ShooterIO {
 
   public default void setRightTargetVelocity(AngularVelocity pVelocity) {}
 
+  // Per-motor helper functions: Left Motor, Left Follower Motor, Right Motor, Right Follower Motor
+  public default void setLeftMotorTargetVelocity(AngularVelocity pVelocity) {
+    setLeftTargetVelocity(pVelocity);
+  }
+
+  public default void setLeftFollowerTargetVelocity(AngularVelocity pVelocity) {
+    setLeftTargetVelocity(pVelocity);
+  }
+
+  public default void setRightMotorTargetVelocity(AngularVelocity pVelocity) {
+    setRightTargetVelocity(pVelocity);
+  }
+
+  public default void setRightFollowerTargetVelocity(AngularVelocity pVelocity) {
+    setRightTargetVelocity(pVelocity);
+  }
+
   public default AngularVelocity getLeftVelocity() {
     return RotationsPerSecond.of(0);
   }
 
   public default AngularVelocity getRightVelocity() {
     return RotationsPerSecond.of(0);
+  }
+
+  public default AngularVelocity getLeftMotorVelocity() {
+    return getLeftVelocity();
+  }
+
+  public default AngularVelocity getLeftFollowerVelocity() {
+    return getLeftVelocity();
+  }
+
+  public default AngularVelocity getRightMotorVelocity() {
+    return getRightVelocity();
+  }
+
+  public default AngularVelocity getRightFollowerVelocity() {
+    return getRightVelocity();
   }
 
   public default AngularVelocity getLeftTargetVelocity() {
@@ -48,6 +81,10 @@ public interface ShooterIO {
 
   public default Angle getRightHoodPosition() {
     return Degrees.of(0);
+  }
+
+  public default Angle getHoodPosition() {
+    return getLeftHoodPosition();
   }
 
   public default boolean hasBreakerLeftBroke() {
