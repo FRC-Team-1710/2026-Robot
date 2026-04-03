@@ -15,6 +15,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import edu.wpi.first.epilogue.Logged;
@@ -105,7 +106,7 @@ public class IntakeIOCTRE implements IntakeIO {
     m_deploymentMotor.getClosedLoopReference().getValue();
 
     m_intakeMotorFollower.setControl(
-        new Follower(CanIdConstants.Intake.INTAKE_MOTOR, true));
+        new Follower(CanIdConstants.Intake.INTAKE_MOTOR, MotorAlignmentValue.Opposed));
 
     m_intakeSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotor);
     m_intakeFollowerSignals = TalonFXUtil.getBasicStatusSignals(m_intakeMotorFollower);
