@@ -14,86 +14,70 @@ import frc.robot.utils.FuelSim;
 
 @Logged
 public interface ShooterIO {
+  /**
+   * Updates cached inputs and simulation state.
+   *
+   * @param pDTSeconds loop delta time in seconds
+   */
   public default void update(double pDTSeconds) {}
 
+  /** Stops all shooter outputs. */
   public default void stop() {}
 
-  public default void setLeftTargetVelocity(AngularVelocity pVelocity) {}
+  /**
+   * Sets the flywheel velocity target for the shooter.
+   *
+   * @param pVelocity target flywheel angular velocity
+   */
+  public default void setTargetVelocity(AngularVelocity pVelocity) {}
 
-  public default void setRightTargetVelocity(AngularVelocity pVelocity) {}
-
-  // Per-motor helper functions: Left Motor, Left Follower Motor, Right Motor, Right Follower Motor
-  public default void setLeftMotorTargetVelocity(AngularVelocity pVelocity) {
-    setLeftTargetVelocity(pVelocity);
-  }
-
-  public default void setLeftFollowerTargetVelocity(AngularVelocity pVelocity) {
-    setLeftTargetVelocity(pVelocity);
-  }
-
-  public default void setRightMotorTargetVelocity(AngularVelocity pVelocity) {
-    setRightTargetVelocity(pVelocity);
-  }
-
-  public default void setRightFollowerTargetVelocity(AngularVelocity pVelocity) {
-    setRightTargetVelocity(pVelocity);
-  }
-
-  public default AngularVelocity getLeftVelocity() {
+  /**
+   * Returns the current flywheel velocity measurement.
+   *
+   * @return current flywheel angular velocity
+   */
+  public default AngularVelocity getVelocity() {
     return RotationsPerSecond.of(0);
   }
 
-  public default AngularVelocity getRightVelocity() {
-    return RotationsPerSecond.of(0);
-  }
+  /**
+   * Sets the hood target angle.
+   *
+   * @param pAngle target hood angle
+   */
+  public default void setHoodTarget(Angle pAngle) {}
 
-  public default AngularVelocity getLeftMotorVelocity() {
-    return getLeftVelocity();
-  }
-
-  public default AngularVelocity getLeftFollowerVelocity() {
-    return getLeftVelocity();
-  }
-
-  public default AngularVelocity getRightMotorVelocity() {
-    return getRightVelocity();
-  }
-
-  public default AngularVelocity getRightFollowerVelocity() {
-    return getRightVelocity();
-  }
-
-  public default AngularVelocity getLeftTargetVelocity() {
-    return RotationsPerSecond.of(0);
-  }
-
-  public default AngularVelocity getRightTargetVelocity() {
-    return RotationsPerSecond.of(0);
-  }
-
-  public default void setLeftHoodTarget(Angle pAngle) {}
-
-  public default void setRightHoodTarget(Angle pAngle) {}
-
-  public default Angle getLeftHoodPosition() {
-    return Degrees.of(0);
-  }
-
-  public default Angle getRightHoodPosition() {
-    return Degrees.of(0);
-  }
-
+  /**
+   * Returns the current hood angle measurement.
+   *
+   * @return current hood position angle
+   */
   public default Angle getHoodPosition() {
-    return getLeftHoodPosition();
+    return Degrees.of(0);
   }
 
+  /**
+   * Returns whether the left beam break sensor is blocked.
+   *
+   * @return true when the left beam is broken
+   */
   public default boolean hasBreakerLeftBroke() {
     return false;
   }
 
+  /**
+   * Returns whether the right beam break sensor is blocked.
+   *
+   * @return true when the right beam is broken
+   */
   public default boolean hasBreakerRightBroke() {
     return false;
   }
 
+  /**
+   * Injects the fuel simulator reference for simulation-backed IO implementations.
+   *
+   * @param fuelSim shooter fuel simulator
+   */
   public default void setFuelSim(FuelSim fuelSim) {}
 }

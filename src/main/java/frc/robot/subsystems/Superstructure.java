@@ -252,13 +252,8 @@ public class Superstructure {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTargetWithWait()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTargetWithWait()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -268,13 +263,8 @@ public class Superstructure {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Up);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTargetWithWait()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTargetWithWait()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -284,13 +274,8 @@ public class Superstructure {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTarget()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTarget()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -300,13 +285,8 @@ public class Superstructure {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Up);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTarget()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTarget()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -326,13 +306,8 @@ public class Superstructure {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTargetWithWait()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTargetWithWait()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTargetWithWait() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -342,13 +317,8 @@ public class Superstructure {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTarget()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTarget()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -369,13 +339,8 @@ public class Superstructure {
   private void scoreAuto() {
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTarget()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTarget()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -383,13 +348,8 @@ public class Superstructure {
   private void scoreWithIntakeUpAuto() {
     m_intake.setState(IntakeStates.Up);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTarget()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTarget()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -406,13 +366,8 @@ public class Superstructure {
   private void scoreWhileIntakingAuto() {
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_indexer.setState(anyAtTarget() ? IndexStates.Indexing : IndexStates.Idle);
-    m_feeder.setState(
-        allAtTarget()
-            ? FEEDER_STATE.FEEDING
-            : leftAtTarget()
-                ? FEEDER_STATE.FEEDING_LEFT
-                : rightAtTarget() ? FEEDER_STATE.FEEDING_RIGHT : FEEDER_STATE.STOP);
+    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
 
     m_didIntake = false;
   }
@@ -430,30 +385,6 @@ public class Superstructure {
     m_feeder.setState(FEEDER_STATE.FEEDING);
   }
 
-  /** Returns whether all shooters are at their targets. */
-  @Logged(importance = Importance.INFO)
-  public boolean allAtTarget() {
-    return leftAtTarget() && rightAtTarget();
-  }
-
-  /** Returns whether all shooters are at their targets with wait. */
-  @Logged(importance = Importance.INFO)
-  public boolean allAtTargetWithWait() {
-    return leftAtTargetWithWait() && rightAtTargetWithWait();
-  }
-
-  /** Returns whether any m_shooter is at its target. */
-  @NotLogged
-  public boolean anyAtTarget() {
-    return leftAtTarget() || rightAtTarget();
-  }
-
-  /** Returns whether any m_shooter is at its target with wait. */
-  @NotLogged
-  public boolean anyAtTargetWithWait() {
-    return leftAtTargetWithWait() || rightAtTargetWithWait();
-  }
-
   @Logged(importance = Importance.CRITICAL)
   public boolean driveAtTarget() {
     return Math.abs(
@@ -462,32 +393,15 @@ public class Superstructure {
   }
 
   @Logged(importance = Importance.CRITICAL)
-  public boolean leftAtTarget() {
-    return m_shooter.isAtLeftTargetVelocity()
-        && m_shooter.isHoodAtLeftTargetAngle()
-        && driveAtTarget();
-  }
-
-  /** Returns whether the right m_shooter is at its target. */
-  @Logged(importance = Importance.CRITICAL)
-  public boolean rightAtTarget() {
-    return m_shooter.isAtRightTargetVelocity()
-        && m_shooter.isHoodAtRightTargetAngle()
-        && driveAtTarget();
+  public boolean flywheelAtTarget() {
+    return m_shooter.isAtTargetVelocity() && m_shooter.isHoodAtTargetAngle() && driveAtTarget();
   }
 
   /** Returns whether the left m_shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
-  public boolean leftAtTargetWithWait() {
-    return leftAtTarget()
+  public boolean flywheelAtTargetWithWait() {
+    return flywheelAtTarget()
         && MatchState.canShoot(ShooterMath2.currentSolution.shooterLeft().tof().in(Seconds));
-  }
-
-  /** Returns whether the right m_shooter is at its target with wait. */
-  @Logged(importance = Importance.CRITICAL)
-  public boolean rightAtTargetWithWait() {
-    return rightAtTarget()
-        && MatchState.canShoot(ShooterMath2.currentSolution.shooterRight().tof().in(Seconds));
   }
 
   @NotLogged

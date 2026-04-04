@@ -22,6 +22,7 @@ import frc.robot.utils.MechanismUtil.HoodMechanism;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
 import frc.robot.utils.shooterMath.ShooterMath2;
 
+/** Simulation implementation of shooter IO. */
 @Logged
 public class ShooterIOSIM implements ShooterIO {
 
@@ -37,6 +38,7 @@ public class ShooterIOSIM implements ShooterIO {
   private final Debouncer m_shooterDebouncer = new Debouncer(1 / 12.0); // 12 fuel/sec
   private boolean m_leftShooter = false;
 
+  /** Constructs the simulated shooter IO and visualization mechanisms. */
   public ShooterIOSIM() {
     this.m_flyWheelMechanism = new WheelMechanism("Flywheel 1", 0.1, -0.25, 0.5);
     this.m_flyWheelFollowerMechanism = new WheelMechanism("Flywheel 2", 0.1, 0.25, 0.5);
@@ -125,22 +127,42 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  public void setLeftTargetVelocity(AngularVelocity pVelocity) {
+  public void setTargetVelocity(AngularVelocity pVelocity) {
     this.m_velocity = pVelocity;
   }
 
   /** {@inheritDoc} */
-  public AngularVelocity getVelocity() {
+  public void setLeftTargetVelocity(AngularVelocity pVelocity) {
+    setTargetVelocity(pVelocity);
+  }
+
+  /** {@inheritDoc} */
+  public void setRightTargetVelocity(AngularVelocity pVelocity) {
+    setTargetVelocity(pVelocity);
+  }
+
+  /** {@inheritDoc} */
+  public AngularVelocity getLeftVelocity() {
     return this.m_velocity;
   }
 
   /** {@inheritDoc} */
-  public AngularVelocity getTargetVelocity() {
+  public AngularVelocity getRightVelocity() {
     return this.m_velocity;
   }
 
   /** {@inheritDoc} */
-  public void setLeftHoodTarget(Angle pAngle) {
+  public AngularVelocity getLeftTargetVelocity() {
+    return this.m_velocity;
+  }
+
+  /** {@inheritDoc} */
+  public AngularVelocity getRightTargetVelocity() {
+    return this.m_velocity;
+  }
+
+  /** {@inheritDoc} */
+  public void setHoodTarget(Angle pAngle) {
     this.m_hoodAngle =
         Degrees.of(
             MathUtil.clamp(
@@ -148,7 +170,7 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  public Angle getLeftHoodPosition() {
+  public Angle getHoodPosition() {
     return this.m_hoodAngle;
   }
 
