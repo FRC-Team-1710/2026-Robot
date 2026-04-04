@@ -397,7 +397,7 @@ public class Superstructure {
     return m_shooter.isAtTargetVelocity() && m_shooter.isHoodAtTargetAngle() && driveAtTarget();
   }
 
-  /** Returns whether the left m_shooter is at its target with wait. */
+  /** Returns whether the m_shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTargetWithWait() {
     return flywheelAtTarget()
