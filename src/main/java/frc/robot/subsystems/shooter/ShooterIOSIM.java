@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -49,6 +48,7 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
+  @Override
   public void update(double dtSeconds) {
     this.m_flyWheelMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
     this.m_flyWheelFollowerMechanism.update(this.m_velocity.in(RadiansPerSecond), dtSeconds, false);
@@ -122,46 +122,25 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
+  @Override
   public void stop() {
-    this.m_velocity = DegreesPerSecond.of(0);
+    this.m_velocity = RotationsPerSecond.of(0);
   }
 
   /** {@inheritDoc} */
+  @Override
   public void setTargetVelocity(AngularVelocity pVelocity) {
     this.m_velocity = pVelocity;
   }
 
   /** {@inheritDoc} */
-  public void setLeftTargetVelocity(AngularVelocity pVelocity) {
-    setTargetVelocity(pVelocity);
-  }
-
-  /** {@inheritDoc} */
-  public void setRightTargetVelocity(AngularVelocity pVelocity) {
-    setTargetVelocity(pVelocity);
-  }
-
-  /** {@inheritDoc} */
-  public AngularVelocity getLeftVelocity() {
+  @Override
+  public AngularVelocity getVelocity() {
     return this.m_velocity;
   }
 
   /** {@inheritDoc} */
-  public AngularVelocity getRightVelocity() {
-    return this.m_velocity;
-  }
-
-  /** {@inheritDoc} */
-  public AngularVelocity getLeftTargetVelocity() {
-    return this.m_velocity;
-  }
-
-  /** {@inheritDoc} */
-  public AngularVelocity getRightTargetVelocity() {
-    return this.m_velocity;
-  }
-
-  /** {@inheritDoc} */
+  @Override
   public void setHoodTarget(Angle pAngle) {
     this.m_hoodAngle =
         Degrees.of(
@@ -170,11 +149,13 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
+  @Override
   public Angle getHoodPosition() {
     return this.m_hoodAngle;
   }
 
   /** Sets the fuel simulation instance for this shooter IO. */
+  @Override
   public void setFuelSim(FuelSim fuelSim) {
     this.m_fuelSim = fuelSim;
   }
