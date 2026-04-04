@@ -11,6 +11,7 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
@@ -89,9 +90,11 @@ public class ShooterIOCTRE implements ShooterIO {
 
     // Configure follower motors to follow their respective masters
     m_flywheels[1].setControl(
-        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, false));
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Aligned));
+    m_flywheels[2].setControl(
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed));
     m_flywheels[3].setControl(
-        new Follower(CanIdConstants.Shooter.SHOOTER_RIGHT_MOTOR, false));
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed));
 
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
@@ -145,12 +148,10 @@ public class ShooterIOCTRE implements ShooterIO {
   public void setTargetVelocity(AngularVelocity pVelocity) {
     if (pVelocity.in(RotationsPerSecond) == 0) {
       m_flywheels[0].stopMotor();
-      m_flywheels[2].stopMotor();
       return;
     }
 
     m_flywheels[0].setControl(this.m_velocityRequest.withVelocity(pVelocity));
-    m_flywheels[2].setControl(this.m_velocityRequest.withVelocity(pVelocity));
   }
 
   /** {@inheritDoc} */
