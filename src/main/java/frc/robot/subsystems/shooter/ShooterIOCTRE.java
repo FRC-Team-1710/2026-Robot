@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -86,6 +87,12 @@ public class ShooterIOCTRE implements ShooterIO {
       TalonFXUtil.applyConfigWithRetries(fx, flywheelConfig, 5);
     }
 
+    // Configure follower motors to follow their respective masters
+    m_flywheels[1].setControl(
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, false));
+    m_flywheels[3].setControl(
+        new Follower(CanIdConstants.Shooter.SHOOTER_RIGHT_MOTOR, false));
+
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
@@ -137,15 +144,13 @@ public class ShooterIOCTRE implements ShooterIO {
   @Override
   public void setTargetVelocity(AngularVelocity pVelocity) {
     if (pVelocity.in(RotationsPerSecond) == 0) {
-      for (TalonFX flywheel : this.m_flywheels) {
-        flywheel.stopMotor();
-      }
+      m_flywheels[0].stopMotor();
+      m_flywheels[2].stopMotor();
       return;
     }
 
-    for (TalonFX flywheel : this.m_flywheels) {
-      flywheel.setControl(this.m_velocityRequest.withVelocity(pVelocity));
-    }
+    m_flywheels[0].setControl(this.m_velocityRequest.withVelocity(pVelocity));
+    m_flywheels[2].setControl(this.m_velocityRequest.withVelocity(pVelocity));
   }
 
   /** {@inheritDoc} */
