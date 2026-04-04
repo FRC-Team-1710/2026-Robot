@@ -145,7 +145,7 @@ public class ShooterIOSIM implements ShooterIO {
     this.m_hoodAngle =
         Degrees.of(
             MathUtil.clamp(
-                pAngle.magnitude(), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
+                pAngle.in(Degrees), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX));
   }
 
   /** {@inheritDoc} */
