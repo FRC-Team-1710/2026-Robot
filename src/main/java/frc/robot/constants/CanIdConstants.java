@@ -26,7 +26,8 @@ public class CanIdConstants {
   /** Constants for intake */
   public static class Intake {
     public static final int INTAKE_MOTOR = 20;
-    public static final int DEPLOYMENT_MOTOR = 21;
+    public static final int INTAKE_MOTOR_FOLLOWER = 21;
+    public static final int DEPLOYMENT_MOTOR = 22;
   }
 
   /** Constants for indexer */
@@ -51,6 +52,5 @@ public class CanIdConstants {
   /** Constants for feeder */
   public static class Feeder {
     public static final int FEEDER_MOTOR = 60;
-    public static final int FEEDER_FOLLOWER_MOTOR = 61;
   }
 }
