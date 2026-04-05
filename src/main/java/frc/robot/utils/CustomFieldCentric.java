@@ -278,7 +278,7 @@ public class CustomFieldCentric implements SwerveRequest {
         && (currentBumpLocation
                 .getTranslation()
                 .getDistance(robotWantedVelocityHeading.getTranslation())
-            < speed * 0.5);
+            < speed * DrivetrainAutomationConstants.BumpDetection.kBumpDetectionTime);
   }
 
   // /* Uses the pose to determine the max speed on the bump depending on its current position */
