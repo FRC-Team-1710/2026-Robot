@@ -28,6 +28,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Shooter subsystem state machine, control targets, and beam-break based fuel accounting. */
 @Logged
 public class Shooter {
   @Logged(importance = Importance.CRITICAL)
@@ -39,16 +40,10 @@ public class Shooter {
   @NotLogged private final TimesConsumer m_timesConsumer;
 
   @Logged(importance = Importance.CRITICAL)
-  private AngularVelocity m_leftTargetVelocity;
+  private AngularVelocity m_targetVelocity;
 
   @Logged(importance = Importance.CRITICAL)
-  private Angle m_leftHoodTarget;
-
-  @Logged(importance = Importance.CRITICAL)
-  private AngularVelocity m_rightTargetVelocity;
-
-  @Logged(importance = Importance.CRITICAL)
-  private Angle m_rightHoodTarget;
+  private Angle m_hoodTarget;
 
   @NotLogged private boolean m_isGoingTowardsAllianceZone;
 
@@ -92,10 +87,8 @@ public class Shooter {
     this.m_timesConsumer = consumer;
     this.m_currentState = SHOOTER_STATE.STOP;
 
-    this.m_leftTargetVelocity = RotationsPerSecond.of(0);
-    this.m_leftHoodTarget = Degrees.of(0);
-    this.m_rightTargetVelocity = RotationsPerSecond.of(0);
-    this.m_rightHoodTarget = Degrees.of(0);
+    this.m_targetVelocity = RotationsPerSecond.of(0);
+    this.m_hoodTarget = Degrees.of(0);
 
     this.m_isGoingTowardsAllianceZone = false;
     this.m_didIntake = false;
@@ -120,121 +113,74 @@ public class Shooter {
 
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_leftTargetVelocity = ShooterMath2.currentSolution.shooterLeft().flywheelOmega();
-        this.m_leftHoodTarget = ShooterMath2.currentSolution.shooterLeft().hoodAngle();
-        this.m_rightTargetVelocity = ShooterMath2.currentSolution.shooterRight().flywheelOmega();
-        this.m_rightHoodTarget = ShooterMath2.currentSolution.shooterRight().hoodAngle();
+        this.m_targetVelocity =
+            RotationsPerSecond.of(
+                (ShooterMath2.currentSolution.shooterLeft().flywheelOmega().in(RotationsPerSecond)
+                        + ShooterMath2.currentSolution
+                            .shooterRight()
+                            .flywheelOmega()
+                            .in(RotationsPerSecond))
+                    / 2.0);
+        this.m_hoodTarget =
+            Degrees.of(
+                (ShooterMath2.currentSolution.shooterLeft().hoodAngle().in(Degrees)
+                        + ShooterMath2.currentSolution.shooterRight().hoodAngle().in(Degrees))
+                    / 2.0);
         break;
 
       default:
-        this.m_leftTargetVelocity = this.m_currentState.m_velocity;
-        this.m_leftHoodTarget = this.m_currentState.m_hoodAngle;
-        this.m_rightTargetVelocity = this.m_currentState.m_velocity;
-        this.m_rightHoodTarget = this.m_currentState.m_hoodAngle;
+        this.m_targetVelocity = this.m_currentState.m_velocity;
+        this.m_hoodTarget = this.m_currentState.m_hoodAngle;
         break;
     }
 
-    this.m_io.setLeftTargetVelocity(this.m_leftTargetVelocity);
-    this.m_io.setLeftHoodTarget(this.m_leftHoodTarget);
-    this.m_io.setRightTargetVelocity(this.m_rightTargetVelocity);
-    this.m_io.setRightHoodTarget(this.m_rightHoodTarget);
+    this.m_io.setTargetVelocity(this.m_targetVelocity);
+    this.m_io.setHoodTarget(this.m_hoodTarget);
 
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
 
     // Always run FPS tracking regardless of state so pruning stays current
-    calculateFPS();
+    // calculateFPS();
   }
 
   /** Returns whether the left flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
-  public boolean isAtLeftTargetVelocity() {
+  public boolean isAtTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution
-            .shooterLeft()
-            .flywheelOmega()
-            .isNear(this.getLeftVelocity(), RotationsPerSecond.of(20)))
+        ? (this.m_targetVelocity.isNear(this.getVelocity(), RotationsPerSecond.of(20)))
         : true;
   }
 
   /** Returns whether the left hood is at its target angle. */
   @Logged(importance = Importance.CRITICAL)
-  public boolean isHoodAtLeftTargetAngle() {
+  public boolean isHoodAtTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution
-            .shooterLeft()
-            .hoodAngle()
-            .isNear(this.getLeftHoodPosition(), Degrees.of(3)))
-        : true;
-  }
-
-  /** Returns whether the right flywheel is at its target velocity. */
-  @Logged(importance = Importance.CRITICAL)
-  public boolean isAtRightTargetVelocity() {
-    return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution
-            .shooterRight()
-            .flywheelOmega()
-            .isNear(this.getRightVelocity(), RotationsPerSecond.of(20)))
-        : true;
-  }
-
-  /** Returns whether the right hood is at its target angle. */
-  @Logged(importance = Importance.CRITICAL)
-  public boolean isHoodAtRightTargetAngle() {
-    return Mode.currentMode == CurrentMode.REAL
-        ? (ShooterMath2.currentSolution
-            .shooterRight()
-            .hoodAngle()
-            .isNear(this.getRightHoodPosition(), Degrees.of(3)))
+        ? (this.m_hoodTarget.isNear(this.getHoodPosition(), Degrees.of(3)))
         : true;
   }
 
   /** Returns the left target hood angle. */
   @NotLogged
-  public Angle getLeftTargetHood() {
-    return this.m_leftHoodTarget;
-  }
-
-  /** Returns the right target hood angle. */
-  @NotLogged
-  public Angle getRightTargetHood() {
-    return this.m_rightHoodTarget;
+  public Angle getHoodTarget() {
+    return this.m_hoodTarget;
   }
 
   /** Returns the left hood position. */
   @NotLogged
-  public Angle getLeftHoodPosition() {
-    return this.m_io.getLeftHoodPosition();
-  }
-
-  /** Returns the right hood position. */
-  @NotLogged
-  public Angle getRightHoodPosition() {
-    return this.m_io.getRightHoodPosition();
+  public Angle getHoodPosition() {
+    return this.m_io.getHoodPosition();
   }
 
   /** Returns the left target velocity. */
   @NotLogged
-  public AngularVelocity getLeftTargetVelocity() {
-    return this.m_leftTargetVelocity;
-  }
-
-  /** Returns the right target velocity. */
-  @NotLogged
-  public AngularVelocity getRightTargetVelocity() {
-    return this.m_rightTargetVelocity;
+  public AngularVelocity getTargetVelocity() {
+    return this.m_targetVelocity;
   }
 
   /** Returns the left flywheel velocity. */
   @NotLogged
-  public AngularVelocity getLeftVelocity() {
-    return this.m_io.getLeftVelocity();
-  }
-
-  /** Returns the right flywheel velocity. */
-  @NotLogged
-  public AngularVelocity getRightVelocity() {
-    return this.m_io.getRightVelocity();
+  public AngularVelocity getVelocity() {
+    return this.m_io.getVelocity();
   }
 
   /**
