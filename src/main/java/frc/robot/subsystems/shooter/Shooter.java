@@ -69,6 +69,10 @@ public class Shooter {
         this.m_targetVelocity = ShooterMath3.currentSolution.flywheelOmega();
         this.m_hoodTarget = ShooterMath3.currentSolution.hoodAngle();
         break;
+      case PASS:
+        this.m_targetVelocity = ShooterMath3.currentPassingSolution.flywheelOmega();
+        this.m_hoodTarget = ShooterMath3.currentPassingSolution.hoodAngle();
+        break;
       default:
         this.m_targetVelocity = this.m_currentState.m_velocity;
         this.m_hoodTarget = this.m_currentState.m_hoodAngle;
@@ -130,7 +134,8 @@ public class Shooter {
         RotationsPerSecond.of(0), // TODO: tune for fastest without drawing too much current
         Degrees.of(ShooterConstants.HOOD_MIN)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    TESTING(
+    PASS(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    TEST(
         Milliseconds.of(20),
         RotationsPerSecond.of(40),
         Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),

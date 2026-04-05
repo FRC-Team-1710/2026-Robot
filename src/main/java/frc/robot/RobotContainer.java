@@ -220,7 +220,7 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_shooter.setStateTesting(SHOOTER_STATE.TESTING);
+                  m_shooter.setStateTesting(SHOOTER_STATE.TEST);
                   m_feeder.setStateTesting(FEEDER_STATE.FEEDING);
                   m_indexer.setStateTesting(IndexStates.Indexing);
                   m_intake.setStateTesting(IntakeStates.Jostle);
