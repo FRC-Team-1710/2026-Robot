@@ -38,9 +38,10 @@ public class CanIdConstants {
   /** Constants for shooter */
   public static class Shooter {
     public static final int SHOOTER_LEFT_MOTOR = 40;
-    public static final int SHOOTER_RIGHT_MOTOR = 41;
-    public static final int HOOD_LEFT_MOTOR = 42;
-    public static final int HOOD_RIGHT_MOTOR = 43;
+    public static final int SHOOTER_LEFT_FOLLOWER = 41;
+    public static final int SHOOTER_RIGHT_MOTOR = 42;
+    public static final int SHOOTER_RIGHT_FOLLOWER = 43;
+    public static final int HOOD_MOTOR = 44;
   }
 
   /** Constants for climber */
