@@ -62,6 +62,9 @@ public class CustomFieldCentric implements SwerveRequest {
   private boolean m_shouldRaiseIntake = false;
 
   @Logged(importance = Importance.INFO)
+  private boolean m_isGoingTowardsAllianceZone = false;
+
+  @Logged(importance = Importance.INFO)
   private final PIDController yAssistPID =
       new PIDController(
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
@@ -161,6 +164,14 @@ public class CustomFieldCentric implements SwerveRequest {
                       xVelocity.in(MetersPerSecond) < 0
                           ? (DrivetrainAutomationConstants.BumpDetection.kSnap1)
                           : (DrivetrainAutomationConstants.BumpDetection.kSnap2));
+              m_isGoingTowardsAllianceZone =
+                  Alliance.redAlliance
+                      ? (parameters.currentPose.getX()
+                              > FieldConstants.kFieldLength.div(3).in(Meters)
+                          && xVelocity.in(MetersPerSecond) > 0)
+                      : (parameters.currentPose.getX()
+                              < FieldConstants.kFieldLength.div(3).times(2).in(Meters)
+                          && xVelocity.in(MetersPerSecond) < 0);
             }
           } else {
             // Already bump assist
@@ -186,6 +197,11 @@ public class CustomFieldCentric implements SwerveRequest {
           currentDriveState = RequestStates.DRIVER_CONTROLLED;
         }
       }
+    }
+
+    if (currentDriveState != RequestStates.BUMP_ASSIST) {
+      m_isGoingTowardsAllianceZone = false;
+      m_shouldRaiseIntake = false;
     }
 
     if (shouldResetYAssistPID) {
@@ -334,12 +350,9 @@ public class CustomFieldCentric implements SwerveRequest {
   //       : DrivetrainAutomationConstants.BumpDetection.kBumpFast;
   // }
 
-  /** Uses the pose to determine if it's going towards the alliance zone */
-  public boolean isGoingToAllianceZone(Pose2d currentPose) {
-    return (currentPose.getX() > FieldConstants.kFieldLength.div(3).times(2).in(Meters)
-            && Alliance.redAlliance)
-        || (currentPose.getX() < FieldConstants.kFieldLength.div(3).in(Meters)
-            && !Alliance.redAlliance);
+  /** Uses the pose and speeds to determine if it's going towards the alliance zone */
+  public boolean isGoingToAllianceZone() {
+    return m_isGoingTowardsAllianceZone;
   }
 
   @NotLogged

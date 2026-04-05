@@ -367,11 +367,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     this.m_shouldAcceptNextVisionMeasurementRotation = shouldAccept;
   }
 
-  @Logged(importance = Importance.INFO)
-  public boolean isGoingTowardsAllianceZone() {
-    return fieldCentric.isGoingToAllianceZone(getPose());
-  }
-
   @Logged(importance = Importance.CRITICAL)
   public Pose2d getPose() {
     return getState().Pose;

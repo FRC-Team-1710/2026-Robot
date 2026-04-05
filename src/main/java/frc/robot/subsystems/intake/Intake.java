@@ -117,7 +117,7 @@ public class Intake {
       // Set the rollers with jam logic
       switch (m_currentState) {
         case Intaking:
-          // IMPORTANT, keep every if statement different!
+          // IMPORTANT, keep every if statement separate!
           if (m_minimumJamTime.calculate(true)) {
             if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
               m_wasJammed = true;
@@ -152,7 +152,7 @@ public class Intake {
 
     switch (m_currentState) {
       case Up:
-        // IMPORTANT, keep every if statement different!
+        // IMPORTANT, keep every if statement separate!
         if (m_minimumStuckTime.calculate(true)) {
           if (m_stuckTime.calculate(isStuck()) || m_wasStuck) {
             m_wasStuck = true;
@@ -286,7 +286,7 @@ public class Intake {
 
   public enum IntakeStates {
     Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.5),
-    Half(Milliseconds.of(60), Rotations.of(0.145), 0, 1, 0.5),
+    Half(Milliseconds.of(60), Rotations.of(0.1), 0, 1, 0.5),
     Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.5),
     Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 1, 1.5, 1.5),
     Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),

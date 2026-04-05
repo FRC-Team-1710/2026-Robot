@@ -25,6 +25,7 @@ import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.CustomFieldCentric.RequestStates;
 import frc.robot.utils.MathUtils;
 import frc.robot.utils.shooterMath.ShooterMath3;
 
@@ -236,11 +237,16 @@ public class Superstructure {
 
   private void idle() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
+    if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
+        && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
+      m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
+    } else {
+      m_shooter.setState(SHOOTER_STATE.IDLE);
+    }
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
     if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
-      m_intake.setState(IntakeStates.Half);
+      m_intake.setState(IntakeStates.Half); // TODO: test
     }
   }
 

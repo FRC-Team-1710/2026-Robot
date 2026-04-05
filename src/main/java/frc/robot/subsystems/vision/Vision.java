@@ -10,7 +10,6 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
-import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -182,8 +181,8 @@ public class Vision implements Subsystem {
     xyStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
-    
-    //TODO: make sure vision doesn't correct rotation
+
+    // TODO: make sure vision doesn't correct rotation
     m_drivetrain.addVisionMeasurement(
         m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }
