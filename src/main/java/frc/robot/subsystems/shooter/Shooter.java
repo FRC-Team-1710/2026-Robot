@@ -8,11 +8,6 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -23,10 +18,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
-import frc.robot.utils.shooterMath.ShooterMath2;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
+import frc.robot.utils.shooterMath.ShooterMath3;
 
 /** Shooter subsystem state machine, control targets, and beam-break based fuel accounting. */
 @Logged
@@ -45,33 +37,7 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   private Angle m_hoodTarget;
 
-  @NotLogged private boolean m_isGoingTowardsAllianceZone;
-
-  @Logged(importance = Importance.INFO)
-  private boolean m_didIntake;
-
-  @Logged(importance = Importance.INFO)
-  private double m_fps;
-
   @NotLogged private boolean m_testing = false;
-
-  @NotLogged private final List<ArrayDeque<Long>> m_timestampQueues = new ArrayList<>(2);
-
-  @NotLogged private Debouncer m_jamDetect;
-
-  @NotLogged private Boolean[] m_fuelDetection = new Boolean[] {false, false};
-
-  @Logged(importance = Importance.INFO)
-  private int m_ballCount;
-
-  /**
-   * This Matrix is derived from values of the beam breakers for rising and falling detection.
-   *
-   * <p>Structure: <code>[currentLeft , previousLeft] [currentRight, previousRight]</code>
-   *
-   * <p>Stored as ints: 1 = beam broken, 0 = beam clear.
-   */
-  @NotLogged private Matrix<N2, N2> m_risingDetection;
 
   @Logged(importance = Importance.INFO)
   private boolean m_shouldOverride;
@@ -90,44 +56,19 @@ public class Shooter {
     this.m_targetVelocity = RotationsPerSecond.of(0);
     this.m_hoodTarget = Degrees.of(0);
 
-    this.m_isGoingTowardsAllianceZone = false;
-    this.m_didIntake = false;
-
-    this.m_ballCount = 0;
-
-    this.m_risingDetection = MatBuilder.fill(Nat.N2(), Nat.N2(), 0, 0, 0, 0);
-
-    m_timestampQueues.add(new ArrayDeque<>()); // left
-    m_timestampQueues.add(new ArrayDeque<>()); // right
-
-    this.m_jamDetect = new Debouncer(ShooterConstants.JAM_DETECT_TIME);
-
     this.m_shouldOverride = false;
 
-    SmartDashboard.putNumber("preferredMinArrivalAngleDeg", 40);
-    SmartDashboard.putNumber("speedTransferEfficiency", 0.541);
+    SmartDashboard.putNumber("tuning/preferredMinArrivalAngleDeg", 0.0);
+    SmartDashboard.putNumber("tuning/speedTransferEfficiency", 0.0);
   }
 
   /** Runs periodic shooter logic including target tracking and fuel counting. */
   public void periodic() {
-
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_targetVelocity =
-            RotationsPerSecond.of(
-                (ShooterMath2.currentSolution.shooterLeft().flywheelOmega().in(RotationsPerSecond)
-                        + ShooterMath2.currentSolution
-                            .shooterRight()
-                            .flywheelOmega()
-                            .in(RotationsPerSecond))
-                    / 2.0);
-        this.m_hoodTarget =
-            Degrees.of(
-                (ShooterMath2.currentSolution.shooterLeft().hoodAngle().in(Degrees)
-                        + ShooterMath2.currentSolution.shooterRight().hoodAngle().in(Degrees))
-                    / 2.0);
+        this.m_targetVelocity = ShooterMath3.currentSolution.flywheelOmega();
+        this.m_hoodTarget = ShooterMath3.currentSolution.hoodAngle();
         break;
-
       default:
         this.m_targetVelocity = this.m_currentState.m_velocity;
         this.m_hoodTarget = this.m_currentState.m_hoodAngle;
@@ -138,72 +79,56 @@ public class Shooter {
     this.m_io.setHoodTarget(this.m_hoodTarget);
 
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
-
-    // Always run FPS tracking regardless of state so pruning stays current
-    // calculateFPS();
   }
 
-  /** Returns whether the left flywheel is at its target velocity. */
+  /** Returns whether the flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.m_targetVelocity.isNear(this.getVelocity(), RotationsPerSecond.of(20)))
+        ? (this.m_targetVelocity.isNear(
+            this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
         : true;
   }
 
-  /** Returns whether the left hood is at its target angle. */
+  /** Returns whether the hood is at its target angle. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.m_hoodTarget.isNear(this.getHoodPosition(), Degrees.of(3)))
+        ? (this.m_hoodTarget.isNear(
+            this.getHoodPosition(), ShooterConstants.HOOD_TARGET_ERROR_RANGE))
         : true;
   }
 
-  /** Returns the left target hood angle. */
+  /** Returns the target hood angle. */
   @NotLogged
   public Angle getHoodTarget() {
     return this.m_hoodTarget;
   }
 
-  /** Returns the left hood position. */
+  /** Returns the hood position. */
   @NotLogged
   public Angle getHoodPosition() {
     return this.m_io.getHoodPosition();
   }
 
-  /** Returns the left target velocity. */
+  /** Returns the target velocity. */
   @NotLogged
   public AngularVelocity getTargetVelocity() {
     return this.m_targetVelocity;
   }
 
-  /** Returns the left flywheel velocity. */
+  /** Returns the flywheel velocity. */
   @NotLogged
   public AngularVelocity getVelocity() {
     return this.m_io.getVelocity();
   }
 
-  /**
-   * Sets whether the robot is going towards the alliance zone.
-   *
-   * @param isGoingTowardsAllianceZone true if heading towards alliance zone
-   */
-  public void setGoingTowardsAllianceZone(boolean isGoingTowardsAllianceZone) {
-    this.m_isGoingTowardsAllianceZone = isGoingTowardsAllianceZone;
-  }
-
-  /**
-   * Sets whether the robot has intaked.
-   *
-   * @param didIntake true if intake has occurred
-   */
-  public void setDidIntake(boolean didIntake) {
-    this.m_didIntake = didIntake;
-  }
-
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    IDLE(
+        Milliseconds.of(60),
+        RotationsPerSecond.of(0), // TODO: tune for fastest without drawing too much current
+        Degrees.of(ShooterConstants.HOOD_MIN)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     TESTING(
         Milliseconds.of(20),
@@ -291,102 +216,6 @@ public class Shooter {
   @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;
-  }
-
-  /** Calculates the fuel per second (FPS) based on the timestamps of fuel detection events. */
-  @NotLogged
-  public void calculateFPS() {
-    /* Fuel per second Handling */
-    long currentTime = System.currentTimeMillis();
-
-    // Prune timestamps older than 1 second using an iterator (safe removal while iterating)
-    for (ArrayDeque<Long> queue : m_timestampQueues) {
-      while (!queue.isEmpty() && queue.peekFirst() < currentTime - 1000) {
-        queue.removeFirst();
-      }
-    }
-
-    // Shift current column → previous column in rising detection matrix
-    m_risingDetection.set(0, 1, m_risingDetection.get(0, 0));
-    m_risingDetection.set(1, 1, m_risingDetection.get(1, 0));
-
-    // Update current column with fresh sensor readings
-    m_risingDetection.set(0, 0, m_io.hasBreakerLeftBroke() ? 1 : 0);
-    m_risingDetection.set(1, 0, m_io.hasBreakerRightBroke() ? 1 : 0);
-    // Rising edge: current=1, previous=0 → use per-row index for each side
-    for (int i = 0; i < 2; i++) {
-      m_fuelDetection[i] = (m_risingDetection.get(i, 0) > m_risingDetection.get(i, 1));
-      if (m_fuelDetection[i]) {
-        ArrayDeque<Long> queue = m_timestampQueues.get(i);
-        // Debounce: ignore duplicate triggers within a physically impossible interval (< 1/24 s)
-        if (!queue.isEmpty()
-            && (currentTime - queue.peekLast()) < (ShooterConstants.UNREALISTIC_FPS_INTERVAL_MS)) {
-          continue;
-        }
-        queue.addLast(currentTime);
-        this.m_ballCount++;
-      }
-    }
-
-    // Calculate combined FPS over the 1-second window
-    int totalEvents = m_timestampQueues.get(0).size() + m_timestampQueues.get(1).size();
-    if (totalEvents < 2) {
-      // Not enough data points — keep last valid FPS or return 0
-      if (totalEvents == 0) this.m_fps = 0.0;
-      return;
-    }
-
-    // Span = from earliest event across both queues to latest
-    double span =
-        (Math.max(
-                m_timestampQueues.get(0).isEmpty()
-                    ? Double.MIN_VALUE
-                    : m_timestampQueues.get(0).peekLast(),
-                m_timestampQueues.get(1).isEmpty()
-                    ? Double.MIN_VALUE
-                    : m_timestampQueues.get(1).peekLast()))
-            - 1000;
-    this.m_fps = (span > 0) ? (totalEvents * 1000.0 / span) : 0.0;
-  }
-
-  /** Returns the current ball count based on the timestamps of fuel detection events. */
-  @NotLogged
-  public int getBallCount() {
-    return this.m_ballCount;
-  }
-
-  /** Resets the ball count and FPS to zero. */
-  @NotLogged
-  public void resetBallCount() {
-    this.m_timestampQueues.get(0).clear();
-    this.m_timestampQueues.get(1).clear();
-    this.m_ballCount = 0;
-    this.m_fps = 0.0;
-  }
-
-  /** Returns the current fuel per second (FPS) based on the timestamps of fuel detection events. */
-  @Logged(importance = Importance.INFO)
-  public double getFPS() {
-    return this.m_fps;
-  }
-
-  /** Returns whether the shooter is jammed. */
-  @Logged(importance = Importance.INFO)
-  public boolean isJammed() {
-    return this.m_jamDetect.calculate(
-        !this.m_io.hasBreakerLeftBroke() && !this.m_io.hasBreakerRightBroke());
-  }
-
-  /** Returns whether the left beam breaker has been broken. */
-  @Logged(importance = Importance.INFO)
-  public boolean hasBreakerLeftBroke() {
-    return this.m_io.hasBreakerLeftBroke();
-  }
-
-  /** Returns whether the right beam breaker has been broken. */
-  @Logged(importance = Importance.INFO)
-  public boolean hasBreakerRightBroke() {
-    return this.m_io.hasBreakerRightBroke();
   }
 
   /**

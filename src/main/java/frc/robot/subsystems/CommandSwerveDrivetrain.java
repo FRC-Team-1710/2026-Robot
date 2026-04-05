@@ -38,7 +38,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
-import frc.robot.utils.shooterMath.ShooterMath2;
+import frc.robot.utils.shooterMath.ShooterMath3;
 import java.util.function.Supplier;
 
 /**
@@ -290,7 +290,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withDriveState(m_currentState));
     }
 
-    ShooterMath2.calculate(getPose(), getFieldSpeeds());
+    ShooterMath3.calculate(getPose(), getFieldSpeeds());
   }
 
   /** Rescales the translation input vector with deadband and power curve. */

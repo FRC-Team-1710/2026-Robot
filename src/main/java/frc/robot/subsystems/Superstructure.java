@@ -26,7 +26,7 @@ import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.MathUtils;
-import frc.robot.utils.shooterMath.ShooterMath2;
+import frc.robot.utils.shooterMath.ShooterMath3;
 
 @Logged
 public class Superstructure {
@@ -83,9 +83,6 @@ public class Superstructure {
 
   /** Runs periodic logic for state transitions and subsystem coordination. */
   public void periodic() {
-    m_shooter.setGoingTowardsAllianceZone(m_drivetrain.isGoingTowardsAllianceZone());
-    m_shooter.setDidIntake(m_didIntake);
-
     m_currentState = handleStateTransitions();
     applyStates();
 
@@ -401,12 +398,12 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTargetWithWait() {
     return flywheelAtTarget()
-        && MatchState.canShoot(ShooterMath2.currentSolution.shooterLeft().tof().in(Seconds));
+        && MatchState.canShoot(ShooterMath3.currentSolution.tof().in(Seconds));
   }
 
   @NotLogged
   public Rotation2d getRotationForScore() {
-    return ShooterMath2.currentSolution.robotHeading().plus(Rotation2d.k180deg);
+    return ShooterMath3.currentSolution.robotHeading().plus(Rotation2d.k180deg);
   }
 
   @NotLogged
