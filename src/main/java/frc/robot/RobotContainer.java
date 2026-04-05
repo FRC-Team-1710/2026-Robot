@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.DrivetrainAccelerationLimits;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
@@ -264,7 +265,15 @@ public class RobotContainer {
             Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
                 .ignoringDisable(true));
 
-    m_driver.leftStick().and(() -> DriverStation.isTeleopEnabled()).onTrue(Commands.runOnce(() -> DrivetrainAutomationConstants.BumpDetection.toggleAutoBumpAlignment()));
+    m_driver
+        .leftStick()
+        .and(() -> DriverStation.isTeleopEnabled())
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  DrivetrainAutomationConstants.BumpDetection.toggleAutoBumpAlignment();
+                  DrivetrainAccelerationLimits.toggleShouldLimit();
+                }));
 
     m_driver
         .start()

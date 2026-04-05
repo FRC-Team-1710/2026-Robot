@@ -29,6 +29,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.DrivetrainAccelerationLimits;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.Mode;
@@ -110,7 +111,10 @@ public class CustomFieldCentric implements SwerveRequest {
   @Logged(importance = Importance.CRITICAL)
   private ChassisSpeeds wantedSpeeds = new ChassisSpeeds();
 
-  @NotLogged private double speedRequested = 0;
+  @Logged(importance = Importance.CRITICAL)
+  private ChassisSpeeds wantedSpeedsAfterLimits = new ChassisSpeeds();
+
+  @NotLogged private Translation2d previousTargetTranslation = new Translation2d();
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
@@ -244,12 +248,43 @@ public class CustomFieldCentric implements SwerveRequest {
 
     m_lastLoopTime = RobotController.getFPGATime() - loopStartTime;
 
+    if (DrivetrainAccelerationLimits.shouldLimit()) {
+      var wantedTranslationAfterLimits =
+          DrivetrainAccelerationLimits.calculateTilt(
+              toRobotSpeeds(
+                  new Translation2d(wantedSpeeds.vxMetersPerSecond, wantedSpeeds.vyMetersPerSecond),
+                  parameters.currentPose),
+              previousTargetTranslation);
+      wantedSpeedsAfterLimits =
+          ChassisSpeeds.fromRobotRelativeSpeeds(
+              wantedTranslationAfterLimits.getX(),
+              wantedTranslationAfterLimits.getY(),
+              wantedSpeeds.omegaRadiansPerSecond,
+              parameters.currentPose.getRotation());
+    } else {
+      wantedSpeedsAfterLimits = wantedSpeeds;
+    }
+
+    previousTargetTranslation =
+        new Translation2d(
+            parameters.currentChassisSpeed.vxMetersPerSecond,
+            parameters.currentChassisSpeed.vyMetersPerSecond);
+
     return driveRequest
-        .withVelocityX(wantedSpeeds.vxMetersPerSecond)
-        .withVelocityY(wantedSpeeds.vyMetersPerSecond)
+        .withVelocityX(wantedSpeedsAfterLimits.vxMetersPerSecond)
+        .withVelocityY(wantedSpeedsAfterLimits.vyMetersPerSecond)
         .withRotationalRate(wantedSpeeds.omegaRadiansPerSecond)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
         .apply(parameters, modulesToApply);
+  }
+
+  /** Converts a translation in the field coordinate system to the robot coordinate system */
+  private Translation2d toRobotSpeeds(Translation2d translation2d, Pose2d currentPose) {
+    return new Translation2d(
+        translation2d.getX() * currentPose.getRotation().getCos()
+            + translation2d.getY() * currentPose.getRotation().getSin(),
+        -translation2d.getX() * currentPose.getRotation().getSin()
+            + translation2d.getY() * currentPose.getRotation().getCos());
   }
 
   /**
