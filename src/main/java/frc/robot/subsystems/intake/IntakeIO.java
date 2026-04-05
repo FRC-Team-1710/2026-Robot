@@ -62,10 +62,26 @@ public interface IntakeIO {
   }
 
   /**
+   * @return the current draw of the intake follower motor
+   */
+  @Logged(importance = Importance.DEBUG)
+  public default Current getFollowerCurrent() {
+    return Amps.of(0);
+  }
+
+  /**
    * @return the angular velocity of the intake roller
    */
   @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getRollerVelocity() {
+    return RotationsPerSecond.of(0);
+  }
+
+  /**
+   * @return the angular velocity of the intake follower motor
+   */
+  @Logged(importance = Importance.DEBUG)
+  public default AngularVelocity getFollowerVelocity() {
     return RotationsPerSecond.of(0);
   }
 
