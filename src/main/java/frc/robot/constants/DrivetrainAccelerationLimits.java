@@ -37,13 +37,13 @@ public class DrivetrainAccelerationLimits {
    */
   public static Translation2d calculateTilt(Translation2d target, Translation2d previousTarget) {
     kMaxAccelerationLimits[0] =
-        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("AccelFront", 0));
+        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("tuning/acceleration/AccelFront", 0));
     kMaxAccelerationLimits[1] =
-        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("AccelBack", 0));
+        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("tuning/acceleration/AccelBack", 0));
     kMaxAccelerationLimits[2] =
-        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("AccelLeft", 0));
+        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("tuning/acceleration/AccelLeft", 0));
     kMaxAccelerationLimits[3] =
-        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("AccelRight", 0));
+        MetersPerSecondPerSecond.of(SmartDashboard.getNumber("tuning/acceleration/AccelRight", 0));
 
     double dvx = target.getX() - previousTarget.getX();
     double dvy = target.getY() - previousTarget.getY();
@@ -66,10 +66,10 @@ public class DrivetrainAccelerationLimits {
   }
 
   static {
-    SmartDashboard.putNumber("AccelFront", 0);
-    SmartDashboard.putNumber("AccelBack", 0);
-    SmartDashboard.putNumber("AccelLeft", 0);
-    SmartDashboard.putNumber("AccelRight", 0);
+    SmartDashboard.putNumber("tuning/acceleration/AccelFront", 10000);
+    SmartDashboard.putNumber("tuning/acceleration/AccelBack", 10000);
+    SmartDashboard.putNumber("tuning/acceleration/AccelLeft", 10000);
+    SmartDashboard.putNumber("tuning/acceleration/AccelRight", 10000);
   }
 
   public static boolean shouldLimit() {

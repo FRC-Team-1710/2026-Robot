@@ -9,10 +9,10 @@ import java.util.Optional;
 
 public class MatchState {
   // TODO: Set to simulate a match environment to test match specific code
-  private static final boolean kSimulatePracticeMatch = false;
+  private static final boolean kSimulatePracticeMatch = true;
 
   /** Used when we want to shoot while our hub is disabled */
-  private static final boolean m_ignoreFMS = true;
+  private static final boolean m_ignoreFMS = false;
 
   public static Optional<Boolean> autonomousWinnerIsRed = Optional.empty();
 
@@ -20,7 +20,7 @@ public class MatchState {
   public static final double kFuelProcessTime = 1.5;
 
   // Time after hub inactive until it stops counting
-  public static final double kHubCountingEndOffset = 2;
+  public static final double kHubCountingEndOffset = 3.0;
 
   public static final double kFuelTimeOffset = kFuelProcessTime - kHubCountingEndOffset;
 

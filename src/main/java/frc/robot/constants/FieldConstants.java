@@ -27,7 +27,7 @@ public class FieldConstants {
 
   public static final Distance kMaxHubWidth =
       Inches.of(58.413)
-          .plus(Inches.of(24)); // Add tolerance to account for ball diameter and shooter separation
+          .plus(Inches.of(28)); // Add tolerance to account for ball diameter and shooter separation
   public static final Distance kMaxHubDistanceFromDS = Inches.of(215.4186745);
 
   public static final Distance kBumpCenterYFromFieldCenter =
@@ -38,9 +38,9 @@ public class FieldConstants {
   public static final Distance kStartingLineDistance = Inches.of(158.6);
 
   public static final Translation3d kHubCenterBlue =
-      new Translation3d(Inches.of(182.112411), kFieldWidth.div(2), Inches.of(75.0));
+      new Translation3d(Inches.of(182.112411), kFieldWidth.div(2), Inches.of(72.0));
   public static final Translation3d kHubCenterRed =
-      new Translation3d(Inches.of(469.11125), kFieldWidth.div(2), Inches.of(75.0));
+      new Translation3d(Inches.of(469.11125), kFieldWidth.div(2), Inches.of(72.0));
 
   public static final Distance kDepotWidth = Inches.of(42);
   public static final Distance kDepotLength = Inches.of(24);

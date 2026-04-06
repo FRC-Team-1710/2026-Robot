@@ -174,7 +174,7 @@ public class RobotContainer {
           -length / 2,
           length / 2,
           () ->
-              m_superstructure.getCurrentState() == CurrentStates.Intake
+              m_driver.leftTrigger().getAsBoolean()
                   || m_superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
@@ -183,7 +183,12 @@ public class RobotContainer {
 
       fuelSim.enableAirResistance();
 
-      fuelSim.shouldShoot = () -> m_driver.rightTrigger().getAsBoolean();
+      fuelSim.shouldShoot =
+          () ->
+              (m_driver.rightTrigger().getAsBoolean()
+                      || m_superstructure.getCurrentState() == CurrentStates.ScoreAuto)
+                  && DriverStation.isEnabled();
+      fuelSim.shouldScore = () -> !m_superstructure.shooting();
 
       m_shooter.setFuelSim(fuelSim);
     }

@@ -91,8 +91,14 @@ public class Superstructure {
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
-    Robot.telemetry().log("MatchState/TimeTillActive", MatchState.timeTillActive());
-    Robot.telemetry().log("MatchState/TimeTillInactive", MatchState.timeTillInactive());
+    Robot.telemetry()
+        .log(
+            "MatchState/TimeTillActive",
+            Math.round(MatchState.timeTillActive().in(Seconds) * 10.0) / 10.0);
+    Robot.telemetry()
+        .log(
+            "MatchState/TimeTillInactive",
+            Math.round(MatchState.timeTillInactive().in(Seconds) * 10.0) / 10.0);
     Robot.telemetry()
         .log(
             "MatchState/AutonomousWinnerIsRed",
@@ -165,7 +171,17 @@ public class Superstructure {
                 case Intaking -> CurrentStates.ScoreWhileIntaking;
               };
       case Intake -> CurrentStates.Intake;
-      case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
+      case IntakeAndShoot ->
+          ((!Alliance.redAlliance
+                      && m_drivetrain.getPose().getX()
+                          >= FieldConstants.kBumpDistanceFromDS.in(Meters))
+                  || (Alliance.redAlliance
+                      && m_drivetrain.getPose().getX()
+                          <= FieldConstants.kFieldLength
+                              .minus(FieldConstants.kBumpDistanceFromDS)
+                              .in(Meters)))
+              ? CurrentStates.ShootWhileIntaking
+              : CurrentStates.ScoreWhileIntaking;
       case Climb -> CurrentStates.Climb;
       case DefaultAuto -> CurrentStates.IdleAuto;
       case ShootAuto ->
@@ -386,6 +402,16 @@ public class Superstructure {
         m_addableState == AddableStates.IntakeUp ? IntakeStates.Up : IntakeStates.Jostle);
     m_indexer.setState(IndexStates.Indexing);
     m_feeder.setState(FEEDER_STATE.FEEDING);
+  }
+
+  @NotLogged
+  /**
+   * @return whether the superstructure is currently in a shooting (not scoring) state
+   */
+  public boolean shooting() {
+    return m_currentState == CurrentStates.Shoot
+        || m_currentState == CurrentStates.ShootWhileIntaking
+        || m_currentState == CurrentStates.ShootWithIntakeUp;
   }
 
   @Logged(importance = Importance.CRITICAL)

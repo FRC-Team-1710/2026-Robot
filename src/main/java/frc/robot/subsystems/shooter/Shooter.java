@@ -11,7 +11,6 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
@@ -57,9 +56,6 @@ public class Shooter {
     this.m_hoodTarget = Degrees.of(0);
 
     this.m_shouldOverride = false;
-
-    SmartDashboard.putNumber("tuning/preferredMinArrivalAngleDeg", 0.0);
-    SmartDashboard.putNumber("tuning/speedTransferEfficiency", 0.0);
   }
 
   /** Runs periodic shooter logic including target tracking and fuel counting. */

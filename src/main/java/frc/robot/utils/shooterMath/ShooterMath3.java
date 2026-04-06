@@ -128,39 +128,10 @@ public final class ShooterMath3 {
   // Public so sim can access it
   public static ChassisSpeeds currentSpeeds = new ChassisSpeeds();
 
-  private static void calculateComplexFromDirectionAndSpeed(
-      Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
-    Translation3d pivot =
-        new Pose3d(robotPose).transformBy(ShooterConstants.kSHOOTER_OFFSET).getTranslation();
-    SolverResult r = solveDirection(pivot, fieldSpeeds);
-    PhysicsResult phys = solvePhysicsAlongDirection(pivot, fieldSpeeds, r.phi, r.tof);
-
-    currentSolution =
-        new ShooterSolution(
-            new Rotation2d(r.phi),
-            Radians.of(phys.hoodAngle),
-            RadiansPerSecond.of(phys.exitSpeed / kSpeedPerOmega),
-            Seconds.of(phys.tof),
-            phys.hoodClamped,
-            phys.arrivalConstrained);
-  }
-
-  private static void calculateSimpleFromDirectionAndSpeed(
-      Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
-    Translation3d pivot =
-        new Pose3d(robotPose.getX(), 0, 0, new Rotation3d(robotPose.getRotation()))
-            .transformBy(ShooterConstants.kSHOOTER_OFFSET)
-            .getTranslation();
-    var newFieldSpeeds =
-        new ChassisSpeeds(fieldSpeeds.vxMetersPerSecond, 0, fieldSpeeds.omegaRadiansPerSecond);
-    SolverResult r = solveDirection(pivot, newFieldSpeeds);
-    PhysicsResult phys = solvePhysicsAlongDirection(pivot, newFieldSpeeds, r.phi, r.tof);
-
-    currentPassingSolution =
-        new SimpleSolution(
-            Radians.of(phys.hoodAngle),
-            RadiansPerSecond.of(phys.exitSpeed / kSpeedPerOmega),
-            phys.hoodClamped);
+  static {
+    SmartDashboard.putNumber(
+        "tuning/preferredMinArrivalAngleDeg", Math.toDegrees(m_preferredMinArrivalAngleRad));
+    SmartDashboard.putNumber("tuning/speedTransferEfficiency", m_speedTransferEfficiency);
   }
 
   /**
@@ -205,89 +176,40 @@ public final class ShooterMath3 {
     }
   }
 
-  // /**
-  //  * Compute optimal shooter parameters for one fixed-direction shooter
-  //  *
-  //  * @param robotPose Current robot 2-D pose.
-  //  * @param fieldSpeeds Chassis speeds in the field frame.
-  //  */
-  // public static void calculate(Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
-  //   m_preferredMinArrivalAngleRad =
-  //       Math.toRadians(SmartDashboard.getNumber("tuning/preferredMinArrivalAngleDeg", 0));
-  //   m_speedTransferEfficiency = SmartDashboard.getNumber("tuning/speedTransferEfficiency", 0);
-  //   kSpeedPerOmega =
-  //       m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
+  private static void calculateComplexFromDirectionAndSpeed(
+      Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
+    Translation3d pivot =
+        new Pose3d(robotPose).transformBy(ShooterConstants.kSHOOTER_OFFSET).getTranslation();
+    SolverResult r = solveDirection(pivot, fieldSpeeds);
+    PhysicsResult phys = solvePhysicsAlongDirection(pivot, fieldSpeeds, r.phi, r.tof);
 
-  //   m_targetCenter =
-  //       Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue;
-  //   m_targetVertices =
-  //       Alliance.redAlliance ? FieldConstants.kHexagonRed : FieldConstants.kHexagonBlue;
-  //   currentPose = robotPose;
-  //   currentSpeeds = fieldSpeeds;
+    currentSolution =
+        new ShooterSolution(
+            new Rotation2d(r.phi),
+            Radians.of(phys.hoodAngle),
+            RadiansPerSecond.of(phys.exitSpeed / kSpeedPerOmega),
+            Seconds.of(phys.tof),
+            phys.hoodClamped,
+            phys.arrivalConstrained);
+  }
 
-  //   Translation3d pivot =
-  //       new Pose3d(robotPose).transformBy(ShooterConstants.kSHOOTER_OFFSET).getTranslation();
+  private static void calculateSimpleFromDirectionAndSpeed(
+      Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
+    Translation3d pivot =
+        new Pose3d(robotPose.getX(), 0, 0, new Rotation3d(robotPose.getRotation()))
+            .transformBy(ShooterConstants.kSHOOTER_OFFSET)
+            .getTranslation();
+    var newFieldSpeeds =
+        new ChassisSpeeds(fieldSpeeds.vxMetersPerSecond, 0, fieldSpeeds.omegaRadiansPerSecond);
+    SolverResult r = solveDirection(pivot, newFieldSpeeds);
+    PhysicsResult phys = solvePhysicsAlongDirection(pivot, newFieldSpeeds, r.phi, r.tof);
 
-  //   SolverResult r1 = solveDirection(pivot, fieldSpeeds);
-
-  //   double D1 =
-  //       Math.hypot(m_targetCenter.getX() - pivot.getX(), m_targetCenter.getY() - pivot.getY());
-
-  //   double phiComp =
-  //       Math.atan2(
-  //           (D1 * Math.sin(r1.phi)) / D1,
-  //           (D1 * Math.cos(r1.phi)) / D1 - fieldSpeeds.vxMetersPerSecond * r1.tof);
-
-  //   double tofGuess = (r1.tof + r2.tof) / 2.0;
-
-  //   PhysicsResult phys1 = solvePhysicsAlongDirection(pivot, fieldSpeeds, phiComp, tofGuess);
-
-  //   double omega1 = phys1.exitSpeed / kSpeedPerOmega;
-  //   double omega2 = phys2.exitSpeed / kSpeedPerOmega;
-
-  //   currentSolution =
-  //       new DualShooterSolution(
-  //           new Rotation2d(phiComp),
-  //           new ShooterSolution(
-  //               Radians.of(phys1.hoodAngle),
-  //               RadiansPerSecond.of(omega1),
-  //               Seconds.of(phys1.tof),
-  //               phys1.hoodClamped,
-  //               phys1.arrivalConstrained),
-  //           new ShooterSolution(
-  //               Radians.of(phys2.hoodAngle),
-  //               RadiansPerSecond.of(omega2),
-  //               Seconds.of(phys2.tof),
-  //               phys2.hoodClamped,
-  //               phys2.arrivalConstrained));
-
-  //   if (Epilogue.shouldLog(Importance.INFO)) {
-  //     Robot.telemetry()
-  //         .log("ShotSolution/Heading", currentSolution.robotHeading, Rotation2d.struct);
-
-  //     Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooterLeft.hoodAngle);
-  //     Robot.telemetry().log("ShotSolution/Left/Omega",
-  // currentSolution.shooterLeft.flywheelOmega);
-  //     Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooterLeft.tof);
-  //     Robot.telemetry()
-  //         .log("ShotSolution/Left/Clamped", currentSolution.shooterLeft.hoodAngleClamped);
-  //     Robot.telemetry()
-  //         .log(
-  //             "ShotSolution/Left/ArrivalConstraint",
-  //             currentSolution.shooterLeft.arrivalAngleConstrained);
-
-  //     Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
-  //     Robot.telemetry().log("ShotSolution/Right/Omega",
-  // currentSolution.shooterRight.flywheelOmega);
-  //     Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooterRight.tof);
-  //     Robot.telemetry()
-  //         .log("ShotSolution/Right/Clamped", currentSolution.shooterRight.hoodAngleClamped);
-  //     Robot.telemetry()
-  //         .log(
-  //             "ShotSolution/Right/ArrivalConstraint",
-  //             currentSolution.shooterRight.arrivalAngleConstrained);
-  //   }
-  // }
+    currentPassingSolution =
+        new SimpleSolution(
+            Radians.of(phys.hoodAngle),
+            RadiansPerSecond.of(phys.exitSpeed / kSpeedPerOmega),
+            phys.hoodClamped);
+  }
 
   /** Ideal field-frame shooting direction and converged TOF for one shooter. */
   private record SolverResult(double phi, double tof) {}

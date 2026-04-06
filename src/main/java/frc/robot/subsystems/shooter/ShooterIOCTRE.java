@@ -32,8 +32,19 @@ public class ShooterIOCTRE implements ShooterIO {
   @NotLogged private final MotionMagicVoltage m_hoodPositionRequest;
 
   // Four flywheel motors: left master, left follower, right follower, right follower
+  @NotLogged private final TalonFX[] m_flywheels;
+
   @Logged(importance = Importance.CRITICAL)
-  private final TalonFX[] m_flywheels;
+  private final TalonFX m_leftFlywheelLeader;
+
+  @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_leftFlywheelFollower;
+
+  @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_rightFlywheelFollower1;
+
+  @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_rightFlywheelFollower2;
 
   @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_hoodMotor;
@@ -45,16 +56,17 @@ public class ShooterIOCTRE implements ShooterIO {
   /** Constructs the CTRE-backed shooter IO implementation. */
   public ShooterIOCTRE() {
     // Initialize flywheel motors:
-    // left (master),
-    // left (follower: aligned),
-    // right (follower: opposed),
-    // right (follower: opposed)
+    // left (master), left (follower: aligned), right (follower: opposed), right (follower: opposed)
+    m_leftFlywheelLeader = new TalonFX(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR);
+    m_leftFlywheelFollower = new TalonFX(CanIdConstants.Shooter.SHOOTER_LEFT_FOLLOWER);
+    m_rightFlywheelFollower1 = new TalonFX(CanIdConstants.Shooter.SHOOTER_RIGHT_FOLLOWER_1);
+    m_rightFlywheelFollower2 = new TalonFX(CanIdConstants.Shooter.SHOOTER_RIGHT_FOLLOWER_2);
     this.m_flywheels =
         new TalonFX[] {
-          new TalonFX(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR),
-          new TalonFX(CanIdConstants.Shooter.SHOOTER_LEFT_FOLLOWER),
-          new TalonFX(CanIdConstants.Shooter.SHOOTER_RIGHT_FOLLOWER_1),
-          new TalonFX(CanIdConstants.Shooter.SHOOTER_RIGHT_FOLLOWER_2),
+          m_leftFlywheelLeader,
+          m_leftFlywheelFollower,
+          m_rightFlywheelFollower1,
+          m_rightFlywheelFollower2
         };
 
     this.m_hoodMotor = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
