@@ -68,18 +68,15 @@ public class ShooterIOSIM implements ShooterIO {
                     new Pose2d(
                         ShooterMath2.currentPose.getTranslation(),
                         ShooterMath2.currentSolution.robotHeading()))
-                .plus(ShooterConstants.kLEFT_SHOOTER_OFFSET)
+                .plus(ShooterConstants.kSHOOTER_OFFSET)
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath2.currentSolution
-                            .shooterLeft()
-                            .flywheelOmega()
-                            .in(RotationsPerSecond)
+                    ShooterMath2.currentSolution.shooter().flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("ShooterMult", 0),
                     new Rotation3d(
                         0,
                         -Degrees.of(90)
-                            .minus(ShooterMath2.currentSolution.shooterLeft().hoodAngle())
+                            .minus(ShooterMath2.currentSolution.shooter().hoodAngle())
                             .in(Radians),
                         ShooterMath2.currentSolution.robotHeading().getRadians()))
                 .plus(
@@ -93,18 +90,15 @@ public class ShooterIOSIM implements ShooterIO {
                     new Pose2d(
                         ShooterMath2.currentPose.getTranslation(),
                         ShooterMath2.currentSolution.robotHeading()))
-                .plus(ShooterConstants.kRIGHT_SHOOTER_OFFSET)
+                .plus(ShooterConstants.kSHOOTER_OFFSET)
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath2.currentSolution
-                            .shooterRight()
-                            .flywheelOmega()
-                            .in(RotationsPerSecond)
+                    ShooterMath2.currentSolution.shooter().flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("ShooterMult", 0),
                     new Rotation3d(
                         0,
                         -Degrees.of(90)
-                            .minus(ShooterMath2.currentSolution.shooterRight().hoodAngle())
+                            .minus(ShooterMath2.currentSolution.shooter().hoodAngle())
                             .in(Radians),
                         ShooterMath2.currentSolution.robotHeading().getRadians()))
                 .plus(
@@ -125,7 +119,7 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  public void setLeftTargetVelocity(AngularVelocity pVelocity) {
+  public void setTargetVelocity(AngularVelocity pVelocity) {
     this.m_velocity = pVelocity;
   }
 
@@ -140,7 +134,7 @@ public class ShooterIOSIM implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  public void setLeftHoodTarget(Angle pAngle) {
+  public void setHoodTarget(Angle pAngle) {
     this.m_hoodAngle =
         Degrees.of(
             MathUtil.clamp(

@@ -18,19 +18,11 @@ public interface ShooterIO {
 
   public default void stop() {}
 
-  public default void setLeftTargetVelocity(AngularVelocity pVelocity) {}
+  public default void setTargetVelocity(AngularVelocity pVelocity) {}
 
   public default void setRightTargetVelocity(AngularVelocity pVelocity) {}
 
-  public default AngularVelocity getLeftVelocity() {
-    return RotationsPerSecond.of(0);
-  }
-
-  public default AngularVelocity getRightVelocity() {
-    return RotationsPerSecond.of(0);
-  }
-
-  public default AngularVelocity getLeftTargetVelocity() {
+  public default AngularVelocity getAverageVelocity() {
     return RotationsPerSecond.of(0);
   }
 
@@ -38,15 +30,9 @@ public interface ShooterIO {
     return RotationsPerSecond.of(0);
   }
 
-  public default void setLeftHoodTarget(Angle pAngle) {}
+  public default void setHoodTarget(Angle pAngle) {}
 
-  public default void setRightHoodTarget(Angle pAngle) {}
-
-  public default Angle getLeftHoodPosition() {
-    return Degrees.of(0);
-  }
-
-  public default Angle getRightHoodPosition() {
+  public default Angle getHoodPosition() {
     return Degrees.of(0);
   }
 

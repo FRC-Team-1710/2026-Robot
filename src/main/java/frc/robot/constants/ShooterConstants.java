@@ -51,16 +51,10 @@ public final class ShooterConstants {
 
   /* Offsets (center of robot to center of bottom flywheel) */
 
-  public static final Transform3d kLEFT_SHOOTER_OFFSET =
+  public static final Transform3d kSHOOTER_OFFSET =
       new Transform3d(
           Units.inchesToMeters(8.785),
           Units.inchesToMeters(4.394),
-          Units.inchesToMeters(20.789),
-          Rotation3d.kZero);
-  public static final Transform3d kRIGHT_SHOOTER_OFFSET =
-      new Transform3d(
-          Units.inchesToMeters(8.785),
-          Units.inchesToMeters(-4.394),
           Units.inchesToMeters(20.789),
           Rotation3d.kZero);
 

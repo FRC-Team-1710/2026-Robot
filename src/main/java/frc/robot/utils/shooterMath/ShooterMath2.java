@@ -93,14 +93,17 @@ public final class ShooterMath2 {
       boolean arrivalAngleConstrained) {}
 
   /**
-   * Combined solution for two fixed-direction shooters sharing one drive-base heading.
+   * Solution for a single fixed-direction shooter sharing one drive-base heading.
    *
    * @param robotHeading Field-frame heading to command.
-   * @param shooterLeft Solution for the left shooter ({@code robotToShooter1}).
-   * @param shooterRight Solution for the right shooter ({@code robotToShooter2}).
+   * @param shooter Canonical single-shooter solution.
    */
-  public record DualShooterSolution(
-      Rotation2d robotHeading, ShooterSolution shooterLeft, ShooterSolution shooterRight) {}
+  public record SingleShooterSolution(Rotation2d robotHeading, ShooterSolution shooter) {
+    /** Backwards-compatible single-shooter accessor. */
+    public ShooterSolution shooter() {
+      return shooter;
+    }
+  }
 
   /** Center of the hub */
   private static Translation3d m_targetCenter = new Translation3d();
@@ -108,11 +111,10 @@ public final class ShooterMath2 {
   /** Center of the hub */
   private static Translation3d[] m_targetVertices = new Translation3d[0];
 
-  /** The current solution for the dual shooter system. */
-  public static DualShooterSolution currentSolution =
-      new DualShooterSolution(
+  /** The current solution for the shooter system. */
+  public static SingleShooterSolution currentSolution =
+      new SingleShooterSolution(
           Rotation2d.kZero,
-          new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false, false),
           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false, false));
 
   /** The current robot pose for the dual shooter system. */
@@ -142,71 +144,56 @@ public final class ShooterMath2 {
     currentPose = robotPose;
     currentSpeeds = fieldSpeeds;
 
-    Translation3d pivot1 =
-        new Pose3d(robotPose).transformBy(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation();
-    Translation3d pivot2 =
-        new Pose3d(robotPose).transformBy(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation();
+    // Use a single shooter (left) as the canonical shooter. To preserve external API
+    // compatibility that expects left/right solutions, duplicate the single-shooter
+    // solution into both left and right fields.
+    Translation3d pivot =
+        new Pose3d(robotPose).transformBy(ShooterConstants.kSHOOTER_OFFSET).getTranslation();
 
-    SolverResult r1 = solveDirection(pivot1, fieldSpeeds);
-    SolverResult r2 = solveDirection(pivot2, fieldSpeeds);
+    SolverResult r = solveDirection(pivot, fieldSpeeds);
 
-    double D1 =
-        Math.hypot(m_targetCenter.getX() - pivot1.getX(), m_targetCenter.getY() - pivot1.getY());
-    double D2 =
-        Math.hypot(m_targetCenter.getX() - pivot2.getX(), m_targetCenter.getY() - pivot2.getY());
+    double phiComp = r.phi;
+    double tofGuess = r.tof;
 
-    double phiComp =
-        Math.atan2(
-            (D1 * Math.sin(r1.phi) + D2 * Math.sin(r2.phi)) / (D1 + D2),
-            (D1 * Math.cos(r1.phi) + D2 * Math.cos(r2.phi)) / (D1 + D2));
+    PhysicsResult phys = solvePhysicsAlongDirection(pivot, fieldSpeeds, phiComp, tofGuess);
 
-    double tofGuess = (r1.tof + r2.tof) / 2.0;
+    double omega = phys.exitSpeed / kSpeedPerOmega;
 
-    PhysicsResult phys1 = solvePhysicsAlongDirection(pivot1, fieldSpeeds, phiComp, tofGuess);
-    PhysicsResult phys2 = solvePhysicsAlongDirection(pivot2, fieldSpeeds, phiComp, tofGuess);
+    ShooterSolution single =
+        new ShooterSolution(
+            Radians.of(phys.hoodAngle),
+            RadiansPerSecond.of(omega),
+            Seconds.of(phys.tof),
+            phys.hoodClamped,
+            phys.arrivalConstrained);
 
-    double omega1 = phys1.exitSpeed / kSpeedPerOmega;
-    double omega2 = phys2.exitSpeed / kSpeedPerOmega;
-
-    currentSolution =
-        new DualShooterSolution(
-            new Rotation2d(phiComp),
-            new ShooterSolution(
-                Radians.of(phys1.hoodAngle),
-                RadiansPerSecond.of(omega1),
-                Seconds.of(phys1.tof),
-                phys1.hoodClamped,
-                phys1.arrivalConstrained),
-            new ShooterSolution(
-                Radians.of(phys2.hoodAngle),
-                RadiansPerSecond.of(omega2),
-                Seconds.of(phys2.tof),
-                phys2.hoodClamped,
-                phys2.arrivalConstrained));
+    // Store the single-shooter solution. Backwards-compatible accessors
+    // (shooterLeft/shooterRight/shooter) are provided on the record.
+    currentSolution = new SingleShooterSolution(new Rotation2d(phiComp), single);
 
     if (Epilogue.shouldLog(Importance.INFO)) {
       Robot.telemetry()
-          .log("ShotSolution/Heading", currentSolution.robotHeading, Rotation2d.struct);
+          .log("ShotSolution/Heading", currentSolution.robotHeading(), Rotation2d.struct);
 
-      Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooterLeft.hoodAngle);
-      Robot.telemetry().log("ShotSolution/Left/Omega", currentSolution.shooterLeft.flywheelOmega);
-      Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooterLeft.tof);
+      Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooter().hoodAngle);
+      Robot.telemetry().log("ShotSolution/Left/Omega", currentSolution.shooter().flywheelOmega);
+      Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooter().tof);
       Robot.telemetry()
-          .log("ShotSolution/Left/Clamped", currentSolution.shooterLeft.hoodAngleClamped);
+          .log("ShotSolution/Left/Clamped", currentSolution.shooter().hoodAngleClamped);
       Robot.telemetry()
           .log(
               "ShotSolution/Left/ArrivalConstraint",
-              currentSolution.shooterLeft.arrivalAngleConstrained);
+              currentSolution.shooter().arrivalAngleConstrained);
 
-      Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
-      Robot.telemetry().log("ShotSolution/Right/Omega", currentSolution.shooterRight.flywheelOmega);
-      Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooterRight.tof);
+      Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooter().hoodAngle);
+      Robot.telemetry().log("ShotSolution/Right/Omega", currentSolution.shooter().flywheelOmega);
+      Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooter().tof);
       Robot.telemetry()
-          .log("ShotSolution/Right/Clamped", currentSolution.shooterRight.hoodAngleClamped);
+          .log("ShotSolution/Right/Clamped", currentSolution.shooter().hoodAngleClamped);
       Robot.telemetry()
           .log(
               "ShotSolution/Right/ArrivalConstraint",
-              currentSolution.shooterRight.arrivalAngleConstrained);
+              currentSolution.shooter().arrivalAngleConstrained);
     }
   }
 

@@ -26,28 +26,33 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  @NotLogged private final VelocityTorqueCurrentFOC m_leftVelocityRequest;
-  @NotLogged private final VelocityTorqueCurrentFOC m_rightVelocityRequest;
+  @NotLogged private final VelocityTorqueCurrentFOC m_VelocityRequest1;
+  @NotLogged private final VelocityTorqueCurrentFOC m_VelocityRequest2;
+  @NotLogged private final VelocityTorqueCurrentFOC m_VelocityRequest3;
+  @NotLogged private final VelocityTorqueCurrentFOC m_VelocityRequest4;
 
-  @NotLogged private final PositionVoltage m_leftPositionRequest;
-  @NotLogged private final PositionVoltage m_rightPositionRequest;
-
-  @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_leftFlywheel;
+  @NotLogged private final PositionVoltage m_hoodPositionRequest;
 
   @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_rightFlywheel;
+  private final TalonFX m_flywheel1;
 
   @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_leftHood;
+  private final TalonFX m_flywheel2;
 
   @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_rightHood;
+  private final TalonFX m_flywheel3;
 
-  @NotLogged private final BaseStatusSignal[] m_leftFlywheelSignals;
-  @NotLogged private final BaseStatusSignal[] m_rightFlywheelSignals;
-  @NotLogged private final BaseStatusSignal[] m_leftHoodSignals;
-  @NotLogged private final BaseStatusSignal[] m_rightHoodSignals;
+  @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_flywheel4;
+
+  @Logged(importance = Importance.CRITICAL)
+  private final TalonFX m_hood;
+
+  @NotLogged private final BaseStatusSignal[] m_flywheel1Signals;
+  @NotLogged private final BaseStatusSignal[] m_flywheel2Signals;
+  @NotLogged private final BaseStatusSignal[] m_flywheel3Signals;
+  @NotLogged private final BaseStatusSignal[] m_flywheel4Signals;
+  @NotLogged private final BaseStatusSignal[] m_hoodSignals;
 
   @Logged(importance = Importance.INFO)
   private final DigitalInput m_leftBreamBreaker;
@@ -56,12 +61,14 @@ public class ShooterIOCTRE implements ShooterIO {
   private final DigitalInput m_rightBreamBreaker;
 
   public ShooterIOCTRE() {
-    this.m_leftFlywheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR);
-    this.m_rightFlywheel = new TalonFX(CanIdConstants.Shooter.SHOOTER_RIGHT_MOTOR);
+    this.m_flywheel1 = new TalonFX(CanIdConstants.Shooter.SHOOTER_FLYWHEEL_1);
+    this.m_flywheel2 = new TalonFX(CanIdConstants.Shooter.SHOOTER_FLYWHEEL_2);
+    this.m_flywheel3 = new TalonFX(CanIdConstants.Shooter.SHOOTER_FLYWHEEL_3);
+    this.m_flywheel4 = new TalonFX(CanIdConstants.Shooter.SHOOTER_FLYWHEEL_4);
 
-    this.m_leftHood = new TalonFX(CanIdConstants.Shooter.HOOD_LEFT_MOTOR);
-    this.m_rightHood = new TalonFX(CanIdConstants.Shooter.HOOD_RIGHT_MOTOR);
+    this.m_hood = new TalonFX(CanIdConstants.Shooter.HOOD_MOTOR);
 
+    // TODO: Do we need 2 beam breakers
     this.m_leftBreamBreaker = new DigitalInput(8);
     this.m_rightBreamBreaker = new DigitalInput(9);
 
@@ -85,8 +92,10 @@ public class ShooterIOCTRE implements ShooterIO {
 
     flywheelConfig.TorqueCurrent.PeakReverseTorqueCurrent = -10;
 
-    TalonFXUtil.applyConfigWithRetries(this.m_leftFlywheel, flywheelConfig, 5);
-    TalonFXUtil.applyConfigWithRetries(this.m_rightFlywheel, flywheelConfig, 5);
+    TalonFXUtil.applyConfigWithRetries(this.m_flywheel1, flywheelConfig, 5);
+    TalonFXUtil.applyConfigWithRetries(this.m_flywheel2, flywheelConfig, 5);
+    TalonFXUtil.applyConfigWithRetries(this.m_flywheel3, flywheelConfig, 5);
+    TalonFXUtil.applyConfigWithRetries(this.m_flywheel4, flywheelConfig, 5);
 
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
@@ -101,100 +110,76 @@ public class ShooterIOCTRE implements ShooterIO {
 
     hoodConfig.Feedback.SensorToMechanismRatio = 26.666666;
 
-    TalonFXUtil.applyConfigWithRetries(this.m_leftHood, hoodConfig, 5);
-    TalonFXUtil.applyConfigWithRetries(this.m_rightHood, hoodConfig, 5);
+    TalonFXUtil.applyConfigWithRetries(this.m_hood, hoodConfig, 5);
 
-    this.m_leftVelocityRequest = new VelocityTorqueCurrentFOC(0).withSlot(0);
-    this.m_rightVelocityRequest = new VelocityTorqueCurrentFOC(0).withSlot(0);
-    this.m_leftPositionRequest = new PositionVoltage(0).withEnableFOC(true);
-    this.m_rightPositionRequest = new PositionVoltage(0).withEnableFOC(true);
+    this.m_VelocityRequest1 = new VelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_VelocityRequest2 = new VelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_VelocityRequest3 = new VelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_VelocityRequest4 = new VelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_hoodPositionRequest = new PositionVoltage(0).withEnableFOC(true);
 
-    m_leftFlywheelSignals = TalonFXUtil.getBasicStatusSignals(m_leftFlywheel);
-    m_rightFlywheelSignals = TalonFXUtil.getBasicStatusSignals(m_rightFlywheel);
-    m_leftHoodSignals = TalonFXUtil.getBasicStatusSignals(m_leftHood);
-    m_rightHoodSignals = TalonFXUtil.getBasicStatusSignals(m_rightHood);
+    m_flywheel1Signals = TalonFXUtil.getBasicStatusSignals(m_flywheel1);
+    m_flywheel2Signals = TalonFXUtil.getBasicStatusSignals(m_flywheel2);
+    m_flywheel3Signals = TalonFXUtil.getBasicStatusSignals(m_flywheel3);
+    m_flywheel4Signals = TalonFXUtil.getBasicStatusSignals(m_flywheel4);
+    m_hoodSignals = TalonFXUtil.getBasicStatusSignals(m_hood);
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_leftFlywheelSignals);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_rightFlywheelSignals);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_leftHoodSignals);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_rightHoodSignals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_flywheel1Signals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_flywheel2Signals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_flywheel3Signals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_flywheel4Signals);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, m_hoodSignals);
 
-    m_leftFlywheel.optimizeBusUtilization();
-    m_rightFlywheel.optimizeBusUtilization();
-    m_leftHood.optimizeBusUtilization();
-    m_rightHood.optimizeBusUtilization();
+    m_flywheel1.optimizeBusUtilization();
+    m_flywheel2.optimizeBusUtilization();
+    m_hood.optimizeBusUtilization();
 
-    m_leftHood.setPosition(Degrees.of(ShooterConstants.HOOD_MIN));
-    m_rightHood.setPosition(Degrees.of(ShooterConstants.HOOD_MIN));
+    m_hood.setPosition(Degrees.of(ShooterConstants.HOOD_MIN));
   }
 
   public void update(double dtSeconds) {
-    BaseStatusSignal.refreshAll(m_leftFlywheelSignals);
-    BaseStatusSignal.refreshAll(m_rightFlywheelSignals);
-    BaseStatusSignal.refreshAll(m_leftHoodSignals);
-    BaseStatusSignal.refreshAll(m_rightHoodSignals);
+    BaseStatusSignal.refreshAll(m_flywheel1Signals);
+    BaseStatusSignal.refreshAll(m_flywheel2Signals);
+    BaseStatusSignal.refreshAll(m_hoodSignals);
+    BaseStatusSignal.refreshAll(m_hoodSignals);
   }
 
-  public void setLeftTargetVelocity(AngularVelocity pVelocity) {
+  public void setTargetVelocity(AngularVelocity pVelocity) {
     if (pVelocity.in(RotationsPerSecond) == 0) {
-      this.m_leftFlywheel.stopMotor();
+      this.m_flywheel1.stopMotor();
+      this.m_flywheel2.stopMotor();
+      this.m_flywheel3.stopMotor();
+      this.m_flywheel4.stopMotor();
     } else {
-      this.m_leftFlywheel.setControl(this.m_leftVelocityRequest.withVelocity(pVelocity));
+      this.m_flywheel1.setControl(this.m_VelocityRequest1.withVelocity(pVelocity));
+      this.m_flywheel2.setControl(this.m_VelocityRequest2.withVelocity(pVelocity));
+      this.m_flywheel3.setControl(this.m_VelocityRequest3.withVelocity(pVelocity));
+      this.m_flywheel4.setControl(this.m_VelocityRequest4.withVelocity(pVelocity));
     }
   }
 
-  public void setRightTargetVelocity(AngularVelocity pVelocity) {
-    if (pVelocity.in(RotationsPerSecond) == 0) {
-      this.m_rightFlywheel.stopMotor();
-    } else {
-      this.m_rightFlywheel.setControl(this.m_rightVelocityRequest.withVelocity(pVelocity));
-    }
-  }
-
   @NotLogged
-  public AngularVelocity getLeftVelocity() {
-    return this.m_leftFlywheel.getVelocity().getValue();
+  public AngularVelocity getAverageVelocity() {
+    return this.m_flywheel1
+        .getVelocity()
+        .getValue()
+        .plus(m_flywheel2.getVelocity().getValue())
+        .plus(m_flywheel3.getVelocity().getValue())
+        .plus(m_flywheel3.getVelocity().getValue())
+        .div(4);
   }
 
-  @NotLogged
-  public AngularVelocity getRightVelocity() {
-    return this.m_rightFlywheel.getVelocity().getValue();
-  }
-
-  @NotLogged
-  public AngularVelocity getLeftTargetVelocity() {
-    return RotationsPerSecond.of(this.m_leftVelocityRequest.Velocity);
-  }
-
-  @NotLogged
-  public AngularVelocity getRightTargetVelocity() {
-    return RotationsPerSecond.of(this.m_rightVelocityRequest.Velocity);
-  }
-
-  public void setLeftHoodTarget(Angle pAngle) {
-    this.m_leftHood.setControl(
-        m_leftPositionRequest.withPosition(
-            Degrees.of(
-                MathUtil.clamp(
-                    pAngle.in(Degrees), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX))));
-  }
-
-  public void setRightHoodTarget(Angle pAngle) {
-    this.m_rightHood.setControl(
-        m_leftPositionRequest.withPosition(
+  public void setHoodTarget(Angle pAngle) {
+    this.m_hood.setControl(
+        m_hoodPositionRequest.withPosition(
             Degrees.of(
                 MathUtil.clamp(
                     pAngle.in(Degrees), ShooterConstants.HOOD_MIN, ShooterConstants.HOOD_MAX))));
   }
 
   @NotLogged
-  public Angle getLeftHoodPosition() {
-    return this.m_leftHood.getPosition().getValue();
-  }
-
-  @NotLogged
-  public Angle getRightHoodPosition() {
-    return this.m_rightHood.getPosition().getValue();
+  public Angle getHoodPosition() {
+    return this.m_hood.getPosition().getValue();
   }
 
   @NotLogged
