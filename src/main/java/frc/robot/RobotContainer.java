@@ -108,7 +108,7 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
         m_feeder = new Feeder(new FeederIOCTRE(), consumer);
         m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
-        m_leds = new Leds(new LedsIOArduino(), m_shooter);
+        m_leds = new Leds(new LedsIOArduino(), m_shooter, m_intake);
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -131,7 +131,7 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIOSIM(), consumer);
         m_feeder = new Feeder(new FeederIOSIM(), consumer);
         m_indexer = new Indexer(new IndexerIOSIM(), consumer);
-        m_leds = new Leds(new LedsIOSim(), m_shooter);
+        m_leds = new Leds(new LedsIOSim(), m_shooter, m_intake);
         m_cameras = new Vision[0];
         break;
 
@@ -141,7 +141,7 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIO() {}, consumer);
         m_feeder = new Feeder(new FeederIO() {}, consumer);
         m_indexer = new Indexer(new IndexerIO() {}, consumer);
-        m_leds = new Leds(new LedsIO() {}, m_shooter);
+        m_leds = new Leds(new LedsIO() {}, m_shooter, m_intake);
         m_cameras = new Vision[0];
         break;
     }
@@ -434,8 +434,8 @@ public class RobotContainer {
         new SubsystemInfo(
             Subsystems.Leds,
             m_leds::periodic,
-            Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 8)));
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
     return map.toArray(new SubsystemInfo[0]);
   }
 

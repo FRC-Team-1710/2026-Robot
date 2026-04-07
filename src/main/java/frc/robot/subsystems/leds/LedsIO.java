@@ -7,12 +7,15 @@ public interface LedsIO {
   public default void update() {}
 
   public enum LED_STATE {
-    AUTOS,
+    DISBALED,
+    IN_AUTOS,
+    AUTOS_VICTORY,
     BROWNOUT,
-    ATTACKING
+    INTAKING,
+    SHOOTING,
+    CAN_SHOOT
   };
 
+  public default void resetValue() {}
   public default void setValue(LED_STATE pState, boolean pValue) {}
-
-  public default void setFlyWheelCharge(double pPercentage) {}
 }

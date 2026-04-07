@@ -24,22 +24,15 @@ public class LedsIOSim implements LedsIO {
     Robot.telemetry().log("Led Bits", array);
   }
 
+
+  /** {@inheritDoc} */
+  public void resetValue() {
+    this.m_data = 0;
+  }
+  
   /** {@inheritDoc} */
   public void setValue(LED_STATE pState, boolean pValue) {
-    int offset = 0;
-    switch (pState) {
-      case AUTOS:
-        offset = 7;
-        break;
-
-      case BROWNOUT:
-        offset = 6;
-        break;
-
-      case ATTACKING:
-        offset = 5;
-        break;
-    }
+    int offset = getStateOffset(pState);
 
     if (pValue) {
       this.m_data |= (1 << offset);
@@ -49,10 +42,24 @@ public class LedsIOSim implements LedsIO {
   }
 
   /** {@inheritDoc} */
-  public void setFlyWheelCharge(double pPercentage) {
-    int formattedPercent = (int) (30 * pPercentage);
-    for (int i = 0; i < 5; i++) {
-      this.m_data = formattedPercent | (1 << i);
+  private int getStateOffset(LED_STATE pState) {
+    switch (pState) {
+      case DISBALED:
+        return 0;
+      case IN_AUTOS:
+        return 1;
+      case AUTOS_VICTORY:
+        return 2;
+      case BROWNOUT:
+        return 3;
+      case INTAKING:
+        return 4;
+      case SHOOTING:
+        return 5;
+      case CAN_SHOOT:
+        return 6;
     }
+
+    return 0;
   }
 }
