@@ -33,7 +33,7 @@ public class IndexerIOCTRE implements IndexerIO {
 
     motorConfig = new TalonFXConfiguration();
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     m_indexerMotor.getConfigurator().apply(motorConfig);
 

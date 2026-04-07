@@ -29,6 +29,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.DrivetrainAccelerationLimits;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.Mode;
@@ -56,6 +57,12 @@ public class CustomFieldCentric implements SwerveRequest {
   public AngularVelocity angularVelocity = RadiansPerSecond.of(0);
 
   @NotLogged private final Pigeon2 gyro;
+
+  @Logged(importance = Importance.INFO)
+  private boolean m_shouldRaiseIntake = false;
+
+  @Logged(importance = Importance.INFO)
+  private boolean m_isGoingTowardsAllianceZone = false;
 
   @Logged(importance = Importance.INFO)
   private final PIDController yAssistPID =
@@ -107,47 +114,94 @@ public class CustomFieldCentric implements SwerveRequest {
   @Logged(importance = Importance.CRITICAL)
   private ChassisSpeeds wantedSpeeds = new ChassisSpeeds();
 
+  @Logged(importance = Importance.CRITICAL)
+  private ChassisSpeeds wantedSpeedsAfterLimits = new ChassisSpeeds();
+
+  @NotLogged private Translation2d previousTargetTranslation = new Translation2d();
+
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
     // Enable PID wrap from -180 to 180 deg
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
 
     SmartDashboard.putData(rotationLockPID);
+    SmartDashboard.putNumber("tuning/kBumpSpeed", 3.5);
   }
 
   @Override
-  @SuppressWarnings("unused")
   public StatusCode apply(
       SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply) {
+    DrivetrainAutomationConstants.BumpDetection.kBumpSpeed =
+        MetersPerSecond.of(SmartDashboard.getNumber("tuning/kBumpSpeed", 0));
+
     long loopStartTime = RobotController.getFPGATime();
-    if (currentDriveState != RequestStates.ROTATION_LOCK
-        && DrivetrainAutomationConstants.BumpDetection.kAutoBumpAlignment) {
-      if (Math.hypot( // Inputs large enough
-              Math.abs(xVelocity.in(MetersPerSecond)), Math.abs(yVelocity.in(MetersPerSecond)))
-          >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeedRequest.in(MetersPerSecond)) {
-        towardsBump =
-            towardsBump(
+    if (DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
+      // Able to bump assist
+      if (currentDriveState != RequestStates.ROTATION_LOCK) {
+        // Don't override rotation lock
+        var speed =
+            Math.hypot(
+                Math.abs(xVelocity.in(MetersPerSecond)), Math.abs(yVelocity.in(MetersPerSecond)));
+        if (speed
+            >= DrivetrainAutomationConstants.BumpDetection.kMinimumSpeedRequest.in(
+                MetersPerSecond)) {
+          // Inputs large enough
+          if (currentDriveState != RequestStates.BUMP_ASSIST) {
+            // Not already in bump assist
+            if (towardsBump(
                 new Pose2d(
                     parameters.currentPose.getTranslation(),
                     new Rotation2d(xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond))
-                        .plus(Rotation2d.kCW_90deg)));
-        if (towardsBump) {
-          currentDriveState = RequestStates.BUMP_ASSIST;
-        } else {
-          stillGoingOverBump =
-              stillGoingOverBump(
-                  parameters.currentPose.getTranslation(),
-                  gyro.getPitch().getValue(),
-                  gyro.getRoll().getValue());
-          if (currentDriveState == RequestStates.BUMP_ASSIST && stillGoingOverBump) {
-            currentDriveState = RequestStates.BUMP_ASSIST;
+                        .plus(Rotation2d.kCW_90deg)),
+                speed)) {
+              // Inputs going towards bump
+              currentDriveState = RequestStates.BUMP_ASSIST;
+              bumpRotationTarget =
+                  Rotation2d.fromDegrees(
+                      MathUtils.snapAngle(parameters.currentPose.getRotation().getDegrees()));
+              m_shouldRaiseIntake =
+                  bumpRotationTarget.equals(
+                      xVelocity.in(MetersPerSecond) < 0
+                          ? (DrivetrainAutomationConstants.BumpDetection.kSnap1)
+                          : (DrivetrainAutomationConstants.BumpDetection.kSnap2));
+              m_isGoingTowardsAllianceZone =
+                  Alliance.redAlliance
+                      ? (parameters.currentPose.getX()
+                              > FieldConstants.kFieldLength.div(3).in(Meters)
+                          && xVelocity.in(MetersPerSecond) > 0)
+                      : (parameters.currentPose.getX()
+                              < FieldConstants.kFieldLength.div(3).times(2).in(Meters)
+                          && xVelocity.in(MetersPerSecond) < 0);
+            }
           } else {
-            currentDriveState = RequestStates.DRIVER_CONTROLLED;
+            // Already bump assist
+            stillGoingOverBump =
+                stillGoingOverBump(
+                        parameters.currentPose.getTranslation(),
+                        gyro.getPitch().getValue(),
+                        gyro.getRoll().getValue())
+                    || towardsBump(
+                        new Pose2d(
+                            parameters.currentPose.getTranslation(),
+                            new Rotation2d(
+                                    xVelocity.in(MetersPerSecond), yVelocity.in(MetersPerSecond))
+                                .plus(Rotation2d.kCW_90deg)),
+                        speed);
+            if (!stillGoingOverBump) {
+              // Not going over bump anymore
+              currentDriveState = RequestStates.DRIVER_CONTROLLED;
+            }
           }
+        } else {
+          // Not enough input
+          currentDriveState = RequestStates.DRIVER_CONTROLLED;
         }
-      } else {
-        currentDriveState = RequestStates.DRIVER_CONTROLLED;
       }
+    }
+
+    if (currentDriveState != RequestStates.BUMP_ASSIST) {
+      m_isGoingTowardsAllianceZone = false;
+      m_shouldRaiseIntake = false;
     }
 
     if (shouldResetYAssistPID) {
@@ -162,9 +216,6 @@ public class CustomFieldCentric implements SwerveRequest {
 
     switch (currentDriveState) {
       case BUMP_ASSIST:
-        bumpRotationTarget =
-            Rotation2d.fromDegrees(
-                MathUtils.snapAngle(parameters.currentPose.getRotation().getDegrees()));
         rotationLockPID.setGoal(bumpRotationTarget.getRadians());
 
         wantedSpeeds =
@@ -172,8 +223,9 @@ public class CustomFieldCentric implements SwerveRequest {
                 MetersPerSecond.of(
                     MathUtil.clamp(
                         xVelocity.in(MetersPerSecond),
-                        -DrivetrainAutomationConstants.BumpDetection.kBumpFast.in(MetersPerSecond),
-                        DrivetrainAutomationConstants.BumpDetection.kBumpFast.in(MetersPerSecond))),
+                        -DrivetrainAutomationConstants.BumpDetection.kBumpSpeed.in(MetersPerSecond),
+                        DrivetrainAutomationConstants.BumpDetection.kBumpSpeed.in(
+                            MetersPerSecond))),
                 yVelocity
                     .times(DrivetrainAutomationConstants.kDriverTranslationOverrideMultiplier)
                     .plus(
@@ -212,12 +264,43 @@ public class CustomFieldCentric implements SwerveRequest {
 
     m_lastLoopTime = RobotController.getFPGATime() - loopStartTime;
 
+    if (DrivetrainAccelerationLimits.shouldLimit()) {
+      var wantedTranslationAfterLimits =
+          DrivetrainAccelerationLimits.calculateTilt(
+              toRobotSpeeds(
+                  new Translation2d(wantedSpeeds.vxMetersPerSecond, wantedSpeeds.vyMetersPerSecond),
+                  parameters.currentPose),
+              previousTargetTranslation);
+      wantedSpeedsAfterLimits =
+          ChassisSpeeds.fromRobotRelativeSpeeds(
+              wantedTranslationAfterLimits.getX(),
+              wantedTranslationAfterLimits.getY(),
+              wantedSpeeds.omegaRadiansPerSecond,
+              parameters.currentPose.getRotation());
+    } else {
+      wantedSpeedsAfterLimits = wantedSpeeds;
+    }
+
+    previousTargetTranslation =
+        new Translation2d(
+            parameters.currentChassisSpeed.vxMetersPerSecond,
+            parameters.currentChassisSpeed.vyMetersPerSecond);
+
     return driveRequest
-        .withVelocityX(wantedSpeeds.vxMetersPerSecond)
-        .withVelocityY(wantedSpeeds.vyMetersPerSecond)
+        .withVelocityX(wantedSpeedsAfterLimits.vxMetersPerSecond)
+        .withVelocityY(wantedSpeedsAfterLimits.vyMetersPerSecond)
         .withRotationalRate(wantedSpeeds.omegaRadiansPerSecond)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
         .apply(parameters, modulesToApply);
+  }
+
+  /** Converts a translation in the field coordinate system to the robot coordinate system */
+  private Translation2d toRobotSpeeds(Translation2d translation2d, Pose2d currentPose) {
+    return new Translation2d(
+        translation2d.getX() * currentPose.getRotation().getCos()
+            + translation2d.getY() * currentPose.getRotation().getSin(),
+        -translation2d.getX() * currentPose.getRotation().getSin()
+            + translation2d.getY() * currentPose.getRotation().getCos());
   }
 
   /**
@@ -237,16 +320,16 @@ public class CustomFieldCentric implements SwerveRequest {
    * Returns true if the robot pose with the driver's inputs as the heading would break the plane
    * along the bump (if the wanted speeds point towards the bump)
    */
-  private boolean towardsBump(Pose2d robotWantedVelocityHeading) {
+  private boolean towardsBump(Pose2d robotWantedVelocityHeading, double speed) {
     var targetBump =
         FieldConstants.Bump.BumpLocation.getClosest(robotWantedVelocityHeading.getTranslation());
     currentBumpLocation = new Pose2d(targetBump.average, Rotation2d.kZero);
     return MathUtils.willPenetrateLine(
-        robotWantedVelocityHeading, targetBump.translationOutside, targetBump.translationInside);
-    // && (currentBumpLocation
-    //         .getTranslation()
-    //         .getDistance(robotWantedVelocityHeading.getTranslation())
-    //     < 2.5);
+            robotWantedVelocityHeading, targetBump.translationOutside, targetBump.translationInside)
+        && (currentBumpLocation
+                .getTranslation()
+                .getDistance(robotWantedVelocityHeading.getTranslation())
+            < speed * DrivetrainAutomationConstants.BumpDetection.kBumpDetectionTime);
   }
 
   // /* Uses the pose to determine the max speed on the bump depending on its current position */
@@ -267,21 +350,14 @@ public class CustomFieldCentric implements SwerveRequest {
   //       : DrivetrainAutomationConstants.BumpDetection.kBumpFast;
   // }
 
-  /** Uses the pose to determine if it's going towards the alliance zone */
-  public boolean isGoingToAllianceZone(Pose2d currentPose) {
-    return (currentPose.getX() > FieldConstants.kFieldLength.div(3).times(2).in(Meters)
-            && Alliance.redAlliance)
-        || (currentPose.getX() < FieldConstants.kFieldLength.div(3).in(Meters)
-            && !Alliance.redAlliance);
+  /** Uses the pose and speeds to determine if it's going towards the alliance zone */
+  public boolean isGoingToAllianceZone() {
+    return m_isGoingTowardsAllianceZone;
   }
 
   @NotLogged
   public boolean shouldRaiseIntake() {
-    return currentDriveState == RequestStates.BUMP_ASSIST
-        && (bumpRotationTarget.getDegrees()
-                == DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake1.getDegrees()
-            || bumpRotationTarget.getDegrees()
-                == DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake2.getDegrees());
+    return m_shouldRaiseIntake;
   }
 
   /**
@@ -370,14 +446,17 @@ public class CustomFieldCentric implements SwerveRequest {
   public CustomFieldCentric withDriveState(DriveStates state) {
     switch (state) {
       case DRIVER_CONTROLLED:
-        // If it was rotation lock, set back to driver control
-        if (this.currentDriveState == RequestStates.ROTATION_LOCK) {
-          this.currentDriveState = RequestStates.DRIVER_CONTROLLED;
-        }
-        // Only reset PID if it's not targeting
-        if (this.currentDriveState == RequestStates.DRIVER_CONTROLLED) {
-          this.shouldResetRotationPID = true;
-          this.shouldResetYAssistPID = true;
+        // Make sure this doesn't effect bump assist
+        if (currentDriveState != RequestStates.BUMP_ASSIST) {
+          // If it was rotation lock, set back to driver control
+          if (this.currentDriveState == RequestStates.ROTATION_LOCK) {
+            this.currentDriveState = RequestStates.DRIVER_CONTROLLED;
+          }
+          // Only reset PID if it's not targeting
+          if (this.currentDriveState == RequestStates.DRIVER_CONTROLLED) {
+            this.shouldResetRotationPID = true;
+            this.shouldResetYAssistPID = true;
+          }
         }
         break;
       case ROTATION_LOCK:

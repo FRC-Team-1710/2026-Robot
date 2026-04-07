@@ -124,7 +124,7 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "EndShoot",
         () -> {
-          Commands.waitUntil(() -> shooter.getFPS() <= 0.0)
+          Commands.waitUntil(() -> false == true) // Cami has new stuff on another branch :)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);

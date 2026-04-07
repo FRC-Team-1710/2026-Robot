@@ -11,11 +11,14 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.DrivetrainAccelerationLimits;
+import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
@@ -186,7 +189,7 @@ public class RobotContainer {
           -length / 2,
           length / 2,
           () ->
-              m_superstructure.getCurrentState() == CurrentStates.Intake
+              m_driver.leftTrigger().getAsBoolean()
                   || m_superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
@@ -195,7 +198,12 @@ public class RobotContainer {
 
       fuelSim.enableAirResistance();
 
-      fuelSim.shouldShoot = () -> m_driver.rightTrigger().getAsBoolean();
+      fuelSim.shouldShoot =
+          () ->
+              (m_driver.rightTrigger().getAsBoolean()
+                      || m_superstructure.getCurrentState() == CurrentStates.ScoreAuto)
+                  && DriverStation.isEnabled();
+      fuelSim.shouldScore = () -> !m_superstructure.shooting();
 
       m_shooter.setFuelSim(fuelSim);
     }
@@ -232,7 +240,7 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_shooter.setStateTesting(SHOOTER_STATE.TESTING);
+                  m_shooter.setStateTesting(SHOOTER_STATE.TEST);
                   m_feeder.setStateTesting(FEEDER_STATE.FEEDING);
                   m_indexer.setStateTesting(IndexStates.Indexing);
                   m_intake.setStateTesting(IntakeStates.Jostle);
@@ -280,6 +288,16 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
                 .ignoringDisable(true));
+
+    m_driver
+        .leftStick()
+        .and(() -> DriverStation.isTeleopEnabled())
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  DrivetrainAutomationConstants.BumpDetection.toggleAutoBumpAlignment();
+                  DrivetrainAccelerationLimits.toggleShouldLimit();
+                }));
 
     m_driver
         .start()

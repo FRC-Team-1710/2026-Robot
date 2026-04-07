@@ -17,51 +17,60 @@ public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
   /** Static friction compensation */
-  public static final double kS = 4.0;
+  public static final double kFlyS = 0.213;
 
   /** Velocity feedforward (predicts voltage needed for a speed) */
-  public static final double kV = 0.035;
+  public static final double kFlyV = 0.11;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kP = 2.0;
+  public static final double kFlyP = 0.0;
+
+  /** Derivative gain (corrects acceleration errors) */
+  public static final double kFlyD = 0.0;
+
+  /** Static friction compensation */
+  public static final double kHoodS = 0.0;
+
+  /** Gravity feedforward (predicts voltage needed to keep at current angle) */
+  public static final double kHoodG = 0.0;
+
+  /** Velocity feedforward (predicts voltage needed for a speed) */
+  public static final double kHoodV = 0.0;
+
+  /** Proportional gain (corrects position errors) */
+  public static final double kHoodP = 0.0;
+
+  /** Derivative gain (corrects speed errors) */
+  public static final double kHoodD = 0.0;
 
   // ==================== Current Limits ====================
   public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
   public static final int FLYWHEEL_STATOR_CURRENT_LIMIT = 80;
 
   // ==================== Motion Magic (Speed Limits) ====================
-  public static final double MOTION_MAGIC_CRUISE_VELOCITY = 300.0;
-  public static final double MOTION_MAGIC_ACCELERATION = 150.0;
+  public static final double FLYWHEEL_MOTION_MAGIC_CRUISE_VELOCITY = 0.0;
+  public static final double FLYWHEEL_MOTION_MAGIC_ACCELERATION = 0.0;
+
+  public static final double HOOD_MOTION_MAGIC_CRUISE_VELOCITY = 1.25;
+  public static final double HOOD_MOTION_MAGIC_ACCELERATION = 0.25;
 
   // ======================== Shooter Physical Constants ===========================
   // Degrees from horizontal
-  public static final double HOOD_MAX = 41;
-  public static final double HOOD_MIN = 27.5;
-
-  public static final double WHEEL_DIAMETER = 0.1; // Example value in meters
+  public static final double HOOD_MAX = 38.5; // 0.6684611 radians
+  public static final double HOOD_MIN = 11.0; // 0.191986 radians
 
   /** Range of error for the "isAtTargetVelocity" function */
   public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(25);
 
+  /** Range of error for the "isAtTargetAngle" function */
   public static final Angle HOOD_TARGET_ERROR_RANGE = Degrees.of(2.5);
 
-  public static final double JAM_DETECT_TIME = 1.0;
-
-  public static final double UNREALISTIC_FPS_INTERVAL_MS = 1000.0 / 24.0;
-
-  /* Offsets (center of robot to center of bottom flywheel) */
-
-  public static final Transform3d kLEFT_SHOOTER_OFFSET =
+  /** Offset (center of robot to center of bottom flywheel) */
+  public static final Transform3d kSHOOTER_OFFSET =
       new Transform3d(
-          Units.inchesToMeters(8.785),
-          Units.inchesToMeters(4.394),
-          Units.inchesToMeters(20.789),
-          Rotation3d.kZero);
-  public static final Transform3d kRIGHT_SHOOTER_OFFSET =
-      new Transform3d(
-          Units.inchesToMeters(8.785),
-          Units.inchesToMeters(-4.394),
-          Units.inchesToMeters(20.789),
+          Units.inchesToMeters(8.50),
+          Units.inchesToMeters(0),
+          Units.inchesToMeters(20.05),
           Rotation3d.kZero);
 
   private ShooterConstants() {

@@ -38,7 +38,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
-import frc.robot.utils.shooterMath.ShooterMath2;
+import frc.robot.utils.shooterMath.ShooterMath3;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -294,7 +294,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withDriveState(m_currentState));
     }
 
-    ShooterMath2.calculate(getPose(), getFieldSpeeds());
+    ShooterMath3.calculate(getPose(), getFieldSpeeds());
   }
 
   /** Rescales the translation input vector with deadband and power curve. */
@@ -360,9 +360,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
-        new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
-        Utils.fpgaToCurrentTime(timestampSeconds),
-        visionMeasurementStdDevs);
+        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     if (m_shouldAcceptNextVisionMeasurementRotation) {
       m_shouldAcceptNextVisionMeasurementRotation = false;
       resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
