@@ -13,15 +13,16 @@ public class LedsIOArduino implements LedsIO {
   public LedsIOArduino() {
     this.m_data = 0;
 
-    this.m_port = new SerialPort(115200, SerialPort.Port.kMXP);
+    this.m_port = new SerialPort(57600, SerialPort.Port.kMXP);
   }
 
   /** {@inheritDoc} */
   public void update() {
     byte[] data = new byte[1];
-    data[0] = (byte) (this.m_data & 0xFF);
+    // data[0] = (byte) (this.m_data & 0xFF);
+    data[0] = (byte) (0x01);
 
-    this.m_port.write(data, data.length);
+    this.m_port.write(data, 1);
   }
 
   /** {@inheritDoc} */
