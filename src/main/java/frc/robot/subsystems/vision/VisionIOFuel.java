@@ -49,16 +49,25 @@ public class VisionIOFuel extends SubsystemBase {
       m_trackedTargets = m_latestResult.get(0).getTargets();
       double lowestCost = Double.MAX_VALUE;
       for (PhotonTrackedTarget cluster : m_trackedTargets) {
-        if (findCost(cluster) < lowestCost) {
-          lowestCost = findCost(cluster);
+        double cost = findCost(cluster);
+        if (cost < lowestCost) {
+          lowestCost = cost;
           m_bestTarget = cluster;
         }
       }
     }
   }
 
+  /**
+   * Calculates the cost of a cluster using a specific area
+   *
+   * @param target A cluster of fuel that is returned from the fuel camera of type {@link
+   *     PhotonTrackedTarget}
+   * @return {@code double} cost value (lower is a more favorable cluster)
+   */
   private double findCost(PhotonTrackedTarget target) {
-    // Cost = w1 * (abs(yaw)/yaw) + w2 * (distance/maxDistance) - w3 * normalizedArea
+    // Cost = w1 * (abs(yaw)/(horizontalFOV/2)) + w2 * ((pitch + verticalFOV/2)/maxDistance)
+    // - w3 * normalizedArea
 
     return VisionConstants.FUEL_CAMERA_COST_WEIGHT_1
             * Math.abs(target.getYaw())

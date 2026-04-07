@@ -378,7 +378,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   @Logged(importance = Importance.INFO)
   public boolean isGoingTowardsAllianceZone() {
-    return fieldCentric.isGoingToAllianceZone(getPose());
+    return fieldCentric.isGoingToAllianceZone();
   }
 
   @Logged(importance = Importance.CRITICAL)
