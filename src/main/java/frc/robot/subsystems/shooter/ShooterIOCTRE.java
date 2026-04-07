@@ -75,7 +75,7 @@ public class ShooterIOCTRE implements ShooterIO {
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
 
     flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    flywheelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    flywheelConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     flywheelConfig.Slot0.kS = ShooterConstants.kFlyS;
     flywheelConfig.Slot0.kV = ShooterConstants.kFlyV;
@@ -101,11 +101,14 @@ public class ShooterIOCTRE implements ShooterIO {
 
     // Configure follower motors to follow their respective masters
     m_flywheels[1].setControl(
-        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Aligned));
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Aligned)
+            .withUpdateFreqHz(200));
     m_flywheels[2].setControl(
-        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed));
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed)
+            .withUpdateFreqHz(200));
     m_flywheels[3].setControl(
-        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed));
+        new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed)
+            .withUpdateFreqHz(200));
 
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
@@ -113,13 +116,19 @@ public class ShooterIOCTRE implements ShooterIO {
     hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-    hoodConfig.Slot0.kP = 400;
-    hoodConfig.Slot0.kD = 4;
-    hoodConfig.Slot0.kG = 0.4;
+    hoodConfig.Slot0.kP = ShooterConstants.kHoodP;
+    hoodConfig.Slot0.kS = ShooterConstants.kHoodS;
+    hoodConfig.Slot0.kG = ShooterConstants.kHoodG;
+    hoodConfig.Slot0.kV = ShooterConstants.kHoodV;
     hoodConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
+    hoodConfig.MotionMagic.MotionMagicAcceleration =
+        ShooterConstants.HOOD_MOTION_MAGIC_ACCELERATION;
+    hoodConfig.MotionMagic.MotionMagicCruiseVelocity =
+        ShooterConstants.HOOD_MOTION_MAGIC_CRUISE_VELOCITY;
+
     // 2 3:1 gearboxes with custom gear ratio at the end
-    hoodConfig.Feedback.SensorToMechanismRatio = (3.0 / 1.0) * (3.0 / 1.0) * (70.0 / 11.0);
+    hoodConfig.Feedback.SensorToMechanismRatio = (5.0 / 1.0) * (5.0 / 1.0) * (70.0 / 11.0);
 
     TalonFXUtil.applyConfigWithRetries(this.m_hoodMotor, hoodConfig, 5);
 
@@ -138,10 +147,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
     // Configure leader update frequency to optimize follower performance
     // https://www.chiefdelphi.com/t/ctre-follower-does-the-same-volts-or-the-same-control-request/513725/3?u=carterc13
-    m_flywheels[0]
-        .getTorqueCurrent()
-        .setUpdateFrequency(
-            150); // TODO: tune to highest without using too much of the bus bandwidth
+    m_flywheels[0].getMotorVoltage().setUpdateFrequency(200);
 
     for (TalonFX fx : m_flywheels) {
       fx.optimizeBusUtilization();
