@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,13 +55,14 @@ public class AutosChooser {
                         drivetrain.bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
                 new PIDController(5.0, 0.0, 0.0), // Translation PID
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
-                new PIDController(1.5, 0.0, 0.0) // Cross-track PID
+                new PIDController(2, 0.0, 0.0) // Cross-track PID
                 )
-            .withShouldFlip(() -> Alliance.redAlliance);
+            .withShouldFlip(
+                () -> Alliance.redAlliance); // Automatically filps path based on alliance
 
     m_depot = false;
 
-    autoCommands = new HashMap<>();
+    autoCommands = new HashMap<>(); // contains a list of all commands that'll happen during auto
     autoCommands.put(Auto.NONE, Commands.none());
 
     autoChooser = new SendableChooser<>();
@@ -71,12 +73,13 @@ public class AutosChooser {
     addPath(Auto.RIGHT_INSIDE, autoPathing(m_depot).get("RIGHT_INSIDE"));
     addPath(Auto.LEFT_INSIDE, autoPathing(m_depot).get("LEFT_INSIDE"));
     addPath(Auto.ZONE2, autoPathing(m_depot).get("ZONE2"));
+    addPath(Auto.MIDDLE, autoPathing(m_depot).get("MIDDLE"));
 
     SmartDashboard.putBoolean("Auto/Depot?", m_depot);
-    // Put preset autos hare//
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
-    // SmartDashboard.putData("Auto/Actions", actions);
+
+    Timer timer = new Timer();
 
     for (WantedStates state : WantedStates.values()) {
       if (state.name().contains("Auto")) {
@@ -100,6 +103,7 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "Shoot",
         () -> {
+          timer.restart();
           Commands.run(
                   () -> {
                     drivetrain.setAutonomousRequestOverride(true);
@@ -118,13 +122,7 @@ public class AutosChooser {
                       hasResetRotation = true;
                     }
                   })
-              .schedule();
-        });
-
-    FollowPath.registerEventTrigger(
-        "EndShoot",
-        () -> {
-          Commands.waitUntil(() -> false == true) // Cami has new stuff on another branch :)
+              .until(() -> timer.get() > 5)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
@@ -163,25 +161,33 @@ public class AutosChooser {
   public static HashMap<String, Command> autoPathing(boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     var temp = new Path("outsideracer");
-    temp.mirror();
-    listOfPaths.put("RIGHT_INSIDE", Commands.sequence(pathBuilder.build(temp)));
-    listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new Path("outsideracer"))));
+    temp.mirror(); // mirrors the path across the y axis\
+    listOfPaths.put(
+        "RIGHT_INSIDE",
+        Commands.sequence(pathBuilder.build(temp))); // flipped version of left_inside
+    listOfPaths.put(
+        "LEFT_INSIDE",
+        Commands.sequence(
+            pathBuilder.build(new Path("outsideracer")),
+            pathBuilder.build(new Path("doubleracer"))));
     listOfPaths.put(
         "ZONE3",
         Commands.sequence(
             pathBuilder.build(new Path("zone3cycleright")),
             pathBuilder.build(new Path("zone3cycleleft"))));
+    listOfPaths.put("MIDDLE", Commands.sequence(pathBuilder.build(new Path("sweep"))));
     listOfPaths.put(
         "ZONE1",
         Commands.sequence(
             pathBuilder.build(new Path("zone1cycleleft"))
             // pathBuilder.build(new Path("zone1cycleright"))
             ));
-    listOfPaths.put("ZONE2", Commands.sequence(pathBuilder.build(new Path("zone2"))));
+    listOfPaths.put("ZONE2", Commands.sequence(pathBuilder.build(new Path("zone2")))); // the game
 
     return listOfPaths;
   }
 
+  // if you make a new path then you need to add the name here
   public enum Auto {
     NONE(),
     ZONE1(),
@@ -189,5 +195,6 @@ public class AutosChooser {
     ZONE2(),
     RIGHT_INSIDE(),
     LEFT_INSIDE(),
+    MIDDLE()
   }
 }
