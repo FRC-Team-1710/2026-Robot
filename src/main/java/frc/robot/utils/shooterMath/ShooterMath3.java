@@ -30,7 +30,7 @@ public final class ShooterMath3 {
    * mid-range, 70° = May be unreachable from far positions
    */
   // TODO: Soon to be k, need to tune first
-  private static double m_preferredMinArrivalAngleRad = Math.toRadians(45.0);
+  private static double m_preferredMinArrivalAngleRad = Math.toRadians(50.0);
 
   /** Efficiency of speed transfer from flywheel to ball. */
   // TODO: Soon to be k, need to tune first
