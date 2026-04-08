@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -151,7 +152,7 @@ public class IntakeIOCTRE implements IntakeIO {
    * @param speed motor output in the range [-1.0, 1.0]
    */
   public void setIntakeMotor(double speed) {
-    m_intakeMotor.setControl(new DutyCycleOut(speed));
+    m_intakeMotor.setControl(new VoltageOut(-speed * 12).withEnableFOC(true));
   }
 
   /**

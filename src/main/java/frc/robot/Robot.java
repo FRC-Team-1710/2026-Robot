@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -93,6 +94,9 @@ public class Robot extends DynamicTimedRobot {
     }
 
     SmartDashboard.putBoolean("MatchState/IgnoreFMS", false);
+
+    // Lowers brownout threshold to 6.0V
+    RobotController.setBrownoutVoltage(6.0);
   }
 
   @Override
