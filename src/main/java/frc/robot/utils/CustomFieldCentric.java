@@ -101,6 +101,10 @@ public class CustomFieldCentric implements SwerveRequest {
           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
           .withSteerRequestType(SteerRequestType.Position);
 
+  @NotLogged private boolean m_shouldAcceptRobotSpeeds = false;
+
+  @NotLogged private ChassisSpeeds m_robotSpeeds = new ChassisSpeeds();
+
   /* Logging vars */
   @Logged(importance = Importance.CRITICAL)
   private boolean stillGoingOverBump = false;
@@ -133,6 +137,16 @@ public class CustomFieldCentric implements SwerveRequest {
       SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply) {
     DrivetrainAutomationConstants.BumpDetection.kBumpSpeed =
         MetersPerSecond.of(SmartDashboard.getNumber("tuning/kBumpSpeed", 0));
+
+    if (m_shouldAcceptRobotSpeeds) {
+      m_shouldAcceptRobotSpeeds = false;
+      var tempSpeeds =
+          ChassisSpeeds.fromRobotRelativeSpeeds(
+              m_robotSpeeds, parameters.currentPose.getRotation());
+      withVelocityX(tempSpeeds.vxMetersPerSecond);
+      withVelocityY(tempSpeeds.vyMetersPerSecond);
+      withRotationalRate(tempSpeeds.omegaRadiansPerSecond);
+    }
 
     long loopStartTime = RobotController.getFPGATime();
     if (DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
@@ -435,6 +449,12 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withRotationalRate(double velocity) {
     this.angularVelocity = RadiansPerSecond.of(velocity);
+    return this;
+  }
+
+  public CustomFieldCentric withRobotRelativeSpeeds(ChassisSpeeds robotSpeeds) {
+    this.m_shouldAcceptRobotSpeeds = true;
+    this.m_robotSpeeds = robotSpeeds;
     return this;
   }
 

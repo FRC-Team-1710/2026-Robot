@@ -52,7 +52,8 @@ public class AutosChooser {
                 drivetrain::getRobotSpeeds, // Supplier for current speeds
                 (speeds) ->
                     drivetrain.applyRequest(
-                        drivetrain.bLineRequest.withSpeeds(speeds)), // Consumer to drive the robot
+                        drivetrain.fieldCentric.withRobotRelativeSpeeds(
+                            speeds)), // Consumer to drive the robot
                 new PIDController(5.0, 0.0, 0.0), // Translation PID
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
                 new PIDController(2, 0.0, 0.0) // Cross-track PID
@@ -103,7 +104,8 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "Shoot",
         () -> {
-          timer.restart();
+          timer.stop();
+          timer.reset();
           Commands.run(
                   () -> {
                     drivetrain.setAutonomousRequestOverride(true);
@@ -121,11 +123,20 @@ public class AutosChooser {
                       drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);
                       hasResetRotation = true;
                     }
+                    if (superstructure.flywheelAtTarget()) {
+                      timer.start(); // Only count actual shooting time
+                    }
+                    if (timer.get() >= 5) {
+                      superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
+                    } else if (timer.get() >= 3.5) {
+                      superstructure.setIntakeAddableState(IntakeAddableStates.Jostle);
+                    }
                   })
-              .until(() -> timer.get() > 5)
+              .until(() -> timer.get() > 6)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
+                    superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     drivetrain.setAutonomousRequestOverride(false);
                   })
               .schedule();
