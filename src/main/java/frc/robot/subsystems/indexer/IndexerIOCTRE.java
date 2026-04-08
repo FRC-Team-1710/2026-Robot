@@ -6,7 +6,7 @@ package frc.robot.subsystems.indexer;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -26,7 +26,7 @@ public class IndexerIOCTRE implements IndexerIO {
   @NotLogged private final BaseStatusSignal[] m_indexerSignals;
 
   @NotLogged
-  private final DutyCycleOut m_indexerPercentOutput = new DutyCycleOut(0).withEnableFOC(true);
+  private final VoltageOut m_indexerVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public IndexerIOCTRE() {
     this.m_indexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
@@ -49,6 +49,6 @@ public class IndexerIOCTRE implements IndexerIO {
   }
 
   public void setIndexMotor(double speed) {
-    m_indexerMotor.setControl(m_indexerPercentOutput.withOutput(speed));
+    m_indexerMotor.setControl(m_indexerVoltageOutput.withOutput(speed * 12));
   }
 }

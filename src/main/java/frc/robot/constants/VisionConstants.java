@@ -78,7 +78,7 @@ public class VisionConstants {
                 Units.inchesToMeters(16.373),
                 Units.inchesToMeters(11.261)),
             new Rotation3d(
-                Math.toRadians(180), Math.toRadians(180 - 25), Math.toRadians(-90.0 + 25.0))),
+                Math.toRadians(180), Math.toRadians(180 + 25), Math.toRadians(-90.0 + 25.0))),
         false),
     new PoseCameraConfig(
         "BackRight",
@@ -88,7 +88,7 @@ public class VisionConstants {
                 Units.inchesToMeters(-16.373),
                 Units.inchesToMeters(11.261)),
             new Rotation3d(
-                Math.toRadians(180), Math.toRadians(180 - 25), Math.toRadians(90.0 - 25.0))),
+                Math.toRadians(180), Math.toRadians(180 + 25), Math.toRadians(90.0 - 25.0))),
         false),
   };
 

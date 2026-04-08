@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class MatchState {
   // TODO: Set to simulate a match environment to test match specific code
-  private static final boolean kSimulatePracticeMatch = true;
+  private static final boolean kSimulatePracticeMatch = false;
 
   /** Used when we want to shoot while our hub is disabled */
   private static final boolean m_ignoreFMS = false;

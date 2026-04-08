@@ -6,7 +6,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -28,7 +28,7 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  @NotLogged private final MotionMagicVelocityTorqueCurrentFOC m_velocityRequest;
+  @NotLogged private final MotionMagicVelocityVoltage m_velocityRequest;
   @NotLogged private final MotionMagicVoltage m_hoodPositionRequest;
 
   // Four flywheel motors: left master, left follower, right follower, right follower
@@ -132,7 +132,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
     TalonFXUtil.applyConfigWithRetries(this.m_hoodMotor, hoodConfig, 5);
 
-    this.m_velocityRequest = new MotionMagicVelocityTorqueCurrentFOC(0).withSlot(0);
+    this.m_velocityRequest = new MotionMagicVelocityVoltage(0).withSlot(0);
     this.m_hoodPositionRequest = new MotionMagicVoltage(0).withEnableFOC(true).withSlot(0);
 
     // Configure status signals for each motor

@@ -50,7 +50,10 @@ public class Superstructure {
   private boolean m_didIntake = false;
 
   @Logged(importance = Importance.CRITICAL)
-  private AddableStates m_addableState = AddableStates.Jostle;
+  private IntakeAddableStates m_intakeAddableState = IntakeAddableStates.Intaking;
+
+  @Logged(importance = Importance.CRITICAL)
+  private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
 
   /**
    * Constructs the superstructure with all subsystem references.
@@ -160,12 +163,12 @@ public class Superstructure {
                           <= FieldConstants.kFieldLength
                               .minus(FieldConstants.kBumpDistanceFromDS)
                               .in(Meters)))
-              ? switch (m_addableState) {
+              ? switch (m_intakeAddableState) {
                 case Jostle -> CurrentStates.Shoot;
                 case IntakeUp -> CurrentStates.ShootWithIntakeUp;
                 case Intaking -> CurrentStates.ShootWhileIntaking;
               }
-              : switch (m_addableState) {
+              : switch (m_intakeAddableState) {
                 case Jostle -> CurrentStates.Score;
                 case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
                 case Intaking -> CurrentStates.ScoreWhileIntaking;
@@ -185,7 +188,7 @@ public class Superstructure {
       case Climb -> CurrentStates.Climb;
       case DefaultAuto -> CurrentStates.IdleAuto;
       case ShootAuto ->
-          switch (m_addableState) {
+          switch (m_intakeAddableState) {
             case Jostle -> CurrentStates.ScoreAuto;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUpAuto;
             case Intaking -> CurrentStates.ScoreWhileIntakingAuto;
@@ -257,7 +260,10 @@ public class Superstructure {
         && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
       m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
     } else {
-      m_shooter.setState(SHOOTER_STATE.IDLE);
+      m_shooter.setState(
+          m_shooterAddableState == ShooterAddableStates.Idle
+              ? SHOOTER_STATE.IDLE
+              : SHOOTER_STATE.SHOOT);
     }
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
@@ -313,7 +319,10 @@ public class Superstructure {
   private void intake() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     m_intake.setState(IntakeStates.Intaking);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
 
@@ -344,7 +353,10 @@ public class Superstructure {
 
   private void climb() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
   }
@@ -399,7 +411,9 @@ public class Superstructure {
 
   private void override() {
     m_intake.setState(
-        m_addableState == AddableStates.IntakeUp ? IntakeStates.Up : IntakeStates.Jostle);
+        m_intakeAddableState == IntakeAddableStates.IntakeUp
+            ? IntakeStates.Up
+            : IntakeStates.Jostle);
     m_indexer.setState(IndexStates.Indexing);
     m_feeder.setState(FEEDER_STATE.FEEDING);
   }
@@ -500,14 +514,20 @@ public class Superstructure {
     IntakeAuto(),
     ScoreWhileIntakingAuto(),
     ClimbAuto(),
-    Override(),
+    Override()
   }
 
-  /** The addable states of superstructure */
-  public enum AddableStates {
+  /** The addable states of intake */
+  public enum IntakeAddableStates {
     Intaking(),
     Jostle(),
-    IntakeUp(),
+    IntakeUp()
+  }
+
+  /** The addable states of shooter */
+  public enum ShooterAddableStates {
+    SpinUp(),
+    Idle()
   }
 
   /**
@@ -520,8 +540,15 @@ public class Superstructure {
   /**
    * @param state the addable state to set
    */
-  public void setAddableState(AddableStates state) {
-    m_addableState = state;
+  public void setIntakeAddableState(IntakeAddableStates state) {
+    m_intakeAddableState = state;
+  }
+
+  /**
+   * @param state the addable state to set
+   */
+  public void setShooterAddableState(ShooterAddableStates state) {
+    m_shooterAddableState = state;
   }
 
   /**
@@ -536,8 +563,16 @@ public class Superstructure {
    * @param state the addable state to set
    * @return a command that sets the addable state
    */
-  public Command setAddableStateCommand(AddableStates state) {
-    return Commands.runOnce(() -> setAddableState(state)).ignoringDisable(true);
+  public Command setIntakeAddableStateCommand(IntakeAddableStates state) {
+    return Commands.runOnce(() -> setIntakeAddableState(state)).ignoringDisable(true);
+  }
+
+  /**
+   * @param state the addable state to set
+   * @return a command that sets the addable state
+   */
+  public Command setShooterAddableStateCommand(ShooterAddableStates state) {
+    return Commands.runOnce(() -> setShooterAddableState(state)).ignoringDisable(true);
   }
 
   /** Returns the current state of the superstructure. */

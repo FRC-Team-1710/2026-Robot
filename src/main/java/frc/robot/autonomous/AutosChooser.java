@@ -19,7 +19,7 @@ import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.Superstructure.AddableStates;
+import frc.robot.subsystems.Superstructure.IntakeAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.shooter.Shooter;
 import java.util.HashMap;
@@ -111,7 +111,7 @@ public class AutosChooser {
                             .withVelocityX(0) // ensure previous controls aren't affecting auto
                             .withVelocityY(0)
                             .withRotationalRate(0));
-                    superstructure.setAddableState(AddableStates.Jostle);
+                    superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     superstructure.setWantedState(WantedStates.ShootAuto);
                     if (!hasResetRotation && superstructure.driveAtTarget()) {
                       drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);

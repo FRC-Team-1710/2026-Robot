@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 
 public class DrivetrainAutomationConstants {
@@ -26,6 +27,7 @@ public class DrivetrainAutomationConstants {
     }
 
     public static boolean shouldAlignBump() {
+      Robot.telemetry().log("shouldAlignBump", m_autoBumpAlignment);
       return m_autoBumpAlignment;
     }
 
@@ -44,6 +46,6 @@ public class DrivetrainAutomationConstants {
      * meters away the minimum speed required is 4 m/s. This ensures that the robot has enough time
      * to align properly before it reaches the bump.
      */
-    public static final double kBumpDetectionTime = 0.5;
+    public static final double kBumpDetectionTime = 1;
   }
 }

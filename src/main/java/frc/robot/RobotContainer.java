@@ -27,8 +27,9 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.CurrentStates;
+import frc.robot.subsystems.Superstructure.IntakeAddableStates;
+import frc.robot.subsystems.Superstructure.ShooterAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
@@ -292,7 +293,8 @@ public class RobotContainer {
         .onTrue(
             m_superstructure
                 .setWantedStateCommand(WantedStates.Shoot)
-                .alongWith(m_superstructure.setAddableStateCommand(AddableStates.Jostle)));
+                .alongWith(
+                    m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking)));
 
     m_driver
         .leftTrigger()
@@ -309,6 +311,10 @@ public class RobotContainer {
         .negate()
         .and(m_driver.rightTrigger().negate())
         .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Default));
+
+    m_driver
+        .rightTrigger()
+        .onFalse(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
 
     m_driver
         .x()
@@ -367,22 +373,20 @@ public class RobotContainer {
     m_driver
         .povRight()
         .and(m_superstructure::currentStateUsesIntake)
-        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+        .onTrue(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.IntakeUp));
 
     m_driver
         .povRight()
         .and(m_superstructure::currentStateUsesIntake)
-        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
+        .onFalse(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking));
 
     m_driver
         .povLeft()
-        .and(m_superstructure::currentStateUsesIntake)
-        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
 
     m_driver
-        .povLeft()
-        .and(m_superstructure::currentStateUsesIntake)
-        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
+        .rightBumper()
+        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
 
     m_mech
         .rightBumper()

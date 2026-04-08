@@ -7,6 +7,8 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.HootEpilogueBackend;
+import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
 import edu.wpi.first.epilogue.Logged;
@@ -93,6 +95,8 @@ public class Robot extends DynamicTimedRobot {
     }
 
     SmartDashboard.putBoolean("MatchState/IgnoreFMS", false);
+
+    SignalLogger.stop();
   }
 
   @Override

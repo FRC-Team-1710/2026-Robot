@@ -34,7 +34,7 @@ public final class ShooterMath3 {
 
   /** Efficiency of speed transfer from flywheel to ball. */
   // TODO: Soon to be k, need to tune first
-  private static double m_speedTransferEfficiency = 1.0; // 1.0 = No slip
+  private static double m_speedTransferEfficiency = 0.9; // 1.0 = No slip
 
   /** Ball diameter: 5.91 in → meters. */
   private static final double kBallDiameterMeters = 5.91 * 0.0254;

@@ -125,7 +125,7 @@ public class CustomFieldCentric implements SwerveRequest {
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
 
     SmartDashboard.putData(rotationLockPID);
-    SmartDashboard.putNumber("tuning/kBumpSpeed", 3.5);
+    SmartDashboard.putNumber("tuning/kBumpSpeed", 2);
   }
 
   @Override
@@ -357,7 +357,8 @@ public class CustomFieldCentric implements SwerveRequest {
 
   @NotLogged
   public boolean shouldRaiseIntake() {
-    return m_shouldRaiseIntake;
+    return false;
+    // return m_shouldRaiseIntake;
   }
 
   /**

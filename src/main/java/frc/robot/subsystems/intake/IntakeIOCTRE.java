@@ -85,11 +85,11 @@ public class IntakeIOCTRE implements IntakeIO {
 
     // set slot 0 gains //TODO:
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
-    m_slot0Configs.kG = 0;
+    m_slot0Configs.kG = 0.4;
     m_slot0Configs.kS = 0;
-    m_slot0Configs.kV = 0;
+    m_slot0Configs.kV = 6.625;
     m_slot0Configs.kA = 0;
-    m_slot0Configs.kP = 0;
+    m_slot0Configs.kP = 0.2;
     m_slot0Configs.kI = 0;
     m_slot0Configs.kD = 0;
     m_slot0Configs.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
@@ -97,7 +97,7 @@ public class IntakeIOCTRE implements IntakeIO {
 
     m_motorConfig.Feedback.SensorToMechanismRatio = 50;
     m_motorConfig.Slot0 = m_slot0Configs;
-    m_motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     m_deploymentMotor.getConfigurator().apply(m_motorConfig);
 
