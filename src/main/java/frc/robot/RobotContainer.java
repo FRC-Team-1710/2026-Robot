@@ -12,6 +12,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -70,6 +71,8 @@ public class RobotContainer {
   public FuelSim fuelSim;
 
   private final AutosChooser m_autoChooser;
+
+  @NotLogged private final Timer m_intakeChangeTimer = new Timer();
 
   @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
@@ -267,9 +270,36 @@ public class RobotContainer {
 
     m_driver
         .rightTrigger()
+        .and(m_driver.leftTrigger().negate())
+        .and(m_driver.povRight().negate())
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  m_intakeChangeTimer.stop();
+                  m_intakeChangeTimer.reset();
+                }))
+        .whileTrue(
+            Commands.run(
+                () -> {
+                  if (m_superstructure.flywheelAtTargetWithWait()) {
+                    if (!m_intakeChangeTimer.isRunning()) {
+                      m_intakeChangeTimer.start();
+                    } else if (m_intakeChangeTimer.hasElapsed(3.5)) {
+                      m_superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
+                    }
+                  } else {
+                    m_intakeChangeTimer.reset();
+                    m_superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
+                  }
+                }));
+
+    m_driver
+        .rightTrigger()
         .onTrue(
             Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
-                .ignoringDisable(true));
+                .ignoringDisable(true)
+                .andThen(
+                    m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking)));
 
     m_driver
         .leftStick()
@@ -290,11 +320,7 @@ public class RobotContainer {
     m_driver
         .rightTrigger()
         .and(m_driver.leftTrigger().negate())
-        .onTrue(
-            m_superstructure
-                .setWantedStateCommand(WantedStates.Shoot)
-                .alongWith(
-                    m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking)));
+        .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Shoot));
 
     m_driver
         .leftTrigger()
