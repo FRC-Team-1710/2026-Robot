@@ -62,6 +62,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public final CustomFieldCentric fieldCentric;
 
   @Logged(importance = Importance.INFO)
+  public final CustomFieldCentric fieldCentricBLine;
+
+  @Logged(importance = Importance.INFO)
   private DriveStates m_currentState = DriveStates.DRIVER_CONTROLLED;
 
   /** Controller inputs for default teleop */
@@ -159,9 +162,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             null,
   //             this));
 
-  @NotLogged
-  public SwerveRequest.ApplyRobotSpeeds bLineRequest = new SwerveRequest.ApplyRobotSpeeds();
-
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
    *
@@ -178,6 +178,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -200,6 +201,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new CustomFieldCentric(getPigeon2());
   }
 
   /**
@@ -233,6 +235,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new CustomFieldCentric(getPigeon2());
   }
 
   /**

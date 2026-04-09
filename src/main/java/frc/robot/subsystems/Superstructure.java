@@ -286,7 +286,7 @@ public class Superstructure {
   private void scoreWithIntakeUp() {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    m_intake.setState(IntakeStates.Up);
+    m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
     m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -308,7 +308,7 @@ public class Superstructure {
   private void shootWithIntakeUp() {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    m_intake.setState(IntakeStates.Up);
+    m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
     m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -377,7 +377,7 @@ public class Superstructure {
   }
 
   private void scoreWithIntakeUpAuto() {
-    m_intake.setState(IntakeStates.Up);
+    m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
     m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
@@ -412,7 +412,7 @@ public class Superstructure {
   private void override() {
     m_intake.setState(
         m_intakeAddableState == IntakeAddableStates.IntakeUp
-            ? IntakeStates.Up
+            ? IntakeStates.UpAndIntake
             : IntakeStates.Jostle);
     m_indexer.setState(IndexStates.Indexing);
     m_feeder.setState(FEEDER_STATE.FEEDING);

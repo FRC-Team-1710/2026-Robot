@@ -74,6 +74,9 @@ public class RobotContainer {
 
   @NotLogged private final Timer m_intakeChangeTimer = new Timer();
 
+  @Logged(importance = Importance.INFO)
+  private boolean m_hasntAcceptedVisionRotation = true;
+
   @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
 
@@ -197,7 +200,7 @@ public class RobotContainer {
       m_shooter.setFuelSim(fuelSim);
     }
 
-    m_autoChooser = new AutosChooser(m_superstructure, drivetrain, m_shooter);
+    m_autoChooser = new AutosChooser(m_superstructure, drivetrain, m_shooter, m_intake);
 
     configureBindings();
   }
@@ -295,11 +298,16 @@ public class RobotContainer {
 
     m_driver
         .rightTrigger()
+        .onTrue(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking));
+
+    m_driver
+        .rightTrigger()
+        .and(m_superstructure::driveAtTarget)
+        .and(() -> m_hasntAcceptedVisionRotation)
         .onTrue(
             Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
-                .ignoringDisable(true)
-                .andThen(
-                    m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking)));
+                .andThen(Commands.runOnce(() -> m_hasntAcceptedVisionRotation = false))
+                .ignoringDisable(true));
 
     m_driver
         .leftStick()
@@ -340,7 +348,10 @@ public class RobotContainer {
 
     m_driver
         .rightTrigger()
-        .onFalse(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
+        .onFalse(
+            m_superstructure
+                .setShooterAddableStateCommand(ShooterAddableStates.Idle)
+                .andThen(Commands.runOnce(() -> m_hasntAcceptedVisionRotation = true)));
 
     m_driver
         .x()
@@ -430,7 +441,7 @@ public class RobotContainer {
   /** Returns the autonomous command to run during autonomous period. */
   @NotLogged
   public Command getAutonomousCommand() {
-    return m_autoChooser.selectAuto(drivetrain, m_shooter);
+    return m_autoChooser.selectAuto();
   }
 
   /** Returns all subsystem info for dynamic scheduling. */

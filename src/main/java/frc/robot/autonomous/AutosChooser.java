@@ -22,6 +22,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.IntakeAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import java.util.HashMap;
 
@@ -44,7 +46,10 @@ public class AutosChooser {
    * @param shooter the shooter subsystem used during autonomous shooting routines
    */
   public AutosChooser(
-      Superstructure superstructure, CommandSwerveDrivetrain drivetrain, Shooter shooter) {
+      Superstructure superstructure,
+      CommandSwerveDrivetrain drivetrain,
+      Shooter shooter,
+      Intake intake) {
     pathBuilder =
         new FollowPath.Builder(
                 drivetrain, // The drive subsystem to require
@@ -52,7 +57,7 @@ public class AutosChooser {
                 drivetrain::getRobotSpeeds, // Supplier for current speeds
                 (speeds) ->
                     drivetrain.applyRequest(
-                        drivetrain.fieldCentric.withRobotRelativeSpeeds(
+                        drivetrain.fieldCentricBLine.withRobotRelativeSpeeds(
                             speeds)), // Consumer to drive the robot
                 new PIDController(5.0, 0.0, 0.0), // Translation PID
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
@@ -69,14 +74,17 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    addPath(Auto.ZONE1, autoPathing(m_depot).get("ZONE1"));
-    addPath(Auto.ZONE3, autoPathing(m_depot).get("ZONE3"));
-    addPath(Auto.RIGHT_INSIDE, autoPathing(m_depot).get("RIGHT_INSIDE"));
-    addPath(Auto.LEFT_INSIDE, autoPathing(m_depot).get("LEFT_INSIDE"));
-    addPath(Auto.ZONE2, autoPathing(m_depot).get("ZONE2"));
-    addPath(Auto.MIDDLE, autoPathing(m_depot).get("MIDDLE"));
+    var paths = autoPathing(m_depot);
 
-    SmartDashboard.putBoolean("Auto/Depot?", m_depot);
+    // addPath(Auto.ZONE1, paths.get("ZONE1"));
+    // addPath(Auto.ZONE3, paths.get("ZONE3"));
+    addPath(Auto.RIGHT_INSIDE, paths.get("RIGHT_INSIDE"));
+    addPath(Auto.LEFT_INSIDE, paths.get("LEFT_INSIDE"));
+    addPath(Auto.RIGHT_INSIDE_PART_2, paths.get("RIGHT_INSIDE_PART_2"));
+    addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
+    // addPath(Auto.ZONE2, paths.get("ZONE2"));
+    // addPath(Auto.MIDDLE, paths.get("MIDDLE"));
+
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
 
@@ -92,6 +100,12 @@ public class AutosChooser {
         "RemoveOverride",
         () -> {
           drivetrain.setAutonomousRequestOverride(false);
+        });
+
+    FollowPath.registerEventTrigger(
+        "RaiseIntake",
+        () -> {
+          intake.setState(IntakeStates.Half);
         });
 
     FollowPath.registerEventTrigger(
@@ -126,15 +140,13 @@ public class AutosChooser {
                     if (superstructure.flywheelAtTarget()) {
                       timer.start(); // Only count actual shooting time
                     }
-                    if (timer.get() >= 5) {
+                    if (timer.get() >= 3.5) {
                       superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
-                    } else if (timer.get() >= 3.5) {
-                      superstructure.setIntakeAddableState(IntakeAddableStates.Jostle);
                     } else {
                       superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     }
                   })
-              .until(() -> timer.get() > 6)
+              .until(() -> timer.get() > 4.5)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
@@ -162,40 +174,44 @@ public class AutosChooser {
     autoChooser.addOption(auto.name(), auto);
   }
 
-  public Command selectAuto(CommandSwerveDrivetrain drivetrain, Shooter shooter) {
-    boolean depotValue = SmartDashboard.getBoolean("Auto/Depot?", m_depot);
-    Auto currentAuto = autoChooser.getSelected();
-
-    return autoCommands
-        .get(currentAuto)
-        .andThen(pathBuilder.build(new Path("depot")).onlyIf(() -> depotValue));
+  public Command selectAuto() {
+    return autoCommands.get(autoChooser.getSelected());
   }
 
   public static HashMap<String, Command> autoPathing(boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     var temp = new Path("outsideracer");
+    var temp2 = new Path("doubleracer");
     temp.mirror(); // mirrors the path across the y axis\
+    temp2.mirror(); // mirrors the path across the y axis\
     listOfPaths.put(
         "RIGHT_INSIDE",
         Commands.sequence(pathBuilder.build(temp))); // flipped version of left_inside
+    listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new Path("outsideracer"))));
     listOfPaths.put(
-        "LEFT_INSIDE",
+        "RIGHT_INSIDE_PART_2",
+        Commands.sequence(
+            pathBuilder.build(temp), pathBuilder.build(temp2))); // flipped version of left_inside
+    listOfPaths.put(
+        "LEFT_INSIDE_PART_2",
         Commands.sequence(
             pathBuilder.build(new Path("outsideracer")),
             pathBuilder.build(new Path("doubleracer"))));
-    listOfPaths.put(
-        "ZONE3",
-        Commands.sequence(
-            pathBuilder.build(new Path("zone3cycleright")),
-            pathBuilder.build(new Path("zone3cycleleft"))));
-    listOfPaths.put("MIDDLE", Commands.sequence(pathBuilder.build(new Path("sweep"))));
-    listOfPaths.put(
-        "ZONE1",
-        Commands.sequence(
-            pathBuilder.build(new Path("zone1cycleleft"))
-            // pathBuilder.build(new Path("zone1cycleright"))
-            ));
-    listOfPaths.put("ZONE2", Commands.sequence(pathBuilder.build(new Path("zone2")))); // the game
+    // listOfPaths.put(
+    //     "ZONE3",
+    //     Commands.sequence(
+    //         pathBuilder.build(new Path("zone3cycleright")),
+    //         pathBuilder.build(new Path("zone3cycleleft"))));
+    // listOfPaths.put("MIDDLE", Commands.sequence(pathBuilder.build(new Path("sweep"))));
+    // listOfPaths.put(
+    //     "ZONE1",
+    //     Commands.sequence(
+    //         pathBuilder.build(new Path("zone1cycleleft"))
+    //         // pathBuilder.build(new Path("zone1cycleright"))
+    //         ));
+    // listOfPaths.put("ZONE2", Commands.sequence(pathBuilder.build(new Path("zone2"))));
+    // the game
+    //  >:(  -Carter
 
     return listOfPaths;
   }
@@ -206,8 +222,10 @@ public class AutosChooser {
     ZONE1(),
     ZONE3(),
     ZONE2(),
-    RIGHT_INSIDE(),
     LEFT_INSIDE(),
+    RIGHT_INSIDE(),
+    LEFT_INSIDE_PART_2(),
+    RIGHT_INSIDE_PART_2(),
     MIDDLE()
   }
 }
