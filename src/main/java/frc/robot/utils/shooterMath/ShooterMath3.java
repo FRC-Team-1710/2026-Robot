@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -21,6 +22,7 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.utils.MathUtils;
 
 // Same as ShooterMath2 but built around the drum shooter redesign
 public final class ShooterMath3 {
@@ -30,11 +32,11 @@ public final class ShooterMath3 {
    * mid-range, 70° = May be unreachable from far positions
    */
   // TODO: Soon to be k, need to tune first
-  private static double m_preferredMinArrivalAngleRad = Math.toRadians(50.0);
+  private static double m_preferredMinArrivalAngleRad = Math.toRadians(52.5);
 
   /** Efficiency of speed transfer from flywheel to ball. */
   // TODO: Soon to be k, need to tune first
-  private static double m_speedTransferEfficiency = 0.9; // 1.0 = No slip
+  private static double m_speedTransferEfficiency = 0.825; // 1.0 = No slip
 
   /** Ball diameter: 5.91 in → meters. */
   private static final double kBallDiameterMeters = 5.91 * 0.0254;
@@ -120,7 +122,7 @@ public final class ShooterMath3 {
   public static SimpleSolution currentPassingSolution =
       new SimpleSolution(Degrees.of(0), RadiansPerSecond.of(0), false);
 
-  /** The current robot pose for the dual shooter system. */
+  /** The current robot pose for the shooter system. */
   // Public so sim can access it
   public static Pose2d currentPose = new Pose2d();
 
@@ -129,32 +131,48 @@ public final class ShooterMath3 {
   public static ChassisSpeeds currentSpeeds = new ChassisSpeeds();
 
   static {
-    SmartDashboard.putNumber(
-        "tuning/preferredMinArrivalAngleDeg", Math.toDegrees(m_preferredMinArrivalAngleRad));
-    SmartDashboard.putNumber("tuning/speedTransferEfficiency", m_speedTransferEfficiency);
+    SmartDashboard.putNumber("tuning/preferredMinArrivalAngleDeg", 0);
+    SmartDashboard.putNumber("tuning/speedTransferEfficiency", 0);
   }
 
   /**
    * Compute optimal shooter parameters for a single shooter.
    *
    * @param robotPose Current robot 2-D pose.
-   * @param robotToShooter Transform from robot origin to the <b>bottom flywheel center</b>.
    * @param fieldSpeeds Chassis speeds in the field frame.
-   * @return {@link ShooterSolution} including tolerances.
    */
   public static void calculate(Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
-    m_preferredMinArrivalAngleRad =
-        Math.toRadians(SmartDashboard.getNumber("tuning/preferredMinArrivalAngleDeg", 0));
-    m_speedTransferEfficiency = SmartDashboard.getNumber("tuning/speedTransferEfficiency", 0);
-    kSpeedPerOmega =
-        m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
-
     m_targetCenter =
         Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue;
     m_targetVertices =
         Alliance.redAlliance ? FieldConstants.kHexagonRed : FieldConstants.kHexagonBlue;
     currentPose = robotPose;
     currentSpeeds = fieldSpeeds;
+
+    // m_preferredMinArrivalAngleRad =
+    //     Math.toRadians(SmartDashboard.getNumber("tuning/preferredMinArrivalAngleDeg", 0));
+    // m_speedTransferEfficiency = SmartDashboard.getNumber("tuning/speedTransferEfficiency", 0);
+
+    m_speedTransferEfficiency =
+        MathUtils.interpolate(
+                robotPose.getTranslation().getDistance(m_targetCenter.toTranslation2d()),
+                Units.inchesToMeters(70.85),
+                0.85,
+                Units.inchesToMeters(119.67), // haha
+                0.8)
+            + SmartDashboard.getNumber("tuning/speedTransferEfficiency", 0);
+
+    m_preferredMinArrivalAngleRad =
+        MathUtils.interpolate(
+                robotPose.getTranslation().getDistance(m_targetCenter.toTranslation2d()),
+                Units.inchesToMeters(70.85),
+                55.0,
+                Units.inchesToMeters(119.67), // haha
+                50.0)
+            + Math.toRadians(SmartDashboard.getNumber("tuning/preferredMinArrivalAngleDeg", 0));
+
+    kSpeedPerOmega =
+        m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
 
     calculateComplexFromDirectionAndSpeed(robotPose, fieldSpeeds);
     calculateSimpleFromDirectionAndSpeed(robotPose, fieldSpeeds);

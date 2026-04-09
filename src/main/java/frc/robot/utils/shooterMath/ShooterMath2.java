@@ -22,7 +22,8 @@
 
 // public final class ShooterMath2 {
 //   /**
-//    * Preferred minimum arrival angle (radians). 0° = Disabled, 30° = Only activates at long range,
+//    * Preferred minimum arrival angle (radians). 0° = Disabled, 30° = Only activates at long
+// range,
 //    * 45° = Ball enters at roughly 45° into the funnel, 60° = Noticeably higher flywheel demand at
 //    * mid-range, 70° = May be unreachable from far positions
 //    */
@@ -81,7 +82,8 @@
 //    * @param flywheelOmega Flywheel ω to command.
 //    * @param tof Time of flight for the shot.
 //    * @param hoodAngleClamped Optimal angle was outside the mechanical range.
-//    * @param arrivalAngleConstrained Shot was made steeper than minimum-velocity optimum to clear the
+//    * @param arrivalAngleConstrained Shot was made steeper than minimum-velocity optimum to clear
+// the
 //    *     near edge of the funnel.
 //    * @param tolerances Per-parameter deviation budgets for this shot.
 //    */
@@ -112,8 +114,10 @@
 //   public static DualShooterSolution currentSolution =
 //       new DualShooterSolution(
 //           Rotation2d.kZero,
-//           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false, false),
-//           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false, false));
+//           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false,
+// false),
+//           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false,
+// false));
 
 //   /** The current robot pose for the dual shooter system. */
 //   public static Pose2d currentPose = new Pose2d();
@@ -143,9 +147,11 @@
 //     currentSpeeds = fieldSpeeds;
 
 //     Translation3d pivot1 =
-//         new Pose3d(robotPose).transformBy(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation();
+//         new
+// Pose3d(robotPose).transformBy(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation();
 //     Translation3d pivot2 =
-//         new Pose3d(robotPose).transformBy(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation();
+//         new
+// Pose3d(robotPose).transformBy(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation();
 
 //     SolverResult r1 = solveDirection(pivot1, fieldSpeeds);
 //     SolverResult r2 = solveDirection(pivot2, fieldSpeeds);
@@ -189,7 +195,8 @@
 //           .log("ShotSolution/Heading", currentSolution.robotHeading, Rotation2d.struct);
 
 //       Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooterLeft.hoodAngle);
-//       Robot.telemetry().log("ShotSolution/Left/Omega", currentSolution.shooterLeft.flywheelOmega);
+//       Robot.telemetry().log("ShotSolution/Left/Omega",
+// currentSolution.shooterLeft.flywheelOmega);
 //       Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooterLeft.tof);
 //       Robot.telemetry()
 //           .log("ShotSolution/Left/Clamped", currentSolution.shooterLeft.hoodAngleClamped);
@@ -199,7 +206,8 @@
 //               currentSolution.shooterLeft.arrivalAngleConstrained);
 
 //       Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
-//       Robot.telemetry().log("ShotSolution/Right/Omega", currentSolution.shooterRight.flywheelOmega);
+//       Robot.telemetry().log("ShotSolution/Right/Omega",
+// currentSolution.shooterRight.flywheelOmega);
 //       Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooterRight.tof);
 //       Robot.telemetry()
 //           .log("ShotSolution/Right/Clamped", currentSolution.shooterRight.hoodAngleClamped);
@@ -214,7 +222,8 @@
 //   private record SolverResult(double phi, double tof) {}
 
 //   /**
-//    * Iteratively solve for the ideal field-frame shooting direction (φ) and converged time-of-flight
+//    * Iteratively solve for the ideal field-frame shooting direction (φ) and converged
+// time-of-flight
 //    * for a shooter whose bottom flywheel center is at {@code pivotPos}.
 //    */
 //   private static SolverResult solveDirection(Translation3d pivotPos, ChassisSpeeds fieldSpeeds) {

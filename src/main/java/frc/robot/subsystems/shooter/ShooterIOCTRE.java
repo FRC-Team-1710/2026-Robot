@@ -79,7 +79,12 @@ public class ShooterIOCTRE implements ShooterIO {
 
     flywheelConfig.Slot0.kS = ShooterConstants.kFlyS;
     flywheelConfig.Slot0.kV = ShooterConstants.kFlyV;
-    flywheelConfig.Slot0.kP = ShooterConstants.kFlyP;
+    flywheelConfig.Slot0.kA = ShooterConstants.kFlyA;
+
+    flywheelConfig.Slot1.kS = ShooterConstants.kFlyS;
+    flywheelConfig.Slot1.kV = ShooterConstants.kFlyV;
+    flywheelConfig.Slot1.kP = ShooterConstants.kFlyP;
+    // Only use kP when at setpoint so it can be tuned more aggressively
 
     flywheelConfig.MotionMagic.MotionMagicAcceleration =
         ShooterConstants.FLYWHEEL_MOTION_MAGIC_ACCELERATION;
@@ -172,7 +177,13 @@ public class ShooterIOCTRE implements ShooterIO {
       return;
     }
 
-    m_flywheels[0].setControl(this.m_velocityRequest.withVelocity(pVelocity));
+    m_flywheels[0].setControl(
+        this.m_velocityRequest
+            .withVelocity(pVelocity)
+            .withSlot(
+                getVelocity().isNear(pVelocity, ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE)
+                    ? 1
+                    : 0));
   }
 
   /** {@inheritDoc} */

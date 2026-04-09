@@ -106,6 +106,7 @@ public class AutosChooser {
         () -> {
           timer.stop();
           timer.reset();
+          hasResetRotation = false;
           Commands.run(
                   () -> {
                     drivetrain.setAutonomousRequestOverride(true);
@@ -117,7 +118,6 @@ public class AutosChooser {
                             .withVelocityX(0) // ensure previous controls aren't affecting auto
                             .withVelocityY(0)
                             .withRotationalRate(0));
-                    superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     superstructure.setWantedState(WantedStates.ShootAuto);
                     if (!hasResetRotation && superstructure.driveAtTarget()) {
                       drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);
@@ -130,6 +130,8 @@ public class AutosChooser {
                       superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                     } else if (timer.get() >= 3.5) {
                       superstructure.setIntakeAddableState(IntakeAddableStates.Jostle);
+                    } else {
+                      superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     }
                   })
               .until(() -> timer.get() > 6)

@@ -206,4 +206,10 @@ public class MathUtils {
         FieldConstants.kFieldLength.in(Meters) - point.getX(),
         FieldConstants.kFieldWidth.in(Meters) - point.getY());
   }
+
+  public static double interpolate(double d, double d1, double v1, double d2, double v2) {
+    if (d <= d1) return v1;
+    if (d >= d2) return v2;
+    return v1 + (v2 - v1) * (d - d1) / (d2 - d1);
+  }
 }
