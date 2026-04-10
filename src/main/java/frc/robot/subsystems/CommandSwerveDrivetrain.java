@@ -366,8 +366,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           visionRobotPoseMeters,
           Utils.fpgaToCurrentTime(timestampSeconds),
           VecBuilder.fill(0.05, 0.05, 0.05));
-      System.err.println(
-          "--- PIGEON NOT CONNECTED"); // Set vision StdDev to low if pigeon is disconnected
+      DriverStation.reportError(
+          "--- PIGEON NOT CONNECTED", false); // Set vision StdDev to low if pigeon is disconnected
       return;
     }
     super.addVisionMeasurement(
