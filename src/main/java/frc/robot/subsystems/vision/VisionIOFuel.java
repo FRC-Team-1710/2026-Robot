@@ -77,7 +77,9 @@ public class VisionIOFuel extends SubsystemBase {
                 / VisionConstants.FUEL_CAMERA_MAX_DISTANCE)
         - VisionConstants.FUEL_CAMERA_COST_WEIGHT_3
             * target.getArea()
-            / Math.pow(Math.cos(Math.toRadians(target.getPitch())), 2);
+            / Math.pow(
+                Math.cos(Math.toRadians(target.getPitch() + VisionConstants.FUEL_CAMERA_FOV_V / 2)),
+                2);
   }
 
   public Rotation2d getLatestRotationTarget() {

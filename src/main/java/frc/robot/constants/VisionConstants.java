@@ -49,9 +49,9 @@ public class VisionConstants {
   public static final double FUEL_CAMERA_FOV_V = 44.0;
 
   // ==== Cost function weights for Fuel Camera (-1.0, 1.0) ====
-  public static final double FUEL_CAMERA_COST_WEIGHT_1 = 1.0;
-  public static final double FUEL_CAMERA_COST_WEIGHT_2 = 1.0;
-  public static final double FUEL_CAMERA_COST_WEIGHT_3 = 1.0;
+  public static final double FUEL_CAMERA_COST_WEIGHT_1 = 0.1; // YAW
+  public static final double FUEL_CAMERA_COST_WEIGHT_2 = 0.25; // PITCH
+  public static final double FUEL_CAMERA_COST_WEIGHT_3 = 1.0; // AREA
 
   public static final double FUEL_CAMERA_MAX_DISTANCE = 25.0; // degrees
 
