@@ -191,7 +191,8 @@ public class AutosChooser {
   public static HashMap<String, Command> autoPathing(boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     var temp = new Path("outsideracer");
-    var temp2 = new Path("doubleracer");
+    var temp2 = new Path("lineintake");
+    // var temp2 = new Path("doubleracer");
     temp.mirror(); // mirrors the path across the y axis\
     temp2.mirror(); // mirrors the path across the y axis\
     listOfPaths.put(

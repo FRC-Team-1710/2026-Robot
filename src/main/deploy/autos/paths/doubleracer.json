@@ -13,11 +13,6 @@
       }
     },
     {
-      "type": "event_trigger",
-      "t_ratio": 0.09102856140142246,
-      "lib_key": "IntakeAuto"
-    },
-    {
       "type": "waypoint",
       "translation_target": {
         "x_meters": 5.967336685870662,
