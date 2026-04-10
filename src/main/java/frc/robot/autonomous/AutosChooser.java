@@ -148,19 +148,20 @@ public class AutosChooser {
                     if (superstructure.flywheelAtTarget()) {
                       timer.start(); // Only count actual shooting time
                     }
-                    if (timer.get() >= 2.75) {
+                    if (timer.get() >= 2.5) {
                       superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                     } else {
                       superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     }
                   })
-              .until(() -> timer.get() > 3.75)
+              .until(() -> timer.get() > 4.0)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
                     superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     drivetrain.setAutonomousRequestOverride(false);
                     superstructure.setShooterAddableState(ShooterAddableStates.Idle);
+                    intake.setState(IntakeStates.Up);
                   })
               .schedule();
         });

@@ -287,7 +287,7 @@ public class Intake {
   public enum IntakeStates {
     Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.5),
     UpAndIntake(Milliseconds.of(60), Rotations.of(0.29), 0.625, 1, 0.5),
-    Half(Milliseconds.of(60), Rotations.of(0.15), 0, 1.25, 0.75),
+    Half(Milliseconds.of(60), Rotations.of(0.15), 0.625, 1.25, 0.75),
     Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.5),
     Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 0.625, 1.5, 1.5),
     Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),

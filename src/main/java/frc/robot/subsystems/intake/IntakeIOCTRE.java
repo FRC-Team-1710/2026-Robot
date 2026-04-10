@@ -98,6 +98,8 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.Feedback.SensorToMechanismRatio = 50;
     m_motorConfig.Slot0 = m_slot0Configs;
     m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    m_motorConfig.CurrentLimits.StatorCurrentLimit = 45;
+    m_motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     m_deploymentMotor.getConfigurator().apply(m_motorConfig);
 
@@ -142,7 +144,7 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   public void setAngle(Angle angle, double velocity, double acceleration) {
     m_angleSetpoint = angle;
-    if (m_deploymentMotor.getPosition(false).getValue().in(Rotations) < 0.075
+    if (m_deploymentMotor.getPosition(false).getValue().in(Rotations) < 0.0875
         && angle.isEquivalent(IntakeStates.Down.setpoint)) {
       m_deploymentMotor.stopMotor();
     } else {

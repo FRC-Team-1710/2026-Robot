@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveModule.ModuleRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -271,6 +273,13 @@ public class CustomFieldCentric implements SwerveRequest {
                             rotationLockPID.calculate(
                                 parameters.currentPose.getRotation().getRadians()))));
         break;
+      case X_LOCK:
+        for (int i = 0; i < modulesToApply.length; i++) {
+          modulesToApply[i].apply(
+              new ModuleRequest()
+                  .withState(new SwerveModuleState(0, parameters.moduleLocations[i].getAngle())));
+        }
+        return StatusCode.OK;
       default:
         wantedSpeeds = new ChassisSpeeds(xVelocity, yVelocity, angularVelocity);
         break;
@@ -488,6 +497,14 @@ public class CustomFieldCentric implements SwerveRequest {
         this.currentDriveState = RequestStates.ROTATION_LOCK;
         this.shouldResetYAssistPID = true;
         break;
+      case X_LOCK:
+        // Reset PID if it wasn't already rotation locked
+        if (this.currentDriveState != RequestStates.ROTATION_LOCK) {
+          this.shouldResetRotationPID = true;
+        }
+        this.currentDriveState = RequestStates.X_LOCK;
+        this.shouldResetYAssistPID = true;
+        break;
     }
     return this;
   }
@@ -514,6 +531,7 @@ public class CustomFieldCentric implements SwerveRequest {
   public enum RequestStates {
     DRIVER_CONTROLLED,
     BUMP_ASSIST,
-    ROTATION_LOCK
+    ROTATION_LOCK,
+    X_LOCK
   }
 }
