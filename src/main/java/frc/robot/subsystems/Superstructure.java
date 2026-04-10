@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -27,7 +28,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.CustomFieldCentric.RequestStates;
 import frc.robot.utils.MathUtils;
-import frc.robot.utils.shooterMath.ShooterMath3;
+import frc.robot.utils.shooterMath.ShooterMath4;
 
 @Logged
 public class Superstructure {
@@ -54,6 +55,8 @@ public class Superstructure {
 
   @Logged(importance = Importance.CRITICAL)
   private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
+
+  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.4);
 
   /**
    * Constructs the superstructure with all subsystem references.
@@ -363,8 +366,11 @@ public class Superstructure {
 
   private void idleAuto() {
     m_feeder.setState(FEEDER_STATE.STOP);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
     m_indexer.setState(IndexStates.Idle);
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
   }
 
   private void scoreAuto() {
@@ -443,13 +449,13 @@ public class Superstructure {
   /** Returns whether the m_shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTargetWithWait() {
-    return flywheelAtTarget()
-        && MatchState.canShoot(ShooterMath3.currentSolution.tof().in(Seconds));
+    return m_debouncer.calculate(flywheelAtTarget());
+    // && MatchState.canShoot(ShooterMath4.currentSolution.tof().in(Seconds));
   }
 
   @NotLogged
   public Rotation2d getRotationForScore() {
-    return ShooterMath3.currentSolution.robotHeading().plus(Rotation2d.k180deg);
+    return ShooterMath4.currentSolution.robotHeading().plus(Rotation2d.k180deg);
   }
 
   @NotLogged

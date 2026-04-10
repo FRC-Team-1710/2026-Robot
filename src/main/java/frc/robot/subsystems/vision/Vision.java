@@ -4,6 +4,7 @@ import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
@@ -169,7 +170,7 @@ public class Vision implements Subsystem {
     // Larger std dev = less influence in pose estimator.
     double xyStdDev = VisionConstants.BASE_XY_STD_DEV / m_tagCount;
 
-    if (m_tagCount == 1) {
+    if (m_tagCount == 1 && !DriverStation.isAutonomous()) {
       xyStdDev *= 1.5; // Single tag is less reliable, so start with higher std dev
     }
     // Squared distance scaling penalizes far-away tag estimates heavily,

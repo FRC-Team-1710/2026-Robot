@@ -17,7 +17,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
-import frc.robot.utils.shooterMath.ShooterMath3;
+import frc.robot.utils.shooterMath.ShooterMath4;
 
 /** Shooter subsystem state machine, control targets, and beam-break based fuel accounting. */
 @Logged
@@ -62,12 +62,12 @@ public class Shooter {
   public void periodic() {
     switch (this.m_currentState) {
       case SHOOT:
-        this.m_targetVelocity = ShooterMath3.currentSolution.flywheelOmega();
-        this.m_hoodTarget = ShooterMath3.currentSolution.hoodAngle();
+        this.m_targetVelocity = ShooterMath4.currentSolution.flywheelOmega();
+        this.m_hoodTarget = ShooterMath4.currentSolution.hoodAngle();
         break;
       case PASS:
-        this.m_targetVelocity = ShooterMath3.currentPassingSolution.flywheelOmega();
-        this.m_hoodTarget = ShooterMath3.currentPassingSolution.hoodAngle();
+        this.m_targetVelocity = ShooterMath4.currentPassingSolution.flywheelOmega();
+        this.m_hoodTarget = ShooterMath4.currentPassingSolution.hoodAngle();
         break;
       default:
         this.m_targetVelocity = this.m_currentState.m_velocity;

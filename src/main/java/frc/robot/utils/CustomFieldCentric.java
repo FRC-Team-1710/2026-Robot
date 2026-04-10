@@ -129,7 +129,7 @@ public class CustomFieldCentric implements SwerveRequest {
     rotationLockPID.enableContinuousInput(-Math.PI, Math.PI);
 
     SmartDashboard.putData(rotationLockPID);
-    SmartDashboard.putNumber("tuning/kBumpSpeed", 2);
+    SmartDashboard.putNumber("tuning/kBumpSpeed", 3);
   }
 
   @Override
@@ -240,22 +240,22 @@ public class CustomFieldCentric implements SwerveRequest {
                         -DrivetrainAutomationConstants.BumpDetection.kBumpSpeed.in(MetersPerSecond),
                         DrivetrainAutomationConstants.BumpDetection.kBumpSpeed.in(
                             MetersPerSecond))),
-                yVelocity
-                    .times(DrivetrainAutomationConstants.kDriverTranslationOverrideMultiplier)
-                    .plus(
-                        MetersPerSecond.of(
-                            yAssistPID.calculate(
-                                parameters.currentPose.getY(), currentBumpLocation.getY()))),
-                angularVelocity
-                    .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
-                    .plus(
-                        RadiansPerSecond.of(
-                            MathUtil.clamp(
-                                rotationLockPID.calculate(
-                                    parameters.currentPose.getRotation().getRadians()),
-                                -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
-                                DrivetrainAutomationConstants.kRotationPIDMax.in(
-                                    RadiansPerSecond)))));
+                yVelocity,
+                // .times(DrivetrainAutomationConstants.kDriverTranslationOverrideMultiplier)
+                // .plus(
+                //     MetersPerSecond.of(
+                //         yAssistPID.calculate(
+                //             parameters.currentPose.getY(), currentBumpLocation.getY()))),
+                angularVelocity);
+        // .times(DrivetrainAutomationConstants.kDriverRotationOverrideMultiplier)
+        // .plus(
+        //     RadiansPerSecond.of(
+        //         MathUtil.clamp(
+        //             rotationLockPID.calculate(
+        //                 parameters.currentPose.getRotation().getRadians()),
+        //             -DrivetrainAutomationConstants.kRotationPIDMax.in(RadiansPerSecond),
+        //             DrivetrainAutomationConstants.kRotationPIDMax.in(
+        //                 RadiansPerSecond)))));
         break;
       case ROTATION_LOCK:
         rotationLockPID.setGoal(rotationTarget.getRadians());

@@ -22,7 +22,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.MechanismUtil.HoodMechanism;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
-import frc.robot.utils.shooterMath.ShooterMath3;
+import frc.robot.utils.shooterMath.ShooterMath4;
 
 /** Simulation implementation of shooter IO. */
 @Logged
@@ -74,8 +74,8 @@ public class ShooterIOSIM implements ShooterIO {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
-                        ShooterMath3.currentPose.getTranslation(),
-                        ShooterMath3.currentSolution.robotHeading()))
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -85,20 +85,20 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentSolution.robotHeading().getRadians()))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentSolution.robotHeading().getRadians()))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       } else {
         m_fuelSim.spawnFuel(
-            new Pose3d(ShooterMath3.currentPose)
+            new Pose3d(ShooterMath4.currentPose)
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -108,16 +108,16 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentPose.getRotation().getRadians() + Math.PI))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentPose.getRotation().getRadians() + Math.PI))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       }
       m_fuelSim.removeFuelFromStorage(1);
@@ -131,8 +131,8 @@ public class ShooterIOSIM implements ShooterIO {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
-                        ShooterMath3.currentPose.getTranslation(),
-                        ShooterMath3.currentSolution.robotHeading()))
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -142,20 +142,20 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentSolution.robotHeading().getRadians()))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentSolution.robotHeading().getRadians()))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       } else {
         m_fuelSim.spawnFuel(
-            new Pose3d(ShooterMath3.currentPose)
+            new Pose3d(ShooterMath4.currentPose)
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -165,16 +165,16 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentPose.getRotation().getRadians() + Math.PI))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentPose.getRotation().getRadians() + Math.PI))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       }
       m_fuelSim.removeFuelFromStorage(1);
@@ -188,8 +188,8 @@ public class ShooterIOSIM implements ShooterIO {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
-                        ShooterMath3.currentPose.getTranslation(),
-                        ShooterMath3.currentSolution.robotHeading()))
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -199,20 +199,20 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentSolution.robotHeading().getRadians()))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentSolution.robotHeading().getRadians()))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       } else {
         m_fuelSim.spawnFuel(
-            new Pose3d(ShooterMath3.currentPose)
+            new Pose3d(ShooterMath4.currentPose)
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -222,16 +222,16 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentPose.getRotation().getRadians() + Math.PI))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentPose.getRotation().getRadians() + Math.PI))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       }
       m_fuelSim.removeFuelFromStorage(1);
@@ -245,8 +245,8 @@ public class ShooterIOSIM implements ShooterIO {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
-                        ShooterMath3.currentPose.getTranslation(),
-                        ShooterMath3.currentSolution.robotHeading()))
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -256,20 +256,20 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentSolution.robotHeading().getRadians()))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentSolution.robotHeading().getRadians()))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       } else {
         m_fuelSim.spawnFuel(
-            new Pose3d(ShooterMath3.currentPose)
+            new Pose3d(ShooterMath4.currentPose)
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -279,16 +279,16 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentPose.getRotation().getRadians() + Math.PI))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentPose.getRotation().getRadians() + Math.PI))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       }
       m_fuelSim.removeFuelFromStorage(1);
@@ -302,8 +302,8 @@ public class ShooterIOSIM implements ShooterIO {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
-                        ShooterMath3.currentPose.getTranslation(),
-                        ShooterMath3.currentSolution.robotHeading()))
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -313,20 +313,20 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentSolution.robotHeading().getRadians()))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentSolution.robotHeading().getRadians()))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       } else {
         m_fuelSim.spawnFuel(
-            new Pose3d(ShooterMath3.currentPose)
+            new Pose3d(ShooterMath4.currentPose)
                 .plus(
                     new Transform3d(
                         ShooterConstants.kSHOOTER_OFFSET.getX(),
@@ -336,16 +336,16 @@ public class ShooterIOSIM implements ShooterIO {
                         ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath3.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
                         * SmartDashboard.getNumber("tuning/ShooterMult", 0),
                     new Rotation3d(
                         0,
-                        -Degrees.of(90).minus(ShooterMath3.currentSolution.hoodAngle()).in(Radians),
-                        ShooterMath3.currentPose.getRotation().getRadians() + Math.PI))
+                        -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                        ShooterMath4.currentPose.getRotation().getRadians() + Math.PI))
                 .plus(
                     new Translation3d(
-                        ShooterMath3.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath3.currentSpeeds.vyMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vxMetersPerSecond,
+                        ShooterMath4.currentSpeeds.vyMetersPerSecond,
                         0)));
       }
       m_fuelSim.removeFuelFromStorage(1);

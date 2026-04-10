@@ -8,6 +8,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
@@ -38,7 +39,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
-import frc.robot.utils.shooterMath.ShooterMath3;
+import frc.robot.utils.shooterMath.ShooterMath4;
 import java.util.function.Supplier;
 
 /**
@@ -61,8 +62,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Logged(importance = Importance.CRITICAL)
   public final CustomFieldCentric fieldCentric;
 
-  @Logged(importance = Importance.INFO)
-  public final CustomFieldCentric fieldCentricBLine;
+  // @Logged(importance = Importance.INFO)
+  // public final CustomFieldCentric fieldCentricBLine;
+
+  @NotLogged public final RobotCentric fieldCentricBLine;
 
   @Logged(importance = Importance.INFO)
   private DriveStates m_currentState = DriveStates.DRIVER_CONTROLLED;
@@ -178,7 +181,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
-    fieldCentricBLine = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -201,7 +204,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
-    fieldCentricBLine = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -235,7 +238,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
-    fieldCentricBLine = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -293,7 +296,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withDriveState(m_currentState));
     }
 
-    ShooterMath3.calculate(getPose(), getFieldSpeeds());
+    ShooterMath4.calculate(getPose());
   }
 
   /** Rescales the translation input vector with deadband and power curve. */

@@ -31,7 +31,7 @@ public class DrivetrainAutomationConstants {
       return m_autoBumpAlignment;
     }
 
-    public static LinearVelocity kBumpSpeed = MetersPerSecond.of(1);
+    public static LinearVelocity kBumpSpeed = MetersPerSecond.of(3);
 
     public static final LinearVelocity kMinimumSpeedRequest =
         TunerConstants.kSpeedAt12Volts.times(0.15);

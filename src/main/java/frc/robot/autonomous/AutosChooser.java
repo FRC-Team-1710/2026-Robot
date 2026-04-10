@@ -21,6 +21,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.IntakeAddableStates;
+import frc.robot.subsystems.Superstructure.ShooterAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
@@ -57,8 +58,12 @@ public class AutosChooser {
                 drivetrain::getRobotSpeeds, // Supplier for current speeds
                 (speeds) ->
                     drivetrain.applyRequest(
-                        drivetrain.fieldCentricBLine.withRobotRelativeSpeeds(
-                            speeds)), // Consumer to drive the robot
+                        drivetrain
+                            .fieldCentricBLine
+                            .withVelocityX(speeds.vxMetersPerSecond)
+                            .withVelocityY(speeds.vyMetersPerSecond)
+                            .withRotationalRate(
+                                speeds.omegaRadiansPerSecond)), // Consumer to drive the robot
                 new PIDController(5.0, 0.0, 0.0), // Translation PID
                 new PIDController(3.0, 0.0, 0.0), // Rotation PID
                 new PIDController(2, 0.0, 0.0) // Cross-track PID
@@ -116,6 +121,9 @@ public class AutosChooser {
         });
 
     FollowPath.registerEventTrigger(
+        "SpinUp", () -> superstructure.setShooterAddableState(ShooterAddableStates.SpinUp));
+
+    FollowPath.registerEventTrigger(
         "Shoot",
         () -> {
           timer.stop();
@@ -140,18 +148,19 @@ public class AutosChooser {
                     if (superstructure.flywheelAtTarget()) {
                       timer.start(); // Only count actual shooting time
                     }
-                    if (timer.get() >= 3.5) {
+                    if (timer.get() >= 2.75) {
                       superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                     } else {
                       superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     }
                   })
-              .until(() -> timer.get() > 4.5)
+              .until(() -> timer.get() > 3.75)
               .finallyDo(
                   () -> {
                     superstructure.setWantedState(WantedStates.DefaultAuto);
                     superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                     drivetrain.setAutonomousRequestOverride(false);
+                    superstructure.setShooterAddableState(ShooterAddableStates.Idle);
                   })
               .schedule();
         });
@@ -175,7 +184,7 @@ public class AutosChooser {
   }
 
   public Command selectAuto() {
-    return autoCommands.get(autoChooser.getSelected());
+    return Commands.sequence(Commands.waitSeconds(5), autoCommands.get(autoChooser.getSelected()));
   }
 
   public static HashMap<String, Command> autoPathing(boolean depotPath) {

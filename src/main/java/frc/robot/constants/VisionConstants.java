@@ -14,7 +14,7 @@ public class VisionConstants {
   // ==================== Base Trust Levels ====================
 
   /** Starting trust level for X/Y position per AprilTag seen (meters) */
-  public static final double BASE_XY_STD_DEV = 0.5;
+  public static final double BASE_XY_STD_DEV = 0.4;
 
   /** Starting trust level for rotation per AprilTag seen (radians) */
   public static final double BASE_THETA_STD_DEV = 5;
