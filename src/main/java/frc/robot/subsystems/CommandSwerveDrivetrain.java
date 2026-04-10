@@ -362,7 +362,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
     super.addVisionMeasurement(
-        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        visionRobotPoseMeters,
+        Utils.fpgaToCurrentTime(timestampSeconds),
+        getPigeon2().isConnected()
+            ? visionMeasurementStdDevs
+            : VecBuilder.fill(0.05, 0.05, 0.05)); // Set StdDev to low if pigeon is disconnected
     if (m_shouldAcceptNextVisionMeasurementRotation) {
       m_shouldAcceptNextVisionMeasurementRotation = false;
       resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
