@@ -184,7 +184,7 @@ public class AutosChooser {
   }
 
   public Command selectAuto() {
-    return Commands.sequence(Commands.waitSeconds(5), autoCommands.get(autoChooser.getSelected()));
+    return autoCommands.get(autoChooser.getSelected());
   }
 
   public static HashMap<String, Command> autoPathing(boolean depotPath) {
