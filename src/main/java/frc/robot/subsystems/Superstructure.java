@@ -56,7 +56,12 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
 
-  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.4);
+  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.5);
+
+  @NotLogged private final Debouncer m_debouncerDrive = new Debouncer(0.5);
+
+  @Logged(importance = Importance.CRITICAL)
+  private boolean m_wasAtTarget = false;
 
   /**
    * Constructs the superstructure with all subsystem references.
@@ -271,50 +276,87 @@ public class Superstructure {
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
     if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
-      m_intake.setState(IntakeStates.Half); // TODO: test
+      m_intake.setState(IntakeStates.Half);
     }
+    m_wasAtTarget = false;
   }
 
   private void score() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void scoreWithIntakeUp() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void shoot() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void shootWithIntakeUp() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -330,26 +372,45 @@ public class Superstructure {
     m_feeder.setState(FEEDER_STATE.STOP);
 
     m_didIntake = true;
+    m_wasAtTarget = false;
   }
 
   private void scoreWhileIntaking() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void shootWhileIntaking() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -362,6 +423,7 @@ public class Superstructure {
             : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
+    m_wasAtTarget = false;
   }
 
   private void idleAuto() {
@@ -377,7 +439,10 @@ public class Superstructure {
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_indexer.setState(
+        m_debouncer.calculate(flywheelAtTargetWithWait())
+            ? IndexStates.Indexing
+            : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -386,7 +451,10 @@ public class Superstructure {
     m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_indexer.setState(
+        m_debouncer.calculate(flywheelAtTargetWithWait())
+            ? IndexStates.Indexing
+            : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -404,7 +472,10 @@ public class Superstructure {
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_indexer.setState(
+        m_debouncer.calculate(flywheelAtTargetWithWait())
+            ? IndexStates.Indexing
+            : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -436,9 +507,13 @@ public class Superstructure {
 
   @Logged(importance = Importance.CRITICAL)
   public boolean driveAtTarget() {
-    return Math.abs(
-            m_drivetrain.getRotation().minus(m_drivetrain.fieldCentric.rotationTarget).getDegrees())
-        <= 5;
+    return m_debouncerDrive.calculate(
+        Math.abs(
+                m_drivetrain
+                    .getRotation()
+                    .minus(m_drivetrain.fieldCentric.rotationTarget)
+                    .getDegrees())
+            <= 6.5);
   }
 
   @Logged(importance = Importance.CRITICAL)
@@ -449,7 +524,7 @@ public class Superstructure {
   /** Returns whether the m_shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTargetWithWait() {
-    return m_debouncer.calculate(flywheelAtTarget());
+    return flywheelAtTarget();
     // && MatchState.canShoot(ShooterMath4.currentSolution.tof().in(Seconds));
   }
 

@@ -99,7 +99,10 @@ public class Robot extends DynamicTimedRobot {
     // Lowers brownout threshold to 6.0V
     RobotController.setBrownoutVoltage(6.0);
 
-    SignalLogger.stop();
+    DriverStation.silenceJoystickConnectionWarning(true);
+
+    SignalLogger.setPath("/media/sda1");
+    // SignalLogger.stop();
   }
 
   @Override

@@ -46,6 +46,6 @@ public class DrivetrainAutomationConstants {
      * meters away the minimum speed required is 4 m/s. This ensures that the robot has enough time
      * to align properly before it reaches the bump.
      */
-    public static final double kBumpDetectionTime = 0.75;
+    public static final double kBumpDetectionTime = 1.25;
   }
 }
