@@ -84,19 +84,19 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.1314382624234421,
+      "t_ratio": 0.1314382624234422,
       "lib_key": "DefaultAuto"
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.2931671524666204,
+      "t_ratio": 0.2931671524666209,
       "lib_key": "RaiseIntake"
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 5.889814029513421,
-        "y_meters": 5.322307784327355,
+        "x_meters": 6.220065075538525,
+        "y_meters": 5.383465385443115,
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
