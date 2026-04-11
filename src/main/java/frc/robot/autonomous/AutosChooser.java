@@ -83,10 +83,12 @@ public class AutosChooser {
 
     // addPath(Auto.ZONE1, paths.get("ZONE1"));
     // addPath(Auto.ZONE3, paths.get("ZONE3"));
-    addPath(Auto.RIGHT_INSIDE, paths.get("RIGHT_INSIDE"));
-    addPath(Auto.LEFT_INSIDE, paths.get("LEFT_INSIDE"));
+    // addPath(Auto.RIGHT_INSIDE, paths.get("RIGHT_INSIDE"));
+    // addPath(Auto.LEFT_INSIDE, paths.get("LEFT_INSIDE"));
     addPath(Auto.RIGHT_INSIDE_PART_2, paths.get("RIGHT_INSIDE_PART_2"));
     addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
+    addPath(Auto.RIGHT_OUTSIDE_PART_2, paths.get("RIGHT_OUTSIDE_PART_2"));
+    addPath(Auto.LEFT_OUTSIDE_PART_2, paths.get("LEFT_OUTSIDE_PART_2"));
     // addPath(Auto.ZONE2, paths.get("ZONE2"));
     // addPath(Auto.MIDDLE, paths.get("MIDDLE"));
 
@@ -191,23 +193,33 @@ public class AutosChooser {
   public static HashMap<String, Command> autoPathing(boolean depotPath) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     var temp = new Path("outsideracer");
-    var temp2 = new Path("lineintake");
-    // var temp2 = new Path("doubleracer");
+    var temp2 = new Path("Loopdaloop");
+    var temp3 = new Path("insideracer");
     temp.mirror(); // mirrors the path across the y axis\
     temp2.mirror(); // mirrors the path across the y axis\
+    temp3.mirror(); // mirrors the path across the y axis\
+    // listOfPaths.put(
+    //     "RIGHT_INSIDE",
+    //     Commands.sequence(pathBuilder.build(temp))); // flipped version of left_inside
+    // listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new
+    // Path("outsideracer"))));
     listOfPaths.put(
-        "RIGHT_INSIDE",
-        Commands.sequence(pathBuilder.build(temp))); // flipped version of left_inside
-    listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new Path("outsideracer"))));
-    listOfPaths.put(
-        "RIGHT_INSIDE_PART_2",
+        "RIGHT_OUTSIDE_PART_2",
         Commands.sequence(
             pathBuilder.build(temp), pathBuilder.build(temp2))); // flipped version of left_inside
     listOfPaths.put(
-        "LEFT_INSIDE_PART_2",
+        "LEFT_OUTSIDE_PART_2",
         Commands.sequence(
             pathBuilder.build(new Path("outsideracer")),
-            pathBuilder.build(new Path("lineintake"))));
+            pathBuilder.build(new Path("Loopdaloop"))));
+    listOfPaths.put(
+        "RIGHT_INSIDE_PART_2",
+        Commands.sequence(
+            pathBuilder.build(temp3), pathBuilder.build(temp2))); // flipped version of left_inside
+    listOfPaths.put(
+        "LEFT_INSIDE_PART_2",
+        Commands.sequence(
+            pathBuilder.build(new Path("insideracer")), pathBuilder.build(new Path("Loopdaloop"))));
     // listOfPaths.put(
     //     "ZONE3",
     //     Commands.sequence(
@@ -237,6 +249,8 @@ public class AutosChooser {
     RIGHT_INSIDE(),
     LEFT_INSIDE_PART_2(),
     RIGHT_INSIDE_PART_2(),
+    LEFT_OUTSIDE_PART_2(),
+    RIGHT_OUTSIDE_PART_2(),
     MIDDLE()
   }
 }
