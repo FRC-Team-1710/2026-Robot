@@ -139,14 +139,14 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.3768213551148527,
+      "t_ratio": 0.9280269110864783,
       "lib_key": "DefaultAuto"
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 7.586531832529527,
-        "y_meters": 5.447948822095856,
+        "x_meters": 7.659920953868442,
+        "y_meters": 4.738520649153037,
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
