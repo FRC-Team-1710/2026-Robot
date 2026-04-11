@@ -207,7 +207,7 @@ public class AutosChooser {
         "LEFT_INSIDE_PART_2",
         Commands.sequence(
             pathBuilder.build(new Path("outsideracer")),
-            pathBuilder.build(new Path("doubleracer"))));
+            pathBuilder.build(new Path("lineintake"))));
     // listOfPaths.put(
     //     "ZONE3",
     //     Commands.sequence(

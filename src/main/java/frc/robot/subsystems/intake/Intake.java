@@ -112,7 +112,7 @@ public class Intake {
     // This method will be called once per scheduler run
     m_io.update();
     if (m_bumpSupplier.getAsBoolean()) {
-      m_io.setIntakeMotor(-IntakeStates.Intaking.rollerSpeed);
+      m_io.setIntakeMotor(-1);
     } else {
       // Set the rollers with jam logic
       switch (m_currentState) {
