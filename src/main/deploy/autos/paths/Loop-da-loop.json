@@ -68,8 +68,8 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 6.692893775957104,
-        "y_meters": 3.9935540211210387,
+        "x_meters": 6.8068824030895145,
+        "y_meters": 4.050548334687246,
         "intermediate_handoff_radius_meters": 0.39999999999999997
       },
       "rotation_target": {
@@ -80,25 +80,25 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 6.042521357077626,
-        "y_meters": 4.5349999999999975,
+        "x_meters": 6.270498611342451,
+        "y_meters": 4.577745735174652,
         "intermediate_handoff_radius_meters": 0.3
       },
       "rotation_target": {
-        "rotation_radians": 1.5507927757592224,
+        "rotation_radians": 1.592778406883386,
         "profiled_rotation": true
       }
     },
     {
       "type": "translation",
-      "x_meters": 5.886826799807114,
-      "y_meters": 5.447948822095857,
+      "x_meters": 6.257289837987454,
+      "y_meters": 5.447948822095858,
       "intermediate_handoff_radius_meters": 0.2
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 5.976340652251759,
+        "x_meters": 6.289809376865894,
         "y_meters": 6.558298131600324,
         "intermediate_handoff_radius_meters": 0.35
       },
@@ -109,15 +109,15 @@
     },
     {
       "type": "translation",
-      "x_meters": 6.533075014558827,
-      "y_meters": 7.271766856214457,
+      "x_meters": 6.575820749733483,
+      "y_meters": 7.200523964256699,
       "intermediate_handoff_radius_meters": 0.39999999999999997
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 7.19769601182986,
-        "y_meters": 7.029541023558082,
+        "x_meters": 7.240441747004514,
+        "y_meters": 7.029541023558081,
         "intermediate_handoff_radius_meters": 0.35
       },
       "rotation_target": {
@@ -133,65 +133,24 @@
         "intermediate_handoff_radius_meters": 0.39999999999999997
       },
       "rotation_target": {
-        "rotation_radians": -1.897435879508425,
-        "profiled_rotation": true
-      }
-    },
-    {
-      "type": "waypoint",
-      "translation_target": {
-        "x_meters": 7.458294627005562,
-        "y_meters": 5.49069455727051,
-        "intermediate_handoff_radius_meters": 0.2
-      },
-      "rotation_target": {
-        "rotation_radians": -3.02636416391602,
+        "rotation_radians": -1.5693466077057252,
         "profiled_rotation": true
       }
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.37682135511485254,
+      "t_ratio": 0.3768213551148527,
       "lib_key": "DefaultAuto"
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 6.194295354285237,
-        "y_meters": 5.433700243704303,
+        "x_meters": 7.586531832529527,
+        "y_meters": 5.447948822095856,
         "intermediate_handoff_radius_meters": 0.2
       },
       "rotation_target": {
-        "rotation_radians": 0.0,
-        "profiled_rotation": true
-      }
-    },
-    {
-      "type": "waypoint",
-      "translation_target": {
-        "x_meters": 3.7913477932449107,
-        "y_meters": 5.381768117269989,
-        "intermediate_handoff_radius_meters": 0.2
-      },
-      "rotation_target": {
-        "rotation_radians": 0.0,
-        "profiled_rotation": true
-      }
-    },
-    {
-      "type": "event_trigger",
-      "t_ratio": 1.0,
-      "lib_key": "Shoot"
-    },
-    {
-      "type": "waypoint",
-      "translation_target": {
-        "x_meters": 3.031110951360782,
-        "y_meters": 5.566999636360162,
-        "intermediate_handoff_radius_meters": 0.2
-      },
-      "rotation_target": {
-        "rotation_radians": 2.2588628033219385,
+        "rotation_radians": -0.8538350626720442,
         "profiled_rotation": true
       }
     }
@@ -210,8 +169,8 @@
       },
       {
         "value": 2.25,
-        "start_ordinal": 13,
-        "end_ordinal": 15
+        "start_ordinal": 12,
+        "end_ordinal": 12
       },
       {
         "value": 2.5,
