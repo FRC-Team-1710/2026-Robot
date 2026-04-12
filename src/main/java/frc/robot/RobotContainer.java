@@ -12,6 +12,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -412,6 +413,15 @@ public class RobotContainer {
 
     new Trigger(drivetrain::inAllianceZone)
         .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
+
+    new Trigger(DriverStation::isTeleopEnabled)
+        .onTrue(
+            Commands.sequence(
+                    Commands.waitSeconds(3.5),
+                    Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 1)),
+                    Commands.waitSeconds(1.5),
+                    Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)))
+                .ignoringDisable(true));
   }
 
   /** Returns the autonomous command to run during autonomous period. */
