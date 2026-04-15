@@ -224,4 +224,8 @@ public class Vision implements Subsystem {
   public double getAmbiguity() {
     return m_ambiguity;
   }
+
+  public boolean isConnected() {
+    return m_camera.isConnected();
+  }
 }
