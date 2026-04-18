@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 
 public class DrivetrainAutomationConstants {
@@ -27,7 +26,6 @@ public class DrivetrainAutomationConstants {
     }
 
     public static boolean shouldAlignBump() {
-      Robot.telemetry().log("shouldAlignBump", m_autoBumpAlignment);
       return m_autoBumpAlignment;
     }
 
