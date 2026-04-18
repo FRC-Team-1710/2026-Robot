@@ -11,11 +11,16 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.autonomous.AutosChooser;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.DrivetrainAccelerationLimits;
+import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
@@ -24,8 +29,9 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
-import frc.robot.subsystems.Superstructure.AddableStates;
 import frc.robot.subsystems.Superstructure.CurrentStates;
+import frc.robot.subsystems.Superstructure.IntakeAddableStates;
+import frc.robot.subsystems.Superstructure.ShooterAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
@@ -66,6 +72,9 @@ public class RobotContainer {
   public FuelSim fuelSim;
 
   private final AutosChooser m_autoChooser;
+
+  @Logged(importance = Importance.INFO)
+  private boolean m_hasntAcceptedVisionRotation = true;
 
   @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
@@ -171,7 +180,7 @@ public class RobotContainer {
           -length / 2,
           length / 2,
           () ->
-              m_superstructure.getCurrentState() == CurrentStates.Intake
+              m_driver.leftTrigger().getAsBoolean()
                   || m_superstructure.getCurrentState() == CurrentStates.IntakeAuto);
 
       fuelSim.setSubticks(5);
@@ -180,12 +189,17 @@ public class RobotContainer {
 
       fuelSim.enableAirResistance();
 
-      fuelSim.shouldShoot = () -> m_driver.rightTrigger().getAsBoolean();
+      fuelSim.shouldShoot =
+          () ->
+              (m_driver.rightTrigger().getAsBoolean()
+                      || m_superstructure.getCurrentState() == CurrentStates.ScoreAuto)
+                  && DriverStation.isEnabled();
+      fuelSim.shouldScore = () -> !m_superstructure.shooting();
 
       m_shooter.setFuelSim(fuelSim);
     }
 
-    m_autoChooser = new AutosChooser(m_superstructure, drivetrain, m_shooter);
+    m_autoChooser = new AutosChooser(m_superstructure, drivetrain, m_shooter, m_intake);
 
     configureBindings();
   }
@@ -217,7 +231,7 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  m_shooter.setStateTesting(SHOOTER_STATE.TESTING);
+                  m_shooter.setStateTesting(SHOOTER_STATE.TEST);
                   m_feeder.setStateTesting(FEEDER_STATE.FEEDING);
                   m_indexer.setStateTesting(IndexStates.Indexing);
                   m_intake.setStateTesting(IntakeStates.Jostle);
@@ -249,6 +263,27 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // m_driver
+    //     .a()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdDynamic(Direction.kForward))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+    // m_driver
+    //     .b()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+    // m_driver
+    //     .x()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+    // m_driver
+    //     .y()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+
     m_driver
         .rightStick()
         .and(m_driver.leftStick())
@@ -258,9 +293,26 @@ public class RobotContainer {
 
     m_driver
         .rightTrigger()
+        .onTrue(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking));
+
+    m_driver
+        .rightTrigger()
+        .and(m_superstructure::driveAtTarget)
+        .and(() -> m_hasntAcceptedVisionRotation)
         .onTrue(
             Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
+                .andThen(Commands.runOnce(() -> m_hasntAcceptedVisionRotation = false))
                 .ignoringDisable(true));
+
+    m_driver
+        .leftStick()
+        .and(() -> DriverStation.isTeleopEnabled())
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  DrivetrainAutomationConstants.BumpDetection.toggleAutoBumpAlignment();
+                  DrivetrainAccelerationLimits.toggleShouldLimit();
+                }));
 
     m_driver
         .start()
@@ -271,10 +323,7 @@ public class RobotContainer {
     m_driver
         .rightTrigger()
         .and(m_driver.leftTrigger().negate())
-        .onTrue(
-            m_superstructure
-                .setWantedStateCommand(WantedStates.Shoot)
-                .alongWith(m_superstructure.setAddableStateCommand(AddableStates.Jostle)));
+        .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Shoot));
 
     m_driver
         .leftTrigger()
@@ -291,6 +340,13 @@ public class RobotContainer {
         .negate()
         .and(m_driver.rightTrigger().negate())
         .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Default));
+
+    m_driver
+        .rightTrigger()
+        .onFalse(
+            m_superstructure
+                .setShooterAddableStateCommand(ShooterAddableStates.Idle)
+                .andThen(Commands.runOnce(() -> m_hasntAcceptedVisionRotation = true)));
 
     m_driver
         .x()
@@ -349,22 +405,20 @@ public class RobotContainer {
     m_driver
         .povRight()
         .and(m_superstructure::currentStateUsesIntake)
-        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.IntakeUp));
+        .onTrue(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.IntakeUp));
 
     m_driver
         .povRight()
         .and(m_superstructure::currentStateUsesIntake)
-        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
+        .onFalse(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking));
 
     m_driver
         .povLeft()
-        .and(m_superstructure::currentStateUsesIntake)
-        .onTrue(m_superstructure.setAddableStateCommand(AddableStates.Jostle));
+        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
 
     m_driver
-        .povLeft()
-        .and(m_superstructure::currentStateUsesIntake)
-        .onFalse(m_superstructure.setAddableStateCommand(AddableStates.Intaking));
+        .rightBumper()
+        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
 
     m_mech
         .rightBumper()
@@ -377,12 +431,24 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
                 .ignoringDisable(true));
+
+    new Trigger(drivetrain::inAllianceZone)
+        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
+
+    new Trigger(DriverStation::isTeleopEnabled)
+        .onTrue(
+            Commands.sequence(
+                    Commands.waitSeconds(3.5),
+                    Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 1)),
+                    Commands.waitSeconds(1.5),
+                    Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)))
+                .ignoringDisable(true));
   }
 
   /** Returns the autonomous command to run during autonomous period. */
   @NotLogged
   public Command getAutonomousCommand() {
-    return m_autoChooser.selectAuto(drivetrain, m_shooter);
+    return m_autoChooser.selectAuto();
   }
 
   /** Returns all subsystem info for dynamic scheduling. */

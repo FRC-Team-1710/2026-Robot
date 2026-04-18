@@ -39,8 +39,8 @@ public class CanIdConstants {
   public static class Shooter {
     public static final int SHOOTER_LEFT_MOTOR = 40;
     public static final int SHOOTER_LEFT_FOLLOWER = 41;
-    public static final int SHOOTER_RIGHT_MOTOR = 42;
-    public static final int SHOOTER_RIGHT_FOLLOWER = 43;
+    public static final int SHOOTER_RIGHT_FOLLOWER_1 = 42;
+    public static final int SHOOTER_RIGHT_FOLLOWER_2 = 43;
     public static final int HOOD_MOTOR = 44;
   }
 

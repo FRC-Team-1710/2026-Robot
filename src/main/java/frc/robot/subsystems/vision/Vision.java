@@ -4,13 +4,13 @@ import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
-import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -49,8 +49,8 @@ public class Vision implements Subsystem {
 
   private final HootAutoReplay m_autoReplay;
 
-  private final Set<Integer> rejectTagIds =
-      Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
+  // private final Set<Integer> rejectTagIds =
+  //     Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
 
   /**
    * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
@@ -169,11 +169,9 @@ public class Vision implements Subsystem {
     // Closer = more trust
     // Larger std dev = less influence in pose estimator.
     double xyStdDev = VisionConstants.BASE_XY_STD_DEV / m_tagCount;
-    double thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / m_tagCount;
 
-    if (m_tagCount == 1) {
-      xyStdDev *= 2.0; // Single tag is less reliable, so start with higher std dev
-      thetaStdDev *= 2.0;
+    if (m_tagCount == 1 && !DriverStation.isAutonomous()) {
+      xyStdDev *= 1.5; // Single tag is less reliable, so start with higher std dev
     }
     // Squared distance scaling penalizes far-away tag estimates heavily,
     // since pose error grows nonlinearly with distance.
@@ -182,11 +180,12 @@ public class Vision implements Subsystem {
     Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
 
     xyStdDev *= distanceScale;
-    thetaStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
+
+    // TODO: make sure vision doesn't correct rotation
     m_drivetrain.addVisionMeasurement(
-        m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }
 
   /**
@@ -224,5 +223,9 @@ public class Vision implements Subsystem {
   /** Returns the pose ambiguity of the best target. */
   public double getAmbiguity() {
     return m_ambiguity;
+  }
+
+  public boolean isConnected() {
+    return m_camera.isConnected();
   }
 }

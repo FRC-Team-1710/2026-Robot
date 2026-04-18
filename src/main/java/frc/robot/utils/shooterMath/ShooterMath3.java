@@ -1,5 +1,6 @@
 // package frc.robot.utils.shooterMath;
 
+// import static edu.wpi.first.units.Units.Degrees;
 // import static edu.wpi.first.units.Units.Radians;
 // import static edu.wpi.first.units.Units.RadiansPerSecond;
 // import static edu.wpi.first.units.Units.Seconds;
@@ -9,8 +10,10 @@
 // import edu.wpi.first.math.geometry.Pose2d;
 // import edu.wpi.first.math.geometry.Pose3d;
 // import edu.wpi.first.math.geometry.Rotation2d;
+// import edu.wpi.first.math.geometry.Rotation3d;
 // import edu.wpi.first.math.geometry.Translation3d;
 // import edu.wpi.first.math.kinematics.ChassisSpeeds;
+// import edu.wpi.first.math.util.Units;
 // import edu.wpi.first.units.measure.Angle;
 // import edu.wpi.first.units.measure.AngularVelocity;
 // import edu.wpi.first.units.measure.Time;
@@ -19,20 +22,22 @@
 // import frc.robot.constants.Alliance;
 // import frc.robot.constants.FieldConstants;
 // import frc.robot.constants.ShooterConstants;
+// import frc.robot.utils.MathUtils;
 
-// public final class ShooterMath2 {
+// // Same as ShooterMath2 but built around the drum shooter redesign
+// public final class ShooterMath3 {
 //   /**
 //    * Preferred minimum arrival angle (radians). 0° = Disabled, 30° = Only activates at long
 // range,
 //    * 45° = Ball enters at roughly 45° into the funnel, 60° = Noticeably higher flywheel demand at
 //    * mid-range, 70° = May be unreachable from far positions
 //    */
-//   // Soon to be k, need to tune first
-//   private static double m_preferredMinArrivalAngleRad = Math.toRadians(45.0);
+//   // TODO: Soon to be k, need to tune first
+//   private static double m_preferredMinArrivalAngleRad = Math.toRadians(52.5);
 
 //   /** Efficiency of speed transfer from flywheel to ball. */
-//   // Soon to be k, need to tune first
-//   private static double m_speedTransferEfficiency = 0.5; // 1.0 = No slip
+//   // TODO: Soon to be k, need to tune first
+//   private static double m_speedTransferEfficiency = 0.825; // 1.0 = No slip
 
 //   /** Ball diameter: 5.91 in → meters. */
 //   private static final double kBallDiameterMeters = 5.91 * 0.0254;
@@ -41,7 +46,7 @@
 //   private static final double kBallRadiusMeters = kBallDiameterMeters / 2.0;
 
 //   /** Compression: 1 in → meters. */
-//   private static final double kCompressionMeters = 1.00 * 0.0254;
+//   private static final double kCompressionMeters = 0.625 * 0.0254;
 
 //   /** Bottom flywheel radius: 1.5 in → meters. */
 //   private static final double kBottomWheelRadiusMeters = 1.50 * 0.0254;
@@ -78,6 +83,7 @@
 //   /**
 //    * Complete solution for a single shooter.
 //    *
+//    * @param robotHeading Robot heading to command for the shot.
 //    * @param hoodAngle Mechanical hood angle to command.
 //    * @param flywheelOmega Flywheel ω to command.
 //    * @param tof Time of flight for the shot.
@@ -85,9 +91,9 @@
 //    * @param arrivalAngleConstrained Shot was made steeper than minimum-velocity optimum to clear
 // the
 //    *     near edge of the funnel.
-//    * @param tolerances Per-parameter deviation budgets for this shot.
 //    */
 //   public record ShooterSolution(
+//       Rotation2d robotHeading,
 //       Angle hoodAngle,
 //       AngularVelocity flywheelOmega,
 //       Time tof,
@@ -95,14 +101,14 @@
 //       boolean arrivalAngleConstrained) {}
 
 //   /**
-//    * Combined solution for two fixed-direction shooters sharing one drive-base heading.
+//    * Complete solution for a single shooter.
 //    *
-//    * @param robotHeading Field-frame heading to command.
-//    * @param shooterLeft Solution for the left shooter ({@code robotToShooter1}).
-//    * @param shooterRight Solution for the right shooter ({@code robotToShooter2}).
+//    * @param hoodAngle Mechanical hood angle to command.
+//    * @param flywheelOmega Flywheel ω to command.
+//    * @param hoodAngleClamped Optimal angle was outside the mechanical range.
 //    */
-//   public record DualShooterSolution(
-//       Rotation2d robotHeading, ShooterSolution shooterLeft, ShooterSolution shooterRight) {}
+//   public record SimpleSolution(
+//       Angle hoodAngle, AngularVelocity flywheelOmega, boolean hoodAngleClamped) {}
 
 //   /** Center of the hub */
 //   private static Translation3d m_targetCenter = new Translation3d();
@@ -111,34 +117,33 @@
 //   private static Translation3d[] m_targetVertices = new Translation3d[0];
 
 //   /** The current solution for the dual shooter system. */
-//   public static DualShooterSolution currentSolution =
-//       new DualShooterSolution(
-//           Rotation2d.kZero,
-//           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false,
-// false),
-//           new ShooterSolution(Radians.of(0), RadiansPerSecond.of(0), Seconds.of(1), false,
-// false));
+//   public static ShooterSolution currentSolution =
+//       new ShooterSolution(
+//           Rotation2d.kZero, Degrees.of(0), RadiansPerSecond.of(0), Seconds.of(0), false, false);
 
-//   /** The current robot pose for the dual shooter system. */
+//   public static SimpleSolution currentPassingSolution =
+//       new SimpleSolution(Degrees.of(0), RadiansPerSecond.of(0), false);
+
+//   /** The current robot pose for the shooter system. */
+//   // Public so sim can access it
 //   public static Pose2d currentPose = new Pose2d();
 
 //   /** The current speeds for the dual shooter system. */
+//   // Public so sim can access it
 //   public static ChassisSpeeds currentSpeeds = new ChassisSpeeds();
 
+//   static {
+//     SmartDashboard.putNumber("tuning/preferredMinArrivalAngleDeg", 0);
+//     SmartDashboard.putNumber("tuning/speedTransferEfficiency", 0);
+//   }
+
 //   /**
-//    * Compute optimal shooter parameters for two fixed-direction shooters that share a single
-//    * drive-base heading.
+//    * Compute optimal shooter parameters for a single shooter.
 //    *
 //    * @param robotPose Current robot 2-D pose.
 //    * @param fieldSpeeds Chassis speeds in the field frame.
 //    */
 //   public static void calculate(Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
-//     m_preferredMinArrivalAngleRad =
-//         Math.toRadians(SmartDashboard.getNumber("preferredMinArrivalAngleDeg", 0));
-//     m_speedTransferEfficiency = SmartDashboard.getNumber("speedTransferEfficiency", 0);
-//     kSpeedPerOmega =
-//         m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
-
 //     m_targetCenter =
 //         Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue;
 //     m_targetVertices =
@@ -146,76 +151,85 @@
 //     currentPose = robotPose;
 //     currentSpeeds = fieldSpeeds;
 
-//     Translation3d pivot1 =
-//         new
-// Pose3d(robotPose).transformBy(ShooterConstants.kLEFT_SHOOTER_OFFSET).getTranslation();
-//     Translation3d pivot2 =
-//         new
-// Pose3d(robotPose).transformBy(ShooterConstants.kRIGHT_SHOOTER_OFFSET).getTranslation();
+//     // m_preferredMinArrivalAngleRad =
+//     //     Math.toRadians(SmartDashboard.getNumber("tuning/preferredMinArrivalAngleDeg", 0));
+//     // m_speedTransferEfficiency = SmartDashboard.getNumber("tuning/speedTransferEfficiency", 0);
 
-//     SolverResult r1 = solveDirection(pivot1, fieldSpeeds);
-//     SolverResult r2 = solveDirection(pivot2, fieldSpeeds);
+//     m_speedTransferEfficiency =
+//         MathUtils.interpolate(
+//                 robotPose.getTranslation().getDistance(m_targetCenter.toTranslation2d()),
+//                 Units.inchesToMeters(70.85),
+//                 0.85,
+//                 Units.inchesToMeters(119.67), // haha
+//                 0.8)
+//             + SmartDashboard.getNumber("tuning/speedTransferEfficiency", 0);
 
-//     double D1 =
-//         Math.hypot(m_targetCenter.getX() - pivot1.getX(), m_targetCenter.getY() - pivot1.getY());
-//     double D2 =
-//         Math.hypot(m_targetCenter.getX() - pivot2.getX(), m_targetCenter.getY() - pivot2.getY());
+//     m_preferredMinArrivalAngleRad =
+//         MathUtils.interpolate(
+//                 robotPose.getTranslation().getDistance(m_targetCenter.toTranslation2d()),
+//                 Units.inchesToMeters(70.85),
+//                 55.0,
+//                 Units.inchesToMeters(119.67), // haha
+//                 50.0)
+//             + Math.toRadians(SmartDashboard.getNumber("tuning/preferredMinArrivalAngleDeg", 0));
 
-//     double phiComp =
-//         Math.atan2(
-//             (D1 * Math.sin(r1.phi) + D2 * Math.sin(r2.phi)) / (D1 + D2),
-//             (D1 * Math.cos(r1.phi) + D2 * Math.cos(r2.phi)) / (D1 + D2));
+//     kSpeedPerOmega =
+//         m_speedTransferEfficiency * (kBottomWheelRadiusMeters + kTopWheelRadiusMeters) / 2.0;
 
-//     double tofGuess = (r1.tof + r2.tof) / 2.0;
-
-//     PhysicsResult phys1 = solvePhysicsAlongDirection(pivot1, fieldSpeeds, phiComp, tofGuess);
-//     PhysicsResult phys2 = solvePhysicsAlongDirection(pivot2, fieldSpeeds, phiComp, tofGuess);
-
-//     double omega1 = phys1.exitSpeed / kSpeedPerOmega;
-//     double omega2 = phys2.exitSpeed / kSpeedPerOmega;
-
-//     currentSolution =
-//         new DualShooterSolution(
-//             new Rotation2d(phiComp),
-//             new ShooterSolution(
-//                 Radians.of(phys1.hoodAngle),
-//                 RadiansPerSecond.of(omega1),
-//                 Seconds.of(phys1.tof),
-//                 phys1.hoodClamped,
-//                 phys1.arrivalConstrained),
-//             new ShooterSolution(
-//                 Radians.of(phys2.hoodAngle),
-//                 RadiansPerSecond.of(omega2),
-//                 Seconds.of(phys2.tof),
-//                 phys2.hoodClamped,
-//                 phys2.arrivalConstrained));
+//     calculateComplexFromDirectionAndSpeed(robotPose, fieldSpeeds);
+//     calculateSimpleFromDirectionAndSpeed(robotPose, fieldSpeeds);
 
 //     if (Epilogue.shouldLog(Importance.INFO)) {
 //       Robot.telemetry()
-//           .log("ShotSolution/Heading", currentSolution.robotHeading, Rotation2d.struct);
+//           .log("ShotSolution/Scoring/Heading", currentSolution.robotHeading, Rotation2d.struct);
+//       Robot.telemetry().log("ShotSolution/Scoring/Angle", currentSolution.hoodAngle);
+//       Robot.telemetry().log("ShotSolution/Scoring/Omega", currentSolution.flywheelOmega);
+//       Robot.telemetry().log("ShotSolution/Scoring/TOF", currentSolution.tof);
+//       Robot.telemetry().log("ShotSolution/Scoring/Clamped", currentSolution.hoodAngleClamped);
+//       Robot.telemetry()
+//           .log("ShotSolution/Scoring/ArrivalConstraint",
+// currentSolution.arrivalAngleConstrained);
 
-//       Robot.telemetry().log("ShotSolution/Left/Angle", currentSolution.shooterLeft.hoodAngle);
-//       Robot.telemetry().log("ShotSolution/Left/Omega",
-// currentSolution.shooterLeft.flywheelOmega);
-//       Robot.telemetry().log("ShotSolution/Left/TOF", currentSolution.shooterLeft.tof);
+//       Robot.telemetry().log("ShotSolution/Passing/Angle", currentPassingSolution.hoodAngle);
+//       Robot.telemetry().log("ShotSolution/Passing/Omega", currentPassingSolution.flywheelOmega);
 //       Robot.telemetry()
-//           .log("ShotSolution/Left/Clamped", currentSolution.shooterLeft.hoodAngleClamped);
-//       Robot.telemetry()
-//           .log(
-//               "ShotSolution/Left/ArrivalConstraint",
-//               currentSolution.shooterLeft.arrivalAngleConstrained);
-
-//       Robot.telemetry().log("ShotSolution/Right/Angle", currentSolution.shooterRight.hoodAngle);
-//       Robot.telemetry().log("ShotSolution/Right/Omega",
-// currentSolution.shooterRight.flywheelOmega);
-//       Robot.telemetry().log("ShotSolution/Right/TOF", currentSolution.shooterRight.tof);
-//       Robot.telemetry()
-//           .log("ShotSolution/Right/Clamped", currentSolution.shooterRight.hoodAngleClamped);
-//       Robot.telemetry()
-//           .log(
-//               "ShotSolution/Right/ArrivalConstraint",
-//               currentSolution.shooterRight.arrivalAngleConstrained);
+//           .log("ShotSolution/Passing/Clamped", currentPassingSolution.hoodAngleClamped);
 //     }
+//   }
+
+//   private static void calculateComplexFromDirectionAndSpeed(
+//       Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
+//     Translation3d pivot =
+//         new Pose3d(robotPose).transformBy(ShooterConstants.kSHOOTER_OFFSET).getTranslation();
+//     SolverResult r = solveDirection(pivot, fieldSpeeds);
+//     PhysicsResult phys = solvePhysicsAlongDirection(pivot, fieldSpeeds, r.phi, r.tof);
+
+//     currentSolution =
+//         new ShooterSolution(
+//             new Rotation2d(r.phi),
+//             Radians.of(phys.hoodAngle),
+//             RadiansPerSecond.of(phys.exitSpeed / kSpeedPerOmega),
+//             Seconds.of(phys.tof),
+//             phys.hoodClamped,
+//             phys.arrivalConstrained);
+//   }
+
+//   private static void calculateSimpleFromDirectionAndSpeed(
+//       Pose2d robotPose, ChassisSpeeds fieldSpeeds) {
+//     Translation3d pivot =
+//         new Pose3d(robotPose.getX(), 0, 0, new Rotation3d(robotPose.getRotation()))
+//             .transformBy(ShooterConstants.kSHOOTER_OFFSET)
+//             .getTranslation();
+//     var newFieldSpeeds =
+//         new ChassisSpeeds(fieldSpeeds.vxMetersPerSecond, 0, fieldSpeeds.omegaRadiansPerSecond);
+//     SolverResult r = solveDirection(pivot, newFieldSpeeds);
+//     PhysicsResult phys = solvePhysicsAlongDirection(pivot, newFieldSpeeds, r.phi, r.tof);
+
+//     currentPassingSolution =
+//         new SimpleSolution(
+//             Radians.of(phys.hoodAngle),
+//             RadiansPerSecond.of(phys.exitSpeed / kSpeedPerOmega),
+//             phys.hoodClamped);
 //   }
 
 //   /** Ideal field-frame shooting direction and converged TOF for one shooter. */
@@ -426,5 +440,5 @@
 //     return Math.max(lo, Math.min(hi, v));
 //   }
 
-//   private ShooterMath2() {}
+//   private ShooterMath3() {}
 // }

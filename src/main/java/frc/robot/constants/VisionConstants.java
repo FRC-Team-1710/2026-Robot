@@ -14,7 +14,7 @@ public class VisionConstants {
   // ==================== Base Trust Levels ====================
 
   /** Starting trust level for X/Y position per AprilTag seen (meters) */
-  public static final double BASE_XY_STD_DEV = 0.5;
+  public static final double BASE_XY_STD_DEV = 0.4;
 
   /** Starting trust level for rotation per AprilTag seen (radians) */
   public static final double BASE_THETA_STD_DEV = 5;
@@ -56,38 +56,40 @@ public class VisionConstants {
         "FrontLeft",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(7.769),
-                Units.inchesToMeters(13.341),
-                Units.inchesToMeters(7.995)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(175.0))),
+                Units.inchesToMeters(10.24),
+                Units.inchesToMeters(13.685),
+                Units.inchesToMeters(15.669)),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 29.8), Math.toRadians(180))),
         true),
     new PoseCameraConfig(
         "FrontRight",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(7.769),
-                Units.inchesToMeters(-13.341),
-                Units.inchesToMeters(7.995)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 30), Math.toRadians(185.0))),
+                Units.inchesToMeters(10.24),
+                Units.inchesToMeters(-13.685),
+                Units.inchesToMeters(15.669)),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 29.8), Math.toRadians(180))),
         true),
     new PoseCameraConfig(
         "BackLeft",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-9.61367),
-                Units.inchesToMeters(16.48053),
-                Units.inchesToMeters(28.975)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180), Math.toRadians(-90.0))),
-        false), // TODO: Change 0.0 pitch to 25 degrees in version 2
+                Units.inchesToMeters(-6.257),
+                Units.inchesToMeters(16.373),
+                Units.inchesToMeters(11.261)),
+            new Rotation3d(
+                Math.toRadians(180), Math.toRadians(180 + 25), Math.toRadians(-90.0 + 25.0))),
+        false),
     new PoseCameraConfig(
         "BackRight",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-9.61367),
-                Units.inchesToMeters(-16.48053),
-                Units.inchesToMeters(28.975)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180), Math.toRadians(90.0))),
-        false), // TODO: Change 0.0 pitch to 25 degrees in version 2
+                Units.inchesToMeters(-6.257),
+                Units.inchesToMeters(-16.373),
+                Units.inchesToMeters(11.261)),
+            new Rotation3d(
+                Math.toRadians(180), Math.toRadians(180 + 25), Math.toRadians(90.0 - 25.0))),
+        false),
   };
 
   public static record FuelCameraConfig(String name, Transform3d robotToCamera) {}
