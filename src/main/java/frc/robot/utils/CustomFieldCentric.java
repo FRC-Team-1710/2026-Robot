@@ -100,7 +100,7 @@ public class CustomFieldCentric implements SwerveRequest {
   @NotLogged
   private final SwerveRequest.FieldCentric driveRequest =
       new SwerveRequest.FieldCentric()
-          .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+          .withDriveRequestType(DriveRequestType.Velocity)
           .withSteerRequestType(SteerRequestType.Position);
 
   @NotLogged private boolean m_shouldAcceptRobotSpeeds = false;

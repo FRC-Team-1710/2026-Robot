@@ -75,7 +75,7 @@ public class IntakeIOCTRE implements IntakeIO {
 
     TalonFXConfiguration m_motorConfig = new TalonFXConfiguration();
     m_motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    m_motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     m_motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
     m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;

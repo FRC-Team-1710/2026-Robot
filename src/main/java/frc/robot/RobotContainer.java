@@ -263,6 +263,27 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // m_driver
+    //     .a()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdDynamic(Direction.kForward))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+    // m_driver
+    //     .b()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+    // m_driver
+    //     .x()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+    // m_driver
+    //     .y()
+    //     .onTrue(Commands.runOnce(() -> drivetrain.sysid(true)))
+    //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse))
+    //     .onFalse(Commands.runOnce(() -> drivetrain.sysid(false)));
+
     m_driver
         .rightStick()
         .and(m_driver.leftStick())
