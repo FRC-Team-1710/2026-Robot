@@ -39,6 +39,8 @@ public class AutosChooser {
 
   private boolean m_depot;
 
+  Timer timer = new Timer();
+
   /**
    * Creates a new AutosChooser that configures autonomous paths and related event triggers.
    *
@@ -64,9 +66,9 @@ public class AutosChooser {
                             .withVelocityY(speeds.vyMetersPerSecond)
                             .withRotationalRate(
                                 speeds.omegaRadiansPerSecond)), // Consumer to drive the robot
-                new PIDController(5.0, 0.0, 0.0), // Translation PID
-                new PIDController(3.0, 0.0, 0.0), // Rotation PID
-                new PIDController(2, 0.0, 0.0) // Cross-track PID
+                new PIDController(4.0, 0.0, 0.0), // Translation PID
+                new PIDController(6.0, 0.0, 0.25), // Rotation PID
+                new PIDController(5.0, 0.0, 0.0) // Cross-track PID
                 )
             .withShouldFlip(
                 () -> Alliance.redAlliance); // Automatically filps path based on alliance
@@ -79,7 +81,7 @@ public class AutosChooser {
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("None", Auto.NONE);
 
-    var paths = autoPathing(m_depot);
+    var paths = autoPathing(m_depot, superstructure, drivetrain);
 
     // addPath(Auto.ZONE1, paths.get("ZONE1"));
     // addPath(Auto.ZONE3, paths.get("ZONE3"));
@@ -89,13 +91,15 @@ public class AutosChooser {
     addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
     addPath(Auto.RIGHT_OUTSIDE_PART_2, paths.get("RIGHT_OUTSIDE_PART_2"));
     addPath(Auto.LEFT_OUTSIDE_PART_2, paths.get("LEFT_OUTSIDE_PART_2"));
+
+    addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
     // addPath(Auto.ZONE2, paths.get("ZONE2"));
     // addPath(Auto.MIDDLE, paths.get("MIDDLE"));
 
+    addPath(Auto.TEST, paths.get("TEST"));
+
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
-
-    Timer timer = new Timer();
 
     for (WantedStates state : WantedStates.values()) {
       if (state.name().contains("Auto")) {
@@ -125,49 +129,6 @@ public class AutosChooser {
     FollowPath.registerEventTrigger(
         "SpinUp", () -> superstructure.setShooterAddableState(ShooterAddableStates.SpinUp));
 
-    FollowPath.registerEventTrigger(
-        "Shoot",
-        () -> {
-          timer.stop();
-          timer.reset();
-          hasResetRotation = false;
-          Commands.run(
-                  () -> {
-                    drivetrain.setAutonomousRequestOverride(true);
-                    drivetrain.applyPriorityRequestAuto(
-                        drivetrain
-                            .fieldCentric
-                            .withDriveState(DriveStates.ROTATION_LOCK)
-                            .withTargetRotation(superstructure.getRotationForScore())
-                            .withVelocityX(0) // ensure previous controls aren't affecting auto
-                            .withVelocityY(0)
-                            .withRotationalRate(0));
-                    superstructure.setWantedState(WantedStates.ShootAuto);
-                    if (!hasResetRotation && superstructure.driveAtTarget()) {
-                      drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);
-                      hasResetRotation = true;
-                    }
-                    if (superstructure.flywheelAtTarget()) {
-                      timer.start(); // Only count actual shooting time
-                    }
-                    if (timer.get() >= 2.5) {
-                      superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
-                    } else {
-                      superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
-                    }
-                  })
-              .until(() -> timer.get() > 4.0)
-              .finallyDo(
-                  () -> {
-                    superstructure.setWantedState(WantedStates.DefaultAuto);
-                    superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
-                    drivetrain.setAutonomousRequestOverride(false);
-                    superstructure.setShooterAddableState(ShooterAddableStates.Idle);
-                    intake.setState(IntakeStates.Up);
-                  })
-              .schedule();
-        });
-
     FollowPath.setPoseLoggingConsumer(
         (data) ->
             Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond(), Pose2d.struct));
@@ -181,6 +142,50 @@ public class AutosChooser {
         (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
   }
 
+  private Command getShootCommand(
+      Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
+    return Commands.runOnce(
+            () -> {
+              timer.stop();
+              timer.reset();
+              hasResetRotation = false;
+            })
+        .andThen(
+            Commands.run(
+                () -> {
+                  drivetrain.setAutonomousRequestOverride(true);
+                  drivetrain.applyPriorityRequestAuto(
+                      drivetrain
+                          .fieldCentric
+                          .withDriveState(DriveStates.ROTATION_LOCK)
+                          .withTargetRotation(superstructure.getRotationForScore())
+                          .withVelocityX(0) // ensure previous controls aren't affecting auto
+                          .withVelocityY(0)
+                          .withRotationalRate(0));
+                  superstructure.setWantedState(WantedStates.ShootAuto);
+                  if (!hasResetRotation && superstructure.driveAtTarget()) {
+                    drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);
+                    hasResetRotation = true;
+                  }
+                  if (superstructure.flywheelAtTarget()) {
+                    timer.start(); // Only count actual shooting time
+                  }
+                  if (timer.get() >= 2.25) {
+                    superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
+                  } else {
+                    superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
+                  }
+                }))
+        .until(() -> timer.get() > 3.75)
+        .finallyDo(
+            () -> {
+              superstructure.setWantedState(WantedStates.DefaultAuto);
+              superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
+              drivetrain.setAutonomousRequestOverride(false);
+              superstructure.setShooterAddableState(ShooterAddableStates.Idle);
+            });
+  }
+
   public static void addPath(Auto auto, Command command) {
     autoCommands.put(auto, command);
     autoChooser.addOption(auto.name(), auto);
@@ -190,7 +195,8 @@ public class AutosChooser {
     return autoCommands.get(autoChooser.getSelected());
   }
 
-  public static HashMap<String, Command> autoPathing(boolean depotPath) {
+  public HashMap<String, Command> autoPathing(
+      boolean depotPath, Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
     var temp = new Path("outsideracer");
     var temp2 = new Path("Loopdaloop");
@@ -220,6 +226,14 @@ public class AutosChooser {
         "LEFT_INSIDE_PART_2",
         Commands.sequence(
             pathBuilder.build(new Path("insideracer")), pathBuilder.build(new Path("Loopdaloop"))));
+    listOfPaths.put("TEST", Commands.sequence(pathBuilder.build(new Path("test"))));
+    listOfPaths.put(
+        "OPTIMIZUM",
+        Commands.sequence(
+            pathBuilder.build(new Path("optimizum")),
+            getShootCommand(superstructure, drivetrain),
+            pathBuilder.build(new Path("secondOptimizums")),
+            getShootCommand(superstructure, drivetrain)));
     // listOfPaths.put(
     //     "ZONE3",
     //     Commands.sequence(
@@ -251,6 +265,8 @@ public class AutosChooser {
     RIGHT_INSIDE_PART_2(),
     LEFT_OUTSIDE_PART_2(),
     RIGHT_OUTSIDE_PART_2(),
-    MIDDLE()
+    MIDDLE(),
+    TEST(),
+    OPTIMIZUM(),
   }
 }
