@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -81,15 +80,10 @@ public final class ShooterMath4 {
   // Public so sim can access it
   public static Pose2d currentPose = new Pose2d();
 
-  /** The current speeds for the dual shooter system. */
-  // Public so sim can access it (still here so it doesn't error if we have to switch)
-  public static ChassisSpeeds currentSpeeds = new ChassisSpeeds();
-
   /**
    * Compute optimal shooter parameters for a single shooter.
    *
    * @param robotPose Current robot 2-D pose.
-   * @param fieldSpeeds Chassis speeds in the field frame.
    */
   public static void calculate(Pose2d robotPose) {
     currentPose = robotPose;

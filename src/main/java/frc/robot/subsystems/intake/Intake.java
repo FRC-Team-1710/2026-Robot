@@ -112,7 +112,7 @@ public class Intake {
     // This method will be called once per scheduler run
     m_io.update();
     if (m_bumpSupplier.getAsBoolean()) {
-      m_io.setIntakeMotor(-IntakeStates.Intaking.rollerSpeed);
+      m_io.setIntakeMotor(-1);
     } else {
       // Set the rollers with jam logic
       switch (m_currentState) {
@@ -286,12 +286,12 @@ public class Intake {
 
   public enum IntakeStates {
     Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1, 0.5),
-    UpAndIntake(Milliseconds.of(60), Rotations.of(0.29), 0.625, 1, 0.5),
-    Half(Milliseconds.of(60), Rotations.of(0.15), 0.625, 1.25, 0.75),
+    UpAndIntake(Milliseconds.of(60), Rotations.of(0.29), 1.0, 1, 0.5),
+    Half(Milliseconds.of(60), Rotations.of(0.15), 1.0, 1.25, 0.75),
     Down(Milliseconds.of(60), Degrees.of(0), 0, 1, 0.5),
-    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 0.625, 1.5, 1.5),
+    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 1.0, 1.5, 1.5),
     Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1, 0.5),
-    Intaking(Milliseconds.of(20), Degrees.of(0), 0.625, 1, 0.5);
+    Intaking(Milliseconds.of(20), Degrees.of(0), 1.0, 1, 0.5);
 
     private final Time m_subsystemPeriodicFrequency;
     final Angle setpoint;

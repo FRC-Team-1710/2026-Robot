@@ -513,7 +513,7 @@ public class Superstructure {
                     .getRotation()
                     .minus(m_drivetrain.fieldCentric.rotationTarget)
                     .getDegrees())
-            <= 6.5);
+            <= 10);
   }
 
   @Logged(importance = Importance.CRITICAL)
