@@ -25,7 +25,6 @@ public class LedsIOArduino implements LedsIO {
     this.m_port.write(data, data.length);
   }
 
-
   /** {@inheritDoc} */
   public void resetValue() {
     this.m_data = 0;

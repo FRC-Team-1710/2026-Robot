@@ -24,12 +24,11 @@ public class LedsIOSim implements LedsIO {
     Robot.telemetry().log("Led Bits", array);
   }
 
-
   /** {@inheritDoc} */
   public void resetValue() {
     this.m_data = 0;
   }
-  
+
   /** {@inheritDoc} */
   public void setValue(LED_STATE pState, boolean pValue) {
     int offset = getStateOffset(pState);

@@ -17,5 +17,6 @@ public interface LedsIO {
   };
 
   public default void resetValue() {}
+
   public default void setValue(LED_STATE pState, boolean pValue) {}
 }
