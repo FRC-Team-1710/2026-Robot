@@ -41,8 +41,6 @@ public class VisionConstants {
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
 
-  public static record PoseCameraConfig(String name, Transform3d robotToCamera, boolean front) {}
-
   /**
    * Defines a single vision pose camera configuration.
    *
@@ -50,7 +48,10 @@ public class VisionConstants {
    * @param robotToCamera Transform from robot center to camera lens in meters and radians.
    *     Translation3d: +X forward, +Y left, +Z up. Rotation3d: roll (X), pitch (Y), yaw (Z) in
    *     radians.
+   * @param front Whether the camera is mounted on the front of the robot
    */
+  public static record PoseCameraConfig(String name, Transform3d robotToCamera, boolean front) {}
+
   public static final PoseCameraConfig[] kPoseCameraConfigs = {
     new PoseCameraConfig(
         "FrontLeft",

@@ -1,7 +1,9 @@
 package frc.robot.subsystems.vision;
 
-import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,7 +16,6 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.*;
 
 /**
@@ -24,30 +25,33 @@ import org.photonvision.targeting.*;
  *
  * <p>One instance of this class represents a single physical camera.
  */
+@Logged
 public class Vision implements Subsystem {
 
-  private final PhotonCamera m_camera;
+  @NotLogged private final PhotonCamera m_camera;
 
-  private final PhotonPoseEstimator m_poseEstimator;
+  @NotLogged private final PhotonPoseEstimator m_poseEstimator;
 
-  private final CommandSwerveDrivetrain m_drivetrain;
+  @NotLogged private final CommandSwerveDrivetrain m_drivetrain;
 
   // === Vision state calculated each cycle ===
   // These values are updated from PhotonVision and optionally replayed in simulation.
 
-  private Pose2d m_robotPose = new Pose2d();
+  @Logged(importance = Importance.DEBUG)
+  private Pose2d m_robotPoseVision = new Pose2d();
 
-  private double m_robotPoseTimestamp = 0.0;
+  @NotLogged private double m_robotPoseTimestamp = 0.0;
 
+  @Logged(importance = Importance.DEBUG)
   private int m_tagCount = 0;
 
+  @Logged(importance = Importance.DEBUG)
   private double m_avgTagDistance = 0.0;
 
+  @Logged(importance = Importance.DEBUG)
   private double m_ambiguity = 0.0;
 
-  private final String m_logPath;
-
-  private final HootAutoReplay m_autoReplay;
+  @NotLogged private final String m_logPath;
 
   // private final Set<Integer> rejectTagIds =
   //     Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
@@ -64,34 +68,7 @@ public class Vision implements Subsystem {
 
     m_camera = new PhotonCamera(cameraName);
 
-    m_poseEstimator =
-        new PhotonPoseEstimator(
-            FieldConstants.kAprilTags, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
-
-    m_autoReplay =
-        new HootAutoReplay()
-            .withStruct(
-                "PhotonVision/" + cameraName + "/RobotPose",
-                Pose2d.struct,
-                () -> m_robotPose,
-                val -> m_robotPose = val.value)
-            .withDouble(
-                "PhotonVision/" + cameraName + "/RobotPoseTimestamp",
-                () -> m_robotPoseTimestamp,
-                val -> m_robotPoseTimestamp = val.value)
-            .withInteger(
-                "PhotonVision/" + cameraName + "/TagCount",
-                () -> m_tagCount,
-                val -> m_tagCount = val.value.intValue())
-            .withDouble(
-                "PhotonVision/" + cameraName + "/AvgTagDistance",
-                () -> m_avgTagDistance,
-                val -> m_avgTagDistance = val.value)
-            .withDouble(
-                "PhotonVision/" + cameraName + "/Ambiguity",
-                () -> m_ambiguity,
-                val -> m_ambiguity = val.value)
-            .withTimestampReplay();
+    m_poseEstimator = new PhotonPoseEstimator(FieldConstants.kAprilTags, robotToCamera);
   }
 
   /**
@@ -103,7 +80,6 @@ public class Vision implements Subsystem {
       fetchInputs();
     }
 
-    m_autoReplay.update();
     processInputs();
   }
 
@@ -130,7 +106,7 @@ public class Vision implements Subsystem {
       return;
     }
 
-    Optional<EstimatedRobotPose> estimate = m_poseEstimator.update(result);
+    Optional<EstimatedRobotPose> estimate = m_poseEstimator.estimateCoprocMultiTagPose(result);
 
     if (estimate.isEmpty()) {
       reset();
@@ -141,7 +117,7 @@ public class Vision implements Subsystem {
 
     Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
 
-    m_robotPose = visionEstimate.estimatedPose.toPose2d();
+    m_robotPoseVision = visionEstimate.estimatedPose.toPose2d();
     m_robotPoseTimestamp = visionEstimate.timestampSeconds;
     m_tagCount = result.getTargets().size();
 
@@ -156,7 +132,7 @@ public class Vision implements Subsystem {
 
   private void processInputs() {
 
-    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0 || m_robotPose == Pose2d.kZero) {
+    if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0 || m_robotPoseVision == Pose2d.kZero) {
       return;
     }
     // Reject single-tag solutions with high ambiguity.
@@ -177,15 +153,14 @@ public class Vision implements Subsystem {
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);
 
-    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
+    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPoseVision, Pose2d.struct);
 
     xyStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
 
-    // TODO: make sure vision doesn't correct rotation
     m_drivetrain.addVisionMeasurement(
-        m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
+        m_robotPoseVision, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }
 
   /**
@@ -193,7 +168,7 @@ public class Vision implements Subsystem {
    * from being reused.
    */
   private void reset() {
-    m_robotPose = new Pose2d();
+    m_robotPoseVision = new Pose2d();
     m_robotPoseTimestamp = 0.0;
     m_tagCount = 0;
     m_avgTagDistance = 0.0;
@@ -202,7 +177,7 @@ public class Vision implements Subsystem {
 
   /** Returns the estimated robot pose. */
   public Pose2d getRobotPose() {
-    return m_robotPose;
+    return m_robotPoseVision;
   }
 
   /** Returns the timestamp of the robot pose estimate. */
