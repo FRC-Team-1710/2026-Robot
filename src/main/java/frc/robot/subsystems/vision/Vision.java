@@ -135,11 +135,13 @@ public class Vision implements Subsystem {
     if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0 || m_robotPoseVision == Pose2d.kZero) {
       return;
     }
+
     // Reject single-tag solutions with high ambiguity.
     // Multi-tag solutions are inherently more stable.
     if (m_tagCount == 1 && m_ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
       return;
     }
+
     // Dynamically scale measurement
     // More tags = more trust
     // Closer = more trust
@@ -149,16 +151,18 @@ public class Vision implements Subsystem {
     if (m_tagCount == 1 && !DriverStation.isAutonomous()) {
       xyStdDev *= 1.5; // Single tag is less reliable, so start with higher std dev
     }
+
     // Squared distance scaling penalizes far-away tag estimates heavily,
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);
 
     Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPoseVision, Pose2d.struct);
 
+    // Scale the standard deviation based on the average tag distance.
     xyStdDev *= distanceScale;
+
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
-
     m_drivetrain.addVisionMeasurement(
         m_robotPoseVision, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }
