@@ -43,9 +43,6 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.leds.Leds;
-import frc.robot.subsystems.leds.LedsIO;
-import frc.robot.subsystems.leds.LedsIOArduino;
-import frc.robot.subsystems.leds.LedsIOSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.subsystems.shooter.ShooterIO;
@@ -108,7 +105,7 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
         m_feeder = new Feeder(new FeederIOCTRE(), consumer);
         m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
-        m_leds = new Leds(new LedsIOArduino(), m_shooter, m_intake);
+        m_leds = new Leds();
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -131,7 +128,7 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIOSIM(), consumer);
         m_feeder = new Feeder(new FeederIOSIM(), consumer);
         m_indexer = new Indexer(new IndexerIOSIM(), consumer);
-        m_leds = new Leds(new LedsIOSim(), m_shooter, m_intake);
+        m_leds = new Leds();
         m_cameras = new Vision[0];
         break;
 
@@ -141,7 +138,7 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIO() {}, consumer);
         m_feeder = new Feeder(new FeederIO() {}, consumer);
         m_indexer = new Indexer(new IndexerIO() {}, consumer);
-        m_leds = new Leds(new LedsIO() {}, m_shooter, m_intake);
+        m_leds = new Leds();
         m_cameras = new Vision[0];
         break;
     }
@@ -149,6 +146,8 @@ public class RobotContainer {
     m_superstructure =
         new Superstructure(
             m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder, m_leds);
+
+    m_leds.setSuperstructure(m_superstructure);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
