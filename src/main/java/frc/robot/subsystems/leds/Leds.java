@@ -25,6 +25,9 @@ public class Leds {
 
   private Integer commandValue = 0;
 
+  /** Priority booleans for the LEDs */
+  // Autonomous?, Can shoot?, Can't shoot?, Intaking?, Won auto?, Brownout?, Disabled?,
+  // Disconnected?
   public Boolean[] inputBooleans = {false, false, false, false, false, false, false, false};
 
   public void periodic() {
@@ -82,6 +85,7 @@ public class Leds {
     }
   }
 
+  /** Sends the command value to the LEDs */
   private void sendData(int value) { // Sending data (duh)
     byte[] data = new byte[1]; // Create a byte array of length 1
     data[0] =
