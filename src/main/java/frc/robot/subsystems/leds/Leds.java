@@ -90,9 +90,8 @@ public class Leds {
     byte[] data = new byte[1]; // Create a byte array of length 1
     data[0] =
         (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
-    System.out.println("Sending Data: " + value); // Print the data
-    uart.write(data, data.length); // Write the byte array to the serial port
     // System.out.println("Sending Data: " + value); // Print the data
+    uart.write(data, data.length); // Write the byte array to the serial port
   }
 
   /** Sets the superstructure for the LED subsystem */
