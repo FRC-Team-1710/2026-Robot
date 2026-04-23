@@ -3,7 +3,7 @@ package frc.robot.subsystems.leds;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.MatchState;
@@ -14,13 +14,20 @@ import frc.robot.subsystems.Superstructure;
 @Logged
 public class Leds {
   /** Creates a new LEDSubsystem. */
-  private SerialPort uart;
+  // private SerialPort uart;
+
+  private SPI spi;
 
   Timer timer = new Timer();
   private Superstructure m_superstructure;
 
   public Leds() {
-    uart = new SerialPort(4800, SerialPort.Port.kUSB1);
+    // uart = new SerialPort(4800, SerialPort.Port.kUSB1);
+    spi = new SPI(SPI.Port.kOnboardCS0);
+    spi.setClockRate(500000); // 500 kHz safe start
+    spi.setMode(SPI.Mode.kMode3);
+
+    spi.setChipSelectActiveLow();
   }
 
   private Integer commandValue = 0;
@@ -88,10 +95,13 @@ public class Leds {
   /** Sends the command value to the LEDs */
   private void sendData(int value) { // Sending data (duh)
     byte[] data = new byte[1]; // Create a byte array of length 1
+    byte[] rx = new byte[1];
+    SmartDashboard.putNumber("LED Data", value);
     data[0] =
         (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
     // System.out.println("Sending Data: " + value); // Print the data
-    uart.write(data, data.length); // Write the byte array to the serial port
+    // uart.write(data, data.length); // Write the byte array to the serial port
+    spi.transaction(data, rx, 1); // Write the byte array to the SPI port
   }
 
   /** Sets the superstructure for the LED subsystem */
