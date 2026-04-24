@@ -102,10 +102,7 @@ public class VisionConstants {
                 Units.inchesToMeters(15.247),
                 Units.inchesToMeters(0.0),
                 Units.inchesToMeters(21.381)),
-            new Rotation3d(
-                0.0,
-                Math.toRadians(0.0),
-                Math.toRadians(90.0)))),
+            new Rotation3d(0.0, Math.toRadians(0.0), Math.toRadians(90.0)))),
   };
 
   private VisionConstants() {

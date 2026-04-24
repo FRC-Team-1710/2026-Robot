@@ -273,7 +273,7 @@ public class Superstructure {
     // if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
     //   m_intake.setState(IntakeStates.Half);
     // }
-    m_wasAtTarget = false;
+    m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void score() {
@@ -367,7 +367,7 @@ public class Superstructure {
     m_feeder.setState(FEEDER_STATE.STOP);
 
     m_didIntake = true;
-    m_wasAtTarget = false;
+    m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void scoreWhileIntaking() {
@@ -418,7 +418,7 @@ public class Superstructure {
             : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
-    m_wasAtTarget = false;
+    m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void idleAuto() {

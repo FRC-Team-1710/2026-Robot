@@ -53,6 +53,8 @@ public class ShooterIOCTRE implements ShooterIO {
 
   @NotLogged private final BaseStatusSignal[] m_flywheelSignals;
 
+  @NotLogged private final BaseStatusSignal m_flywheelSetpointVelocitySignal;
+
   /** Constructs the CTRE-backed shooter IO implementation. */
   public ShooterIOCTRE() {
     // Initialize flywheel motors:
@@ -114,6 +116,9 @@ public class ShooterIOCTRE implements ShooterIO {
     m_flywheels[3].setControl(
         new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed)
             .withUpdateFreqHz(200));
+
+    m_flywheelSetpointVelocitySignal = m_flywheels[0].getClosedLoopReferenceSlope();
+    m_flywheelSetpointVelocitySignal.setUpdateFrequency(50);
 
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
@@ -184,6 +189,12 @@ public class ShooterIOCTRE implements ShooterIO {
                 getVelocity().isNear(pVelocity, ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE)
                     ? 1
                     : 0));
+  }
+
+  /** Returns the closed loop reference slope == 0 */
+  @Override
+  public boolean getSetpointReferenceVelocityIsZero() {
+    return m_flywheelSetpointVelocitySignal.getValueAsDouble() == 0;
   }
 
   /** {@inheritDoc} */

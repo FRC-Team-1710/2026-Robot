@@ -85,10 +85,10 @@ public class IntakeIOCTRE implements IntakeIO {
 
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
     m_slot0Configs.kG = 0.4;
-    m_slot0Configs.kS = 0;
-    m_slot0Configs.kV = 6.625;
+    m_slot0Configs.kS = 0.05;
+    m_slot0Configs.kV = 6.25;
     m_slot0Configs.kA = 0;
-    m_slot0Configs.kP = 0.2;
+    m_slot0Configs.kP = 0.75;
     m_slot0Configs.kI = 0;
     m_slot0Configs.kD = 0;
     m_slot0Configs.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;

@@ -85,8 +85,9 @@ public class Shooter {
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.m_targetVelocity.isNear(
-            this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
+        ? m_io.getSetpointReferenceVelocityIsZero()
+        // ? (this.m_targetVelocity.isNear(
+        //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
         : true;
   }
 
