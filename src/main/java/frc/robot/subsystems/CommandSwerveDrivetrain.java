@@ -475,6 +475,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public enum DriveStates {
     DRIVER_CONTROLLED,
     ROTATION_LOCK,
-    X_LOCK
+    // X_LOCK
   }
 }

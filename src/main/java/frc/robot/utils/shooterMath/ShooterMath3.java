@@ -32,11 +32,9 @@
 //    * 45° = Ball enters at roughly 45° into the funnel, 60° = Noticeably higher flywheel demand at
 //    * mid-range, 70° = May be unreachable from far positions
 //    */
-//   // TODO: Soon to be k, need to tune first
 //   private static double m_preferredMinArrivalAngleRad = Math.toRadians(52.5);
 
 //   /** Efficiency of speed transfer from flywheel to ball. */
-//   // TODO: Soon to be k, need to tune first
 //   private static double m_speedTransferEfficiency = 0.825; // 1.0 = No slip
 
 //   /** Ball diameter: 5.91 in → meters. */

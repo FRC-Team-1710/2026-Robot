@@ -105,7 +105,7 @@ public class VisionConstants {
             new Rotation3d(
                 0.0,
                 Math.toRadians(0.0),
-                Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2  };
+                Math.toRadians(90.0)))),
   };
 
   private VisionConstants() {

@@ -156,8 +156,7 @@ public class RobotContainer {
     }
 
     m_superstructure =
-        new Superstructure(
-            m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder, m_leds);
+        new Superstructure(m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {

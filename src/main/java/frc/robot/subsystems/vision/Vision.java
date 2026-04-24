@@ -183,7 +183,6 @@ public class Vision implements Subsystem {
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
 
-    // TODO: make sure vision doesn't correct rotation
     m_drivetrain.addVisionMeasurement(
         m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }

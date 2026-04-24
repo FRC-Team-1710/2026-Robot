@@ -83,7 +83,6 @@ public class IntakeIOCTRE implements IntakeIO {
     m_intakeMotor.getConfigurator().apply(m_motorConfig);
     m_intakeMotorFollower.getConfigurator().apply(m_motorConfig);
 
-    // set slot 0 gains //TODO:
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
     m_slot0Configs.kG = 0.4;
     m_slot0Configs.kS = 0;

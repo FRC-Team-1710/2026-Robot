@@ -23,10 +23,8 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
-import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
-import frc.robot.utils.CustomFieldCentric.RequestStates;
 import frc.robot.utils.MathUtils;
 import frc.robot.utils.shooterMath.ShooterMath4;
 
@@ -39,7 +37,6 @@ public class Superstructure {
   @NotLogged private Shooter m_shooter;
   @NotLogged private Indexer m_indexer;
   @NotLogged private Feeder m_feeder;
-  @NotLogged private Leds m_leds;
 
   @Logged(importance = Importance.CRITICAL)
   private WantedStates m_wantedState = WantedStates.Default;
@@ -81,8 +78,7 @@ public class Superstructure {
       Intake m_intake,
       Shooter m_shooter,
       Indexer m_indexer,
-      Feeder m_feeder,
-      Leds leds) {
+      Feeder m_feeder) {
     this.m_driver = driver;
     this.m_mech = mech;
     this.m_drivetrain = m_drivetrain;
@@ -90,7 +86,6 @@ public class Superstructure {
     this.m_shooter = m_shooter;
     this.m_indexer = m_indexer;
     this.m_feeder = m_feeder;
-    this.m_leds = leds;
   }
 
   /** Runs periodic logic for state transitions and subsystem coordination. */
@@ -264,20 +259,20 @@ public class Superstructure {
 
   private void idle() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
-        && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
-      m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
-    } else {
-      m_shooter.setState(
-          m_shooterAddableState == ShooterAddableStates.Idle
-              ? SHOOTER_STATE.IDLE
-              : SHOOTER_STATE.SHOOT);
-    }
+    // if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
+    //     && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
+    //   m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
+    // } else {
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
+    // }
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
-    if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
-      m_intake.setState(IntakeStates.Half);
-    }
+    // if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
+    //   m_intake.setState(IntakeStates.Half);
+    // }
     m_wasAtTarget = false;
   }
 
