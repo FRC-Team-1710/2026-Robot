@@ -142,11 +142,9 @@ public class Indexer {
   }
 
   public enum IndexStates {
-    Indexing(Milliseconds.of(20), 0.35),
-
-    Idle(Milliseconds.of(20), 0),
-
-    Jammed(Milliseconds.of(60), 0);
+    Indexing(Milliseconds.of(20), 0.5),
+    Idle(Milliseconds.of(60), 0),
+    Jammed(Milliseconds.of(20), -0.25);
 
     private final Time m_subsystemPeriodicFrequency;
     private final double m_speed;

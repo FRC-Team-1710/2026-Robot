@@ -11,15 +11,18 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.MechanismUtil.HoodMechanism;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
-import frc.robot.utils.shooterMath.ShooterMath2;
+import frc.robot.utils.shooterMath.ShooterMath4;
 
 /** Simulation implementation of shooter IO. */
 @Logged
@@ -34,8 +37,11 @@ public class ShooterIOSIM implements ShooterIO {
   private final HoodMechanism m_hoodMechanism;
 
   private FuelSim m_fuelSim;
-  private final Debouncer m_shooterDebouncer = new Debouncer(1 / 12.0); // 12 fuel/sec
-  private boolean m_leftShooter = false;
+  private final Debouncer m_shooterDebouncer1 = new Debouncer((1 / 15.0) * 5); // 15 fuel/sec
+  private final Debouncer m_shooterDebouncer2 = new Debouncer((1 / 15.0) * 5); // 15 fuel/sec
+  private final Debouncer m_shooterDebouncer3 = new Debouncer((1 / 15.0) * 5); // 15 fuel/sec
+  private final Debouncer m_shooterDebouncer4 = new Debouncer((1 / 15.0) * 5); // 15 fuel/sec
+  private final Debouncer m_shooterDebouncer5 = new Debouncer((1 / 15.0) * 5); // 15 fuel/sec
 
   /** Constructs the simulated shooter IO and visualization mechanisms. */
   public ShooterIOSIM() {
@@ -44,7 +50,7 @@ public class ShooterIOSIM implements ShooterIO {
 
     this.m_hoodMechanism = new HoodMechanism("Hood", 0);
 
-    SmartDashboard.putNumber("ShooterMult", 0.105);
+    SmartDashboard.putNumber("tuning/ShooterMult", 0.201);
   }
 
   /** {@inheritDoc} */
@@ -62,63 +68,256 @@ public class ShooterIOSIM implements ShooterIO {
 
     if (m_fuelSim == null) return;
 
-    if (m_shooterDebouncer.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
+    if (m_shooterDebouncer1.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
         && m_fuelSim.shouldShoot.getAsBoolean()) {
-      if (m_leftShooter) {
+      if (m_fuelSim.shouldScore.getAsBoolean()) {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(
-                        ShooterMath2.currentPose.getTranslation(),
-                        ShooterMath2.currentSolution.robotHeading()))
-                .plus(ShooterConstants.kLEFT_SHOOTER_OFFSET)
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath2.currentSolution
-                            .shooterLeft()
-                            .flywheelOmega()
-                            .in(RotationsPerSecond)
-                        * SmartDashboard.getNumber("ShooterMult", 0),
-                    new Rotation3d(
-                        0,
-                        -Degrees.of(90)
-                            .minus(ShooterMath2.currentSolution.shooterLeft().hoodAngle())
-                            .in(Radians),
-                        ShooterMath2.currentSolution.robotHeading().getRadians()))
-                .plus(
-                    new Translation3d(
-                        ShooterMath2.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath2.currentSpeeds.vyMetersPerSecond,
-                        0)));
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentSolution.robotHeading().getRadians())));
       } else {
         m_fuelSim.spawnFuel(
-            new Pose3d(
-                    new Pose2d(
-                        ShooterMath2.currentPose.getTranslation(),
-                        ShooterMath2.currentSolution.robotHeading()))
-                .plus(ShooterConstants.kRIGHT_SHOOTER_OFFSET)
+            new Pose3d(ShooterMath4.currentPose)
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
                 .getTranslation(),
             new Translation3d(
-                    ShooterMath2.currentSolution
-                            .shooterRight()
-                            .flywheelOmega()
-                            .in(RotationsPerSecond)
-                        * SmartDashboard.getNumber("ShooterMult", 0),
-                    new Rotation3d(
-                        0,
-                        -Degrees.of(90)
-                            .minus(ShooterMath2.currentSolution.shooterRight().hoodAngle())
-                            .in(Radians),
-                        ShooterMath2.currentSolution.robotHeading().getRadians()))
-                .plus(
-                    new Translation3d(
-                        ShooterMath2.currentSpeeds.vxMetersPerSecond,
-                        ShooterMath2.currentSpeeds.vyMetersPerSecond,
-                        0)));
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentPose.getRotation().getRadians() + Math.PI)));
       }
-      // fuelSim.removeFuelFromStorage(1);
-      m_leftShooter = !m_leftShooter;
-      m_shooterDebouncer.calculate(false);
+      m_fuelSim.removeFuelFromStorage(1);
+      m_shooterDebouncer1.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer1.calculate(false);
     }
+
+    if (m_shooterDebouncer2.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
+        && m_fuelSim.shouldShoot.getAsBoolean()) {
+      if (m_fuelSim.shouldScore.getAsBoolean()) {
+        m_fuelSim.spawnFuel(
+            new Pose3d(
+                    new Pose2d(
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentSolution.robotHeading().getRadians())));
+      } else {
+        m_fuelSim.spawnFuel(
+            new Pose3d(ShooterMath4.currentPose)
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentPose.getRotation().getRadians() + Math.PI)));
+      }
+      m_fuelSim.removeFuelFromStorage(1);
+      m_shooterDebouncer2.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer2.calculate(false);
+    }
+
+    if (m_shooterDebouncer3.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
+        && m_fuelSim.shouldShoot.getAsBoolean()) {
+      if (m_fuelSim.shouldScore.getAsBoolean()) {
+        m_fuelSim.spawnFuel(
+            new Pose3d(
+                    new Pose2d(
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentSolution.robotHeading().getRadians())));
+      } else {
+        m_fuelSim.spawnFuel(
+            new Pose3d(ShooterMath4.currentPose)
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentPose.getRotation().getRadians() + Math.PI)));
+      }
+      m_fuelSim.removeFuelFromStorage(1);
+      m_shooterDebouncer3.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer3.calculate(false);
+    }
+
+    if (m_shooterDebouncer4.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
+        && m_fuelSim.shouldShoot.getAsBoolean()) {
+      if (m_fuelSim.shouldScore.getAsBoolean()) {
+        m_fuelSim.spawnFuel(
+            new Pose3d(
+                    new Pose2d(
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentSolution.robotHeading().getRadians())));
+      } else {
+        m_fuelSim.spawnFuel(
+            new Pose3d(ShooterMath4.currentPose)
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentPose.getRotation().getRadians() + Math.PI)));
+      }
+      m_fuelSim.removeFuelFromStorage(1);
+      m_shooterDebouncer4.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer4.calculate(false);
+    }
+
+    if (m_shooterDebouncer5.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
+        && m_fuelSim.shouldShoot.getAsBoolean()) {
+      if (m_fuelSim.shouldScore.getAsBoolean()) {
+        m_fuelSim.spawnFuel(
+            new Pose3d(
+                    new Pose2d(
+                        ShooterMath4.currentPose.getTranslation(),
+                        ShooterMath4.currentSolution.robotHeading()))
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentSolution.robotHeading().getRadians())));
+      } else {
+        m_fuelSim.spawnFuel(
+            new Pose3d(ShooterMath4.currentPose)
+                .plus(
+                    new Transform3d(
+                        ShooterConstants.kSHOOTER_OFFSET.getX(),
+                        (Math.random() * (Units.inchesToMeters(12.295) * 2))
+                            - Units.inchesToMeters(12.295),
+                        ShooterConstants.kSHOOTER_OFFSET.getZ(),
+                        ShooterConstants.kSHOOTER_OFFSET.getRotation()))
+                .getTranslation(),
+            new Translation3d(
+                ShooterMath4.currentSolution.flywheelOmega().in(RotationsPerSecond)
+                    * SmartDashboard.getNumber("tuning/ShooterMult", 0),
+                new Rotation3d(
+                    0,
+                    -Degrees.of(90).minus(ShooterMath4.currentSolution.hoodAngle()).in(Radians),
+                    ShooterMath4.currentPose.getRotation().getRadians() + Math.PI)));
+      }
+      m_fuelSim.removeFuelFromStorage(1);
+      m_shooterDebouncer5.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer5.calculate(false);
+    }
+
+    if (!m_fuelSim.shouldShoot.getAsBoolean()) {
+      m_shooterDebouncer1.calculate(false);
+      m_shooterDebouncer2.calculate(false);
+      m_shooterDebouncer3.calculate(false);
+      m_shooterDebouncer4.calculate(false);
+      m_shooterDebouncer5.calculate(false);
+      m_shooterDebouncer1.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer2.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer3.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer4.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+      m_shooterDebouncer5.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
+    }
+
+    Robot.telemetry().log("FuelLeft", m_fuelSim.getCurrentFuelStorage());
+    Robot.telemetry().log("FuelScored", FuelSim.Hub.BLUE_HUB.getScore());
   }
 
   /** {@inheritDoc} */

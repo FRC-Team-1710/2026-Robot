@@ -4,10 +4,12 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
@@ -38,7 +40,7 @@ import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.CustomFieldCentric;
-import frc.robot.utils.shooterMath.ShooterMath2;
+import frc.robot.utils.shooterMath.ShooterMath4;
 import java.util.function.Supplier;
 
 /**
@@ -61,8 +63,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Logged(importance = Importance.CRITICAL)
   public final CustomFieldCentric fieldCentric;
 
+  // @Logged(importance = Importance.INFO)
+  // public final CustomFieldCentric fieldCentricBLine;
+
+  @NotLogged public final RobotCentric fieldCentricBLine;
+
   @Logged(importance = Importance.INFO)
   private DriveStates m_currentState = DriveStates.DRIVER_CONTROLLED;
+
+  @NotLogged private boolean m_sysid = false;
 
   /** Controller inputs for default teleop */
   @NotLogged private CommandXboxController m_inputController;
@@ -101,7 +110,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             Volts.of(6),
   //             Seconds.of(9),
   //             // Log state with Logger class
-  //             state -> Robot.telemetry().log("SysIdSteer_State", state.toString())),
+  // state -> SignalLogger.writeString("SysId_State", state.toString())),
   //         new SysIdRoutine.Mechanism(
   //             output -> {
   //               setControl(m_steerCharacterization.withVolts(output.in(Volts)));
@@ -124,7 +133,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               Volts.of(7),
               null, // Use default timeout (10 s)
               // Log state with Logger class
-              state -> Robot.telemetry().log("SysId_State", state.toString())),
+              state -> SignalLogger.writeString("SysId_State", state.toString())),
           new SysIdRoutine.Mechanism(
               output -> {
                 setControl(m_translationCharacterization.withVolts(output.in(Volts)));
@@ -150,7 +159,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             Volts.of(Math.PI),
   //             null, // Use default timeout (10 s)
   //             // Log state with Logger class
-  //             state -> Robot.telemetry().log("SysIdSteer_State", state.toString())),
+  // state -> SignalLogger.writeString("SysId_State", state.toString())),
   //         new SysIdRoutine.Mechanism(
   //             output -> {
   //               setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
@@ -158,9 +167,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   //             },
   //             null,
   //             this));
-
-  @NotLogged
-  public SwerveRequest.ApplyRobotSpeeds bLineRequest = new SwerveRequest.ApplyRobotSpeeds();
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -178,6 +184,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -200,6 +207,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -233,6 +241,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
     fieldCentric = new CustomFieldCentric(getPigeon2());
+    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -280,7 +289,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Vector<N2> scaledTranslationInputs =
         rescaleTranslation(m_inputController.getLeftY(), m_inputController.getLeftX());
 
-    if (!DriverStation.isAutonomous()) {
+    if (!DriverStation.isAutonomous() && !m_sysid) {
       setControl(
           fieldCentric
               .withVelocityX(m_maxSpeed.times(-scaledTranslationInputs.get(0, 0)))
@@ -290,7 +299,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               .withDriveState(m_currentState));
     }
 
-    ShooterMath2.calculate(getPose(), getFieldSpeeds());
+    ShooterMath4.calculate(getPose());
+  }
+
+  public void sysid(boolean sysid) {
+    m_sysid = sysid;
   }
 
   /** Rescales the translation input vector with deadband and power curve. */
@@ -355,10 +368,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
+    // if (!getPigeon2().isConnected()) {
+    //   super.addVisionMeasurement(
+    //       visionRobotPoseMeters,
+    //       Utils.fpgaToCurrentTime(timestampSeconds),
+    //       VecBuilder.fill(0.05, 0.05, 0.05));
+    //   DriverStation.reportError(
+    //       "--- PIGEON NOT CONNECTED", false); // Set vision StdDev to low if pigeon is
+    // disconnected
+    //   return;
+    // }
     super.addVisionMeasurement(
-        new Pose2d(visionRobotPoseMeters.getTranslation(), getRotation()),
-        Utils.fpgaToCurrentTime(timestampSeconds),
-        visionMeasurementStdDevs);
+        visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     if (m_shouldAcceptNextVisionMeasurementRotation) {
       m_shouldAcceptNextVisionMeasurementRotation = false;
       resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
@@ -367,11 +388,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   public void setShouldAcceptNextVisionMeasurementRotation(boolean shouldAccept) {
     this.m_shouldAcceptNextVisionMeasurementRotation = shouldAccept;
-  }
-
-  @Logged(importance = Importance.INFO)
-  public boolean isGoingTowardsAllianceZone() {
-    return fieldCentric.isGoingToAllianceZone(getPose());
   }
 
   @Logged(importance = Importance.CRITICAL)
@@ -459,5 +475,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public enum DriveStates {
     DRIVER_CONTROLLED,
     ROTATION_LOCK,
+    X_LOCK
   }
 }

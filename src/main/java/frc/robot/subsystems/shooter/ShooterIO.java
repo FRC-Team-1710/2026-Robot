@@ -57,24 +57,6 @@ public interface ShooterIO {
   }
 
   /**
-   * Returns whether the left beam break sensor is blocked.
-   *
-   * @return true when the left beam is broken
-   */
-  public default boolean hasBreakerLeftBroke() {
-    return false;
-  }
-
-  /**
-   * Returns whether the right beam break sensor is blocked.
-   *
-   * @return true when the right beam is broken
-   */
-  public default boolean hasBreakerRightBroke() {
-    return false;
-  }
-
-  /**
    * Injects the fuel simulator reference for simulation-backed IO implementations.
    *
    * @param fuelSim shooter fuel simulator

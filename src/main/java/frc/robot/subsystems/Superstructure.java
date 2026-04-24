@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -25,8 +26,9 @@ import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
+import frc.robot.utils.CustomFieldCentric.RequestStates;
 import frc.robot.utils.MathUtils;
-import frc.robot.utils.shooterMath.ShooterMath2;
+import frc.robot.utils.shooterMath.ShooterMath4;
 
 @Logged
 public class Superstructure {
@@ -49,7 +51,17 @@ public class Superstructure {
   private boolean m_didIntake = false;
 
   @Logged(importance = Importance.CRITICAL)
-  private AddableStates m_addableState = AddableStates.Jostle;
+  private IntakeAddableStates m_intakeAddableState = IntakeAddableStates.Intaking;
+
+  @Logged(importance = Importance.CRITICAL)
+  private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
+
+  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.5);
+
+  @NotLogged private final Debouncer m_debouncerDrive = new Debouncer(0.5);
+
+  @Logged(importance = Importance.CRITICAL)
+  private boolean m_wasAtTarget = false;
 
   /**
    * Constructs the superstructure with all subsystem references.
@@ -83,9 +95,6 @@ public class Superstructure {
 
   /** Runs periodic logic for state transitions and subsystem coordination. */
   public void periodic() {
-    m_shooter.setGoingTowardsAllianceZone(m_drivetrain.isGoingTowardsAllianceZone());
-    m_shooter.setDidIntake(m_didIntake);
-
     m_currentState = handleStateTransitions();
     applyStates();
 
@@ -93,8 +102,14 @@ public class Superstructure {
 
     Robot.telemetry().log("redAlliance", Alliance.redAlliance);
 
-    Robot.telemetry().log("MatchState/TimeTillActive", MatchState.timeTillActive());
-    Robot.telemetry().log("MatchState/TimeTillInactive", MatchState.timeTillInactive());
+    Robot.telemetry()
+        .log(
+            "MatchState/TimeTillActive",
+            Math.round(MatchState.timeTillActive().in(Seconds) * 10.0) / 10.0);
+    Robot.telemetry()
+        .log(
+            "MatchState/TimeTillInactive",
+            Math.round(MatchState.timeTillInactive().in(Seconds) * 10.0) / 10.0);
     Robot.telemetry()
         .log(
             "MatchState/AutonomousWinnerIsRed",
@@ -156,22 +171,32 @@ public class Superstructure {
                           <= FieldConstants.kFieldLength
                               .minus(FieldConstants.kBumpDistanceFromDS)
                               .in(Meters)))
-              ? switch (m_addableState) {
+              ? switch (m_intakeAddableState) {
                 case Jostle -> CurrentStates.Shoot;
                 case IntakeUp -> CurrentStates.ShootWithIntakeUp;
                 case Intaking -> CurrentStates.ShootWhileIntaking;
               }
-              : switch (m_addableState) {
+              : switch (m_intakeAddableState) {
                 case Jostle -> CurrentStates.Score;
                 case IntakeUp -> CurrentStates.ScoreWithIntakeUp;
                 case Intaking -> CurrentStates.ScoreWhileIntaking;
               };
       case Intake -> CurrentStates.Intake;
-      case IntakeAndShoot -> CurrentStates.ScoreWhileIntaking;
+      case IntakeAndShoot ->
+          ((!Alliance.redAlliance
+                      && m_drivetrain.getPose().getX()
+                          >= FieldConstants.kBumpDistanceFromDS.in(Meters))
+                  || (Alliance.redAlliance
+                      && m_drivetrain.getPose().getX()
+                          <= FieldConstants.kFieldLength
+                              .minus(FieldConstants.kBumpDistanceFromDS)
+                              .in(Meters)))
+              ? CurrentStates.ShootWhileIntaking
+              : CurrentStates.ScoreWhileIntaking;
       case Climb -> CurrentStates.Climb;
       case DefaultAuto -> CurrentStates.IdleAuto;
       case ShootAuto ->
-          switch (m_addableState) {
+          switch (m_intakeAddableState) {
             case Jostle -> CurrentStates.ScoreAuto;
             case IntakeUp -> CurrentStates.ScoreWithIntakeUpAuto;
             case Intaking -> CurrentStates.ScoreWhileIntakingAuto;
@@ -239,54 +264,99 @@ public class Superstructure {
 
   private void idle() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
+    if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
+        && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
+      m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
+    } else {
+      m_shooter.setState(
+          m_shooterAddableState == ShooterAddableStates.Idle
+              ? SHOOTER_STATE.IDLE
+              : SHOOTER_STATE.SHOOT);
+    }
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
     if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
       m_intake.setState(IntakeStates.Half);
     }
+    m_wasAtTarget = false;
   }
 
   private void score() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void scoreWithIntakeUp() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    m_intake.setState(IntakeStates.Up);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
+    m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void shoot() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void shootWithIntakeUp() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    m_intake.setState(IntakeStates.Up);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
+    m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -294,62 +364,97 @@ public class Superstructure {
   private void intake() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
     m_intake.setState(IntakeStates.Intaking);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
 
     m_didIntake = true;
+    m_wasAtTarget = false;
   }
 
   private void scoreWhileIntaking() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void shootWhileIntaking() {
+    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
+    // } else {
+    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
+    // }
+
+    if (!m_wasAtTarget) {
+      m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
+    }
+
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
-    m_feeder.setState(flywheelAtTargetWithWait() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_feeder.setState(m_wasAtTarget ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
+    m_indexer.setState(m_wasAtTarget ? IndexStates.Indexing : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void climb() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
+    m_wasAtTarget = false;
   }
 
   private void idleAuto() {
     m_feeder.setState(FEEDER_STATE.STOP);
-    m_shooter.setState(SHOOTER_STATE.IDLE);
     m_indexer.setState(IndexStates.Idle);
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
   }
 
   private void scoreAuto() {
     m_intake.setState(IntakeStates.Jostle);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_indexer.setState(
+        m_debouncer.calculate(flywheelAtTargetWithWait())
+            ? IndexStates.Indexing
+            : IndexStates.Idle);
 
     m_didIntake = false;
   }
 
   private void scoreWithIntakeUpAuto() {
-    m_intake.setState(IntakeStates.Up);
+    m_intake.setState(IntakeStates.UpAndIntake);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_indexer.setState(
+        m_debouncer.calculate(flywheelAtTargetWithWait())
+            ? IndexStates.Indexing
+            : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -367,7 +472,10 @@ public class Superstructure {
     m_intake.setState(IntakeStates.Intaking);
     m_shooter.setState(SHOOTER_STATE.SHOOT);
     m_feeder.setState(flywheelAtTarget() ? FEEDER_STATE.FEEDING : FEEDER_STATE.STOP);
-    m_indexer.setState(flywheelAtTargetWithWait() ? IndexStates.Indexing : IndexStates.Idle);
+    m_indexer.setState(
+        m_debouncer.calculate(flywheelAtTargetWithWait())
+            ? IndexStates.Indexing
+            : IndexStates.Idle);
 
     m_didIntake = false;
   }
@@ -380,16 +488,32 @@ public class Superstructure {
 
   private void override() {
     m_intake.setState(
-        m_addableState == AddableStates.IntakeUp ? IntakeStates.Up : IntakeStates.Jostle);
+        m_intakeAddableState == IntakeAddableStates.IntakeUp
+            ? IntakeStates.UpAndIntake
+            : IntakeStates.Jostle);
     m_indexer.setState(IndexStates.Indexing);
     m_feeder.setState(FEEDER_STATE.FEEDING);
   }
 
+  @NotLogged
+  /**
+   * @return whether the superstructure is currently in a shooting (not scoring) state
+   */
+  public boolean shooting() {
+    return m_currentState == CurrentStates.Shoot
+        || m_currentState == CurrentStates.ShootWhileIntaking
+        || m_currentState == CurrentStates.ShootWithIntakeUp;
+  }
+
   @Logged(importance = Importance.CRITICAL)
   public boolean driveAtTarget() {
-    return Math.abs(
-            m_drivetrain.getRotation().minus(m_drivetrain.fieldCentric.rotationTarget).getDegrees())
-        <= 5;
+    return m_debouncerDrive.calculate(
+        Math.abs(
+                m_drivetrain
+                    .getRotation()
+                    .minus(m_drivetrain.fieldCentric.rotationTarget)
+                    .getDegrees())
+            <= 10);
   }
 
   @Logged(importance = Importance.CRITICAL)
@@ -400,13 +524,13 @@ public class Superstructure {
   /** Returns whether the m_shooter is at its target with wait. */
   @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTargetWithWait() {
-    return flywheelAtTarget()
-        && MatchState.canShoot(ShooterMath2.currentSolution.shooterLeft().tof().in(Seconds));
+    return flywheelAtTarget();
+    // && MatchState.canShoot(ShooterMath4.currentSolution.tof().in(Seconds));
   }
 
   @NotLogged
   public Rotation2d getRotationForScore() {
-    return ShooterMath2.currentSolution.robotHeading().plus(Rotation2d.k180deg);
+    return ShooterMath4.currentSolution.robotHeading().plus(Rotation2d.k180deg);
   }
 
   @NotLogged
@@ -471,14 +595,20 @@ public class Superstructure {
     IntakeAuto(),
     ScoreWhileIntakingAuto(),
     ClimbAuto(),
-    Override(),
+    Override()
   }
 
-  /** The addable states of superstructure */
-  public enum AddableStates {
+  /** The addable states of intake */
+  public enum IntakeAddableStates {
     Intaking(),
     Jostle(),
-    IntakeUp(),
+    IntakeUp()
+  }
+
+  /** The addable states of shooter */
+  public enum ShooterAddableStates {
+    SpinUp(),
+    Idle()
   }
 
   /**
@@ -491,8 +621,15 @@ public class Superstructure {
   /**
    * @param state the addable state to set
    */
-  public void setAddableState(AddableStates state) {
-    m_addableState = state;
+  public void setIntakeAddableState(IntakeAddableStates state) {
+    m_intakeAddableState = state;
+  }
+
+  /**
+   * @param state the addable state to set
+   */
+  public void setShooterAddableState(ShooterAddableStates state) {
+    m_shooterAddableState = state;
   }
 
   /**
@@ -507,8 +644,16 @@ public class Superstructure {
    * @param state the addable state to set
    * @return a command that sets the addable state
    */
-  public Command setAddableStateCommand(AddableStates state) {
-    return Commands.runOnce(() -> setAddableState(state)).ignoringDisable(true);
+  public Command setIntakeAddableStateCommand(IntakeAddableStates state) {
+    return Commands.runOnce(() -> setIntakeAddableState(state)).ignoringDisable(true);
+  }
+
+  /**
+   * @param state the addable state to set
+   * @return a command that sets the addable state
+   */
+  public Command setShooterAddableStateCommand(ShooterAddableStates state) {
+    return Commands.runOnce(() -> setShooterAddableState(state)).ignoringDisable(true);
   }
 
   /** Returns the current state of the superstructure. */

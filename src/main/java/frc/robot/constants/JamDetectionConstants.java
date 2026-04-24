@@ -16,7 +16,7 @@ public class JamDetectionConstants {
     public static final Current kJamCurrent = Amps.of(10000000);
 
     /** Jam trip time */
-    public static final Time kJamMinimumTime = Seconds.of(0.5);
+    public static final Time kJamMinimumTime = Seconds.of(100000);
 
     /** Time from when the intake starts to when it starts detecting jams */
     public static final Time kJamDetectionDisabledTime = Seconds.of(0.5);

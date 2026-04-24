@@ -165,10 +165,8 @@ public class MathUtils {
   }
 
   public static double[] snapAngles = {
-    DrivetrainAutomationConstants.BumpDetection.kOtherRotation1.getDegrees(),
-    DrivetrainAutomationConstants.BumpDetection.kOtherRotation2.getDegrees(),
-    DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake1.getDegrees(),
-    DrivetrainAutomationConstants.BumpDetection.kShouldRaiseIntake2.getDegrees()
+    DrivetrainAutomationConstants.BumpDetection.kSnap1.getDegrees(),
+    DrivetrainAutomationConstants.BumpDetection.kSnap2.getDegrees()
   };
 
   public static double snapAngle(double angle) {
@@ -207,5 +205,11 @@ public class MathUtils {
     return new Translation2d(
         FieldConstants.kFieldLength.in(Meters) - point.getX(),
         FieldConstants.kFieldWidth.in(Meters) - point.getY());
+  }
+
+  public static double interpolate(double d, double d1, double v1, double d2, double v2) {
+    if (d <= d1) return v1;
+    if (d >= d2) return v2;
+    return v1 + (v2 - v1) * (d - d1) / (d2 - d1);
   }
 }
