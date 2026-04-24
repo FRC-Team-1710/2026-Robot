@@ -557,6 +557,22 @@ public class Superstructure {
             : Rotation2d.k180deg);
   }
 
+  public boolean isStateTryingToShoot() {
+    return switch (m_currentState) {
+      case Shoot,
+              ShootWithIntakeUp,
+              ShootWhileIntaking,
+              Score,
+              ScoreWithIntakeUp,
+              ScoreWhileIntaking,
+              ScoreAuto,
+              ScoreWithIntakeUpAuto,
+              ScoreWhileIntakingAuto ->
+          true;
+      default -> false;
+    };
+  }
+
   /** The wanted states of superstructure */
   public enum WantedStates {
     // DO NOT RENAME (unless AutosChooser is updated as well)
