@@ -229,7 +229,7 @@ public class AutosChooser {
         Commands.sequence(
             pathBuilder.build(new Path("optimizum")),
             getShootCommand(superstructure, drivetrain),
-            pathBuilder.build(new Path("secondOptimizums")),
+            pathBuilder.build(new Path("doublesweeperisms")),
             getShootCommand(superstructure, drivetrain)));
     listOfPaths.put("DEPOT", Commands.sequence(pathBuilder.build(new Path("depot"))));
     listOfPaths.put(
@@ -237,7 +237,7 @@ public class AutosChooser {
         Commands.sequence(
             pathBuilder.build(new Path("optimizum")),
             getShootCommand(superstructure, drivetrain),
-            pathBuilder.build(new Path("doublesweeperisms")),
+            pathBuilder.build(new Path("secondOptimizums")),
             getShootCommand(superstructure, drivetrain)));
     listOfPaths.put(
         "MIDDLETHENDEPOT",
