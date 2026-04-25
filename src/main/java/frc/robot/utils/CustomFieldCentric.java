@@ -68,9 +68,9 @@ public class CustomFieldCentric implements SwerveRequest {
   @Logged(importance = Importance.INFO)
   private final ProfiledPIDController rotationLockPID =
       new ProfiledPIDController(
-          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 9,
+          Mode.currentMode == CurrentMode.SIMULATION ? 50 : 9.0,
           0.0,
-          Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
+          Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.5,
           new Constraints(
               // Mode.currentMode == CurrentMode.SIMULATION ?
               3,
