@@ -17,16 +17,16 @@ public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
   /** Static friction compensation */
-  public static final double kFlyS = 0.1775;
+  public static final double kFlyS = 4.6;
 
   /** Velocity feedforward (predicts voltage needed for a speed) */
-  public static final double kFlyV = 0.116;
+  public static final double kFlyV = 0.01;
 
   /** Acceleration feedforward (predicts voltage needed for an acceleration) */
   public static final double kFlyA = 0.0;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kFlyP = 0.4;
+  public static final double kFlyP = 10.0;
 
   /** Derivative gain (corrects acceleration errors) */
   public static final double kFlyD = 0.0;
@@ -52,7 +52,7 @@ public final class ShooterConstants {
 
   // ==================== Motion Magic (Speed Limits) ====================
   public static final double FLYWHEEL_MOTION_MAGIC_CRUISE_VELOCITY = 100.0;
-  public static final double FLYWHEEL_MOTION_MAGIC_ACCELERATION = 45.0;
+  public static final double FLYWHEEL_MOTION_MAGIC_ACCELERATION = 85.0;
 
   public static final double HOOD_MOTION_MAGIC_CRUISE_VELOCITY = 5.0;
   public static final double HOOD_MOTION_MAGIC_ACCELERATION = 5.0;

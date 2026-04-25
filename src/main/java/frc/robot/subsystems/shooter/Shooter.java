@@ -11,6 +11,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
@@ -40,6 +41,10 @@ public class Shooter {
 
   @Logged(importance = Importance.INFO)
   private boolean m_shouldOverride;
+
+  @NotLogged private boolean m_shouldCheckNewSetpoint = false;
+
+  @NotLogged private final Timer m_timer = new Timer();
 
   /**
    * Constructs a new Shooter.
@@ -84,8 +89,11 @@ public class Shooter {
   /** Returns whether the flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
+    if (!m_shouldCheckNewSetpoint && m_timer.get() <= 0.1) {
+      m_shouldCheckNewSetpoint = m_io.getSetpointReferenceVelocityIsZero();
+    }
     return Mode.currentMode == CurrentMode.REAL
-        ? m_io.getSetpointReferenceVelocityIsZero()
+        ? m_shouldCheckNewSetpoint
         // ? (this.m_targetVelocity.isNear(
         //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
         : true;
@@ -160,6 +168,11 @@ public class Shooter {
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
+    if (this.m_currentState != pState) {
+      m_timer.restart();
+      m_shouldCheckNewSetpoint = true;
+    }
+
     this.m_currentState = pState;
   }
 

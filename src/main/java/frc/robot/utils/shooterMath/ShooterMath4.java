@@ -28,11 +28,13 @@ public final class ShooterMath4 {
 
   static {
     // addToMaps(0, 35.5, 13.0);
-    addToMaps(1.66, 35.5, 18.0);
-    addToMaps(2.04, 38.5, 21.0);
-    addToMaps(2.54, 43.5, 24.0);
-    addToMaps(2.8, 44.75, 28.0);
-    addToMaps(3.35, 46.75, 29.0);
+    addToMaps(1.51, 47.0, 14.0);
+    addToMaps(2.01, 49.0, 18.0);
+    addToMaps(2.53, 53.0, 20.0);
+    addToMaps(3.02, 56.5, 22.0);
+    addToMaps(3.50, 59.75, 23.0);
+    addToMaps(4.00, 63.25, 24.5);
+    addToMaps(4.51, 68.0, 26.0);
     // addToMaps(100, 46.75, 13.0);
 
     SmartDashboard.putNumber("tuning/preferredMinArrivalAngleDeg", 0);

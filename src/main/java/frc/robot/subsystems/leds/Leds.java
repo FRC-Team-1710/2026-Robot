@@ -63,32 +63,29 @@ public class Leds {
           MatchState.autonomousWinnerIsRed.get() ? Alliance.redAlliance : !Alliance.redAlliance;
     }
 
-    // In auto lights
-    this.inputBooleans[2] = DriverStation.isAutonomous();
-
     // Can shoot lights
-    this.inputBooleans[3] =
+    this.inputBooleans[2] =
         this.m_superstructure.isStateTryingToShoot()
             && this.m_superstructure.flywheelAtTarget()
             && this.m_superstructure.driveAtTarget();
 
     // Can't shoot lights
-    this.inputBooleans[4] =
+    this.inputBooleans[3] =
         this.m_superstructure.isStateTryingToShoot()
             && (!this.m_superstructure.flywheelAtTarget()
                 || !this.m_superstructure.driveAtTarget());
 
     // Intake lights
-    this.inputBooleans[5] = this.m_superstructure.currentStateUsesIntake();
+    this.inputBooleans[4] = this.m_superstructure.currentStateUsesIntake();
 
     // Brownout lights
-    this.inputBooleans[6] = RobotController.isBrownedOut();
+    this.inputBooleans[5] = RobotController.isBrownedOut();
 
     // Disconnected lights
-    this.inputBooleans[7] = !DriverStation.isDSAttached();
+    this.inputBooleans[6] = !DriverStation.isDSAttached();
 
     // Disabled lights
-    this.inputBooleans[8] = DriverStation.isDisabled();
+    this.inputBooleans[7] = DriverStation.isDisabled();
 
     for (int i = 0; i < inputBooleans.length; i++) {
       Robot.telemetry().log("LEDBooleans/" + i, inputBooleans[i]);
