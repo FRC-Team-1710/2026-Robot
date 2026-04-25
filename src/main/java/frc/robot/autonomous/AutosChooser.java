@@ -91,12 +91,10 @@ public class AutosChooser {
     addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
     addPath(Auto.RIGHT_OUTSIDE_PART_2, paths.get("RIGHT_OUTSIDE_PART_2"));
     addPath(Auto.LEFT_OUTSIDE_PART_2, paths.get("LEFT_OUTSIDE_PART_2"));
-
     addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
-    // addPath(Auto.ZONE2, paths.get("ZONE2"));
-    // addPath(Auto.MIDDLE, paths.get("MIDDLE"));
-
-    addPath(Auto.TEST, paths.get("TEST"));
+    addPath(Auto.DEPOT, paths.get("DEPOT"));
+    addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
+    addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
 
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
@@ -226,7 +224,6 @@ public class AutosChooser {
         "LEFT_INSIDE_PART_2",
         Commands.sequence(
             pathBuilder.build(new Path("insideracer")), pathBuilder.build(new Path("Loopdaloop"))));
-    listOfPaths.put("TEST", Commands.sequence(pathBuilder.build(new Path("test"))));
     listOfPaths.put(
         "OPTIMIZUM",
         Commands.sequence(
@@ -234,6 +231,22 @@ public class AutosChooser {
             getShootCommand(superstructure, drivetrain),
             pathBuilder.build(new Path("secondOptimizums")),
             getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put("DEPOT", Commands.sequence(pathBuilder.build(new Path("depot"))));
+    listOfPaths.put(
+        "DOUBLESWEEPER",
+        Commands.sequence(
+            pathBuilder.build(new Path("optimizum")),
+            getShootCommand(superstructure, drivetrain),
+            pathBuilder.build(new Path("optimizum")),
+            getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "MIDDLETHENDEPOT",
+        Commands.sequence(
+            pathBuilder.build(new Path("NeutralMiddle")),
+            getShootCommand(superstructure, drivetrain),
+            pathBuilder.build(new Path("depot")),
+            getShootCommand(superstructure, drivetrain)));
+
     // listOfPaths.put(
     //     "ZONE3",
     //     Commands.sequence(
@@ -256,17 +269,13 @@ public class AutosChooser {
   // if you make a new path then you need to add the name here
   public enum Auto {
     NONE(),
-    ZONE1(),
-    ZONE3(),
-    ZONE2(),
-    LEFT_INSIDE(),
-    RIGHT_INSIDE(),
     LEFT_INSIDE_PART_2(),
     RIGHT_INSIDE_PART_2(),
     LEFT_OUTSIDE_PART_2(),
     RIGHT_OUTSIDE_PART_2(),
-    MIDDLE(),
-    TEST(),
     OPTIMIZUM(),
+    DEPOT(),
+    DOUBLESWEEPER(),
+    MIDDLETHENDEPOT()
   }
 }
