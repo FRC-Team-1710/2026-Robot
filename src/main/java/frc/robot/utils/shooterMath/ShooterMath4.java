@@ -26,6 +26,12 @@ public final class ShooterMath4 {
   /** Angle map for interpolating hood angles. (Meters -> Degrees) */
   private static final InterpolatingDoubleTreeMap m_angleMap = new InterpolatingDoubleTreeMap();
 
+  /** Speed map for interpolating flywheel speeds. (Meters -> Rotations/Second) */
+  private static final InterpolatingDoubleTreeMap m_speedPassMap = new InterpolatingDoubleTreeMap();
+
+  /** Angle map for interpolating hood angles. (Meters -> Degrees) */
+  private static final InterpolatingDoubleTreeMap m_anglePassMap = new InterpolatingDoubleTreeMap();
+
   static {
     // addToMaps(0, 35.5, 13.0);
     addToMaps(1.51, 47.0, 14.0);
@@ -37,6 +43,12 @@ public final class ShooterMath4 {
     addToMaps(4.51, 68.0, 26.0);
     // addToMaps(100, 46.75, 13.0);
 
+    addToPassMaps(0.0, 45.0, 40.0);
+    addToPassMaps(1.51, 45.0, 40.0);
+    addToPassMaps(2.24, 55.0, 43.0);
+    addToPassMaps(3.67, 70.0, 46.0);
+    addToPassMaps(5.36, 90.0, 47.0);
+
     SmartDashboard.putNumber("tuning/preferredMinArrivalAngleDeg", 0);
     SmartDashboard.putNumber("tuning/speedTransferEfficiency", 0);
     SmartDashboard.putBoolean("tuning/tuningShooter", false);
@@ -47,6 +59,13 @@ public final class ShooterMath4 {
       double distanceMeters, double flywheelRotPS, double hoodAngleDegrees) {
     m_speedMap.put(distanceMeters, flywheelRotPS);
     m_angleMap.put(distanceMeters, hoodAngleDegrees);
+  }
+
+  /** Maters, Rotations/Second, Degrees */
+  private static void addToPassMaps(
+      double distanceMeters, double flywheelRotPS, double hoodAngleDegrees) {
+    m_speedPassMap.put(distanceMeters, flywheelRotPS);
+    m_anglePassMap.put(distanceMeters, hoodAngleDegrees);
   }
 
   /**
@@ -93,8 +112,6 @@ public final class ShooterMath4 {
         (Alliance.redAlliance ? FieldConstants.kHubCenterRed : FieldConstants.kHubCenterBlue)
             .toTranslation2d();
 
-    Robot.telemetry().log("SHOTDIST", robotPose.getTranslation().getDistance(m_targetCenter));
-
     calculateComplexFromDirectionAndSpeed(robotPose);
     calculateSimpleFromDirectionAndSpeed(robotPose);
 
@@ -130,6 +147,8 @@ public final class ShooterMath4 {
   private static void calculateSimpleFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = Math.abs(robotPose.getX() - m_targetCenter.getX()) + Units.inchesToMeters(12);
 
+    Robot.telemetry().log("SHOTDIST", dist);
+
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentPassingSolution =
           new SimpleSolution(
@@ -138,7 +157,8 @@ public final class ShooterMath4 {
     } else {
       currentPassingSolution =
           new SimpleSolution(
-              Degrees.of(m_angleMap.get(dist)), RotationsPerSecond.of(m_speedMap.get(dist)));
+              Degrees.of(m_anglePassMap.get(dist)),
+              RotationsPerSecond.of(m_speedPassMap.get(dist)));
     }
   }
 }
