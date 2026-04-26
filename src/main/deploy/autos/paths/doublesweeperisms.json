@@ -185,6 +185,11 @@
         "value": 3.0,
         "start_ordinal": 6,
         "end_ordinal": 8
+      },
+      {
+        "value": 3.25,
+        "start_ordinal": 12,
+        "end_ordinal": 12
       }
     ]
   }
