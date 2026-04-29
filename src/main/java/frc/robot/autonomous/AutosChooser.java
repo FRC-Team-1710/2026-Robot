@@ -87,14 +87,15 @@ public class AutosChooser {
     // addPath(Auto.ZONE3, paths.get("ZONE3"));
     // addPath(Auto.RIGHT_INSIDE, paths.get("RIGHT_INSIDE"));
     // addPath(Auto.LEFT_INSIDE, paths.get("LEFT_INSIDE"));
-    addPath(Auto.RIGHT_INSIDE_PART_2, paths.get("RIGHT_INSIDE_PART_2"));
-    addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
-    addPath(Auto.RIGHT_OUTSIDE_PART_2, paths.get("RIGHT_OUTSIDE_PART_2"));
-    addPath(Auto.LEFT_OUTSIDE_PART_2, paths.get("LEFT_OUTSIDE_PART_2"));
+    // addPath(Auto.RIGHT_INSIDE_PART_2, paths.get("RIGHT_INSIDE_PART_2"));
+    // addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
+    // addPath(Auto.RIGHT_OUTSIDE_PART_2, paths.get("RIGHT_OUTSIDE_PART_2"));
+    // addPath(Auto.LEFT_OUTSIDE_PART_2, paths.get("LEFT_OUTSIDE_PART_2"));
     addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
+    addPath(Auto.OPTIMIZUM_BUT_IT_IS_DIFFERENT, paths.get("OPTIMIZUM_BUT_IT_IS_DIFFERENT"));
     addPath(Auto.DEPOT, paths.get("DEPOT"));
-    addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
-    addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
+    // addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
+    // addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
 
     SmartDashboard.putString("Auto/CustomInput", "");
     SmartDashboard.putData("Auto/AutoChooser", autoChooser);
@@ -196,59 +197,74 @@ public class AutosChooser {
   public HashMap<String, Command> autoPathing(
       boolean depotPath, Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     HashMap<String, Command> listOfPaths = new HashMap<>();
-    var temp = new Path("outsideracer");
-    var temp2 = new Path("Loopdaloop");
-    var temp3 = new Path("insideracer");
-    temp.mirror(); // mirrors the path across the y axis\
-    temp2.mirror(); // mirrors the path across the y axis\
-    temp3.mirror(); // mirrors the path across the y axis\
+    var optimizumFlip = new Path("optimizum");
+    optimizumFlip.mirror(); // mirrors the path across the y axis
+    var secondOptimizumsFlip = new Path("secondOptimizums");
+    secondOptimizumsFlip.mirror(); // mirrors the path across the y axis\
+    // var temp = new Path("outsideracer");
+    // var temp2 = new Path("Loopdaloop");
+    // var temp3 = new Path("insideracer");
+    // temp.mirror(); // mirrors the path across the y axis\
+    // temp2.mirror(); // mirrors the path across the y axis\
+    // temp3.mirror(); // mirrors the path across the y axis\
     // listOfPaths.put(
     //     "RIGHT_INSIDE",
     //     Commands.sequence(pathBuilder.build(temp))); // flipped version of left_inside
     // listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new
     // Path("outsideracer"))));
-    listOfPaths.put(
-        "RIGHT_OUTSIDE_PART_2",
-        Commands.sequence(
-            pathBuilder.build(temp), pathBuilder.build(temp2))); // flipped version of left_inside
-    listOfPaths.put(
-        "LEFT_OUTSIDE_PART_2",
-        Commands.sequence(
-            pathBuilder.build(new Path("outsideracer")),
-            pathBuilder.build(new Path("Loopdaloop"))));
-    listOfPaths.put(
-        "RIGHT_INSIDE_PART_2",
-        Commands.sequence(
-            pathBuilder.build(temp3), pathBuilder.build(temp2))); // flipped version of left_inside
-    listOfPaths.put(
-        "LEFT_INSIDE_PART_2",
-        Commands.sequence(
-            pathBuilder.build(new Path("insideracer")), pathBuilder.build(new Path("Loopdaloop"))));
+    // listOfPaths.put(
+    //     "RIGHT_OUTSIDE_PART_2",
+    //     Commands.sequence(
+    //         pathBuilder.build(temp), pathBuilder.build(temp2))); // flipped version of
+    // left_inside
+    // listOfPaths.put(
+    //     "LEFT_OUTSIDE_PART_2",
+    //     Commands.sequence(
+    //         pathBuilder.build(new Path("outsideracer")),
+    //         pathBuilder.build(new Path("Loopdaloop"))));
+    // listOfPaths.put(
+    //     "RIGHT_INSIDE_PART_2",
+    //     Commands.sequence(
+    //         pathBuilder.build(temp3), pathBuilder.build(temp2))); // flipped version of
+    // left_inside
+    // listOfPaths.put(
+    //     "LEFT_INSIDE_PART_2",
+    //     Commands.sequence(
+    //         pathBuilder.build(new Path("insideracer")), pathBuilder.build(new
+    // Path("Loopdaloop"))));
     listOfPaths.put(
         "OPTIMIZUM",
-        Commands.sequence(
-            pathBuilder.build(new Path("optimizum")),
-            getShootCommand(superstructure, drivetrain),
-            pathBuilder.build(new Path("doublesweeperisms")),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "DEPOT",
-        Commands.sequence(
-            pathBuilder.build(new Path("depot")), getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "DOUBLESWEEPER",
         Commands.sequence(
             pathBuilder.build(new Path("optimizum")),
             getShootCommand(superstructure, drivetrain),
             pathBuilder.build(new Path("secondOptimizums")),
             getShootCommand(superstructure, drivetrain)));
     listOfPaths.put(
-        "MIDDLETHENDEPOT",
+        "OPTIMIZUM_BUT_IT_IS_DIFFERENT",
         Commands.sequence(
-            pathBuilder.build(new Path("NeutralMiddle")),
+            pathBuilder.build(optimizumFlip),
             getShootCommand(superstructure, drivetrain),
-            pathBuilder.build(new Path("depot")),
+            pathBuilder.build(secondOptimizumsFlip),
             getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "DEPOT",
+        Commands.sequence(
+            pathBuilder.build(new Path("AngledDepot")),
+            getShootCommand(superstructure, drivetrain)));
+    // listOfPaths.put(
+    //     "DOUBLESWEEPER",
+    //     Commands.sequence(
+    //         pathBuilder.build(new Path("optimizum")),
+    //         getShootCommand(superstructure, drivetrain),
+    //         pathBuilder.build(new Path("doublesweeperisms")),
+    //         getShootCommand(superstructure, drivetrain)));
+    // listOfPaths.put(
+    //     "MIDDLETHENDEPOT",
+    //     Commands.sequence(
+    //         pathBuilder.build(new Path("NeutralMiddle")),
+    //         getShootCommand(superstructure, drivetrain),
+    //         pathBuilder.build(new Path("depot")),
+    //         getShootCommand(superstructure, drivetrain)));
 
     // listOfPaths.put(
     //     "ZONE3",
@@ -272,13 +288,14 @@ public class AutosChooser {
   // if you make a new path then you need to add the name here
   public enum Auto {
     NONE(),
-    LEFT_INSIDE_PART_2(),
-    RIGHT_INSIDE_PART_2(),
-    LEFT_OUTSIDE_PART_2(),
-    RIGHT_OUTSIDE_PART_2(),
+    // LEFT_INSIDE_PART_2(),
+    // RIGHT_INSIDE_PART_2(),
+    // LEFT_OUTSIDE_PART_2(),
+    // RIGHT_OUTSIDE_PART_2(),
     OPTIMIZUM(),
     DEPOT(),
-    DOUBLESWEEPER(),
-    MIDDLETHENDEPOT()
+    OPTIMIZUM_BUT_IT_IS_DIFFERENT(),
+    // DOUBLESWEEPER(),
+    // MIDDLETHENDEPOT()
   }
 }
