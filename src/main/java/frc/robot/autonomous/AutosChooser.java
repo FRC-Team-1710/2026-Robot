@@ -231,7 +231,10 @@ public class AutosChooser {
             getShootCommand(superstructure, drivetrain),
             pathBuilder.build(new Path("doublesweeperisms")),
             getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put("DEPOT", Commands.sequence(pathBuilder.build(new Path("depot"))));
+    listOfPaths.put(
+        "DEPOT",
+        Commands.sequence(
+            pathBuilder.build(new Path("depot")), getShootCommand(superstructure, drivetrain)));
     listOfPaths.put(
         "DOUBLESWEEPER",
         Commands.sequence(
