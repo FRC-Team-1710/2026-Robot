@@ -94,6 +94,9 @@ public class AutosChooser {
     addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
     addPath(Auto.OPTIMIZUM_BUT_IT_IS_DIFFERENT, paths.get("OPTIMIZUM_BUT_IT_IS_DIFFERENT"));
     addPath(Auto.DEPOT, paths.get("DEPOT"));
+    addPath(Auto.DEPOTEXTRAANGLED, paths.get("DEPOTEXTRAANGLED"));
+    addPath(Auto.DEPOTEXTRASPEEDS, paths.get("DEPOTEXTRASPEEDS"));
+    addPath(Auto.DEPOTEXTRAFAR, paths.get("DEPOTEXTRAFAR"));
     // addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
     // addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
 
@@ -251,6 +254,21 @@ public class AutosChooser {
         Commands.sequence(
             pathBuilder.build(new Path("AngledDepot")),
             getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "DEPOTEXTRAANGLED",
+        Commands.sequence(
+            pathBuilder.build(new Path("superangleddepot")),
+            getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "DEPOTEXTRASPEEDS",
+        Commands.sequence(
+            pathBuilder.build(new Path("superspeedsDepot")),
+            getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "DEPOTEXTRAFAR",
+        Commands.sequence(
+            pathBuilder.build(new Path("superfardepot")),
+            getShootCommand(superstructure, drivetrain)));
     // listOfPaths.put(
     //     "DOUBLESWEEPER",
     //     Commands.sequence(
@@ -295,6 +313,9 @@ public class AutosChooser {
     OPTIMIZUM(),
     DEPOT(),
     OPTIMIZUM_BUT_IT_IS_DIFFERENT(),
+    DEPOTEXTRAANGLED(),
+    DEPOTEXTRASPEEDS(),
+    DEPOTEXTRAFAR()
     // DOUBLESWEEPER(),
     // MIDDLETHENDEPOT()
   }
