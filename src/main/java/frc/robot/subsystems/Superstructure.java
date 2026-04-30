@@ -53,7 +53,7 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
 
-  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.2);
+  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.6);
 
   @NotLogged private final Debouncer m_debouncerDrive = new Debouncer(0.5);
 

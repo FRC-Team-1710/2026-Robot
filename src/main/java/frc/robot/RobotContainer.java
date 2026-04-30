@@ -87,8 +87,7 @@ public class RobotContainer {
   @Logged(importance = Importance.CRITICAL)
   private final Feeder m_feeder;
 
-  @Logged(importance = Importance.CRITICAL)
-  private final Leds m_leds;
+  @NotLogged private final Leds m_leds; // Everything is logged through Robot.telemetry().log()
 
   // Should add logging soon
   @NotLogged private final Vision[] m_cameras;

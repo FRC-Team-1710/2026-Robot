@@ -1,6 +1,5 @@
 package frc.robot.subsystems.leds;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
@@ -12,7 +11,6 @@ import frc.robot.subsystems.Superstructure;
 
 // Arduino's code | https://github.com/AlexIsCool321/1710-2026-Robot-Leds
 
-@Logged
 public class Leds {
   /** Creates a new LEDSubsystem. */
   // private SerialPort uart;

@@ -100,8 +100,9 @@ public class Robot extends DynamicTimedRobot {
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
+    SignalLogger.stop();
     SignalLogger.setPath("/media/sda1");
-    // SignalLogger.stop();
+    SignalLogger.start();
   }
 
   @Override

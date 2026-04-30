@@ -35,6 +35,7 @@ public final class ShooterMath4 {
   static {
     // addToMaps(0, 35.5, 13.0);
     addToMaps(1.51, 47.0, 14.0);
+    addToMaps(1.65, 47.5, 14.0);
     addToMaps(2.01, 50.0, 18.0);
     addToMaps(2.53, 53.0, 20.0);
     addToMaps(3.02, 56.5, 22.0);
