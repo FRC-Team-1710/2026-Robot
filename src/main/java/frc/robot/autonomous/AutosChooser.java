@@ -94,9 +94,9 @@ public class AutosChooser {
     addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
     addPath(Auto.OPTIMIZUM_BUT_IT_IS_DIFFERENT, paths.get("OPTIMIZUM_BUT_IT_IS_DIFFERENT"));
     addPath(Auto.DEPOT, paths.get("DEPOT"));
-    addPath(Auto.superangleddepot, paths.get("superangleddepot"));
-    addPath(Auto.superfardepot, paths.get("superfardepot"));
-    addPath(Auto.superspeedsDepot, paths.get("superspeedsDepot"));
+    addPath(Auto.DEPOTEXTRAANGLED, paths.get("DEPOTEXTRAANGLED"));
+    addPath(Auto.DEPOTEXTRASPEEDS, paths.get("DEPOTEXTRASPEEDS"));
+    addPath(Auto.DEPOTEXTRAFAR, paths.get("DEPOTEXTRAFAR"));
     // addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
     // addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
 
@@ -255,19 +255,19 @@ public class AutosChooser {
             pathBuilder.build(new Path("AngledDepot")),
             getShootCommand(superstructure, drivetrain)));
     listOfPaths.put(
-        "superangleddepot",
+        "DEPOTEXTRAANGLED",
         Commands.sequence(
             pathBuilder.build(new Path("superangleddepot")),
             getShootCommand(superstructure, drivetrain)));
     listOfPaths.put(
-        "superfardepot",
-        Commands.sequence(
-            pathBuilder.build(new Path("superfardepot")),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "superspeedsDepot",
+        "DEPOTEXTRASPEEDS",
         Commands.sequence(
             pathBuilder.build(new Path("superspeedsDepot")),
+            getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "DEPOTEXTRAFAR",
+        Commands.sequence(
+            pathBuilder.build(new Path("superfardepot")),
             getShootCommand(superstructure, drivetrain)));
     // listOfPaths.put(
     //     "DOUBLESWEEPER",
@@ -313,9 +313,9 @@ public class AutosChooser {
     OPTIMIZUM(),
     DEPOT(),
     OPTIMIZUM_BUT_IT_IS_DIFFERENT(),
-    superangleddepot(),
-    superfardepot(),
-    superspeedsDepot(),
+    DEPOTEXTRAANGLED(),
+    DEPOTEXTRASPEEDS(),
+    DEPOTEXTRAFAR()
     // DOUBLESWEEPER(),
     // MIDDLETHENDEPOT()
   }
