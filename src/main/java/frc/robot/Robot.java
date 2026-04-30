@@ -17,6 +17,7 @@ import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
@@ -49,7 +50,8 @@ public class Robot extends DynamicTimedRobot {
     Alliance.updateRedAlliance();
 
     m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
-    // DataLogManager.start();
+
+    DataLogManager.start();
 
     epilogueConfig.backend =
         EpilogueBackend.multi(
