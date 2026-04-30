@@ -89,7 +89,7 @@ public class Shooter {
   /** Returns whether the flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
-    if (!m_shouldCheckNewSetpoint && m_timer.get() <= 0.1) {
+    if (!m_shouldCheckNewSetpoint && m_timer.get() >= 0.75) {
       m_shouldCheckNewSetpoint = m_io.getSetpointReferenceVelocityIsZero();
     }
     return Mode.currentMode == CurrentMode.REAL
@@ -134,12 +134,16 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(40), Degrees.of(ShooterConstants.HOOD_MIN)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     PASS(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     TEST(
         Milliseconds.of(20),
         RotationsPerSecond.of(40),
+        Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
+    TEST_FAST(
+        Milliseconds.of(20),
+        RotationsPerSecond.of(85),
         Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
     TRENCH(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     CORNER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),

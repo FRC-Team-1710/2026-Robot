@@ -35,7 +35,7 @@ public final class ShooterMath4 {
   static {
     // addToMaps(0, 35.5, 13.0);
     addToMaps(1.51, 47.0, 14.0);
-    addToMaps(2.01, 49.0, 18.0);
+    addToMaps(2.01, 50.0, 18.0);
     addToMaps(2.53, 53.0, 20.0);
     addToMaps(3.02, 56.5, 22.0);
     addToMaps(3.50, 59.75, 23.0);
@@ -129,6 +129,8 @@ public final class ShooterMath4 {
   private static void calculateComplexFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = robotPose.getTranslation().getDistance(m_targetCenter);
 
+    Robot.telemetry().log("SHOTDIST", dist);
+
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentSolution =
           new ShooterSolution(
@@ -147,7 +149,7 @@ public final class ShooterMath4 {
   private static void calculateSimpleFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = Math.abs(robotPose.getX() - m_targetCenter.getX()) + Units.inchesToMeters(12);
 
-    Robot.telemetry().log("SHOTDIST", dist);
+    Robot.telemetry().log("PASSDIST", dist);
 
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentPassingSolution =

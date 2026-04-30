@@ -18,10 +18,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.autonomous.AutosChooser;
-import frc.robot.constants.Alliance;
 import frc.robot.constants.DrivetrainAccelerationLimits;
 import frc.robot.constants.DrivetrainAutomationConstants;
-import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
@@ -64,7 +62,7 @@ import java.util.Arrays;
 @Logged
 public class RobotContainer {
   private final CommandXboxController m_driver = new CommandXboxController(0);
-  private final CommandXboxController m_mech = new CommandXboxController(1);
+  private final CommandXboxController m_notDriver = new CommandXboxController(1);
 
   public FuelSim fuelSim;
 
@@ -150,7 +148,8 @@ public class RobotContainer {
     }
 
     m_superstructure =
-        new Superstructure(m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder);
+        new Superstructure(
+            m_driver, m_notDriver, drivetrain, m_intake, m_shooter, m_indexer, m_feeder);
 
     m_leds = new Leds(m_superstructure);
 
@@ -201,27 +200,27 @@ public class RobotContainer {
 
   /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
-    m_driver
-        .a()
+    m_notDriver
+        .leftTrigger()
         .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)))
         .onFalse(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Down)));
 
-    m_driver
-        .b()
+    m_notDriver
+        .a()
         .onTrue(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Indexing)))
         .onFalse(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Idle)));
 
-    m_driver
-        .x()
+    m_notDriver
+        .b()
         .onTrue(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.FEEDING)))
         .onFalse(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.STOP)));
 
-    m_driver
-        .y()
+    m_notDriver
+        .x()
         .onTrue(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.CORNER)))
         .onFalse(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.IDLE)));
 
-    m_driver
+    m_notDriver
         .rightTrigger()
         .onTrue(
             Commands.runOnce(
@@ -242,7 +241,9 @@ public class RobotContainer {
                   }
                 }));
 
-    m_driver.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
+    m_notDriver
+        .povRight()
+        .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
   }
 
   /**
@@ -415,17 +416,17 @@ public class RobotContainer {
         .rightBumper()
         .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
 
-    m_mech
-        .rightBumper()
-        .onTrue(
-            Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
-                .ignoringDisable(true));
+    // m_mech
+    //     .rightBumper()
+    //     .onTrue(
+    //         Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
+    //             .ignoringDisable(true));
 
-    m_mech
-        .leftBumper()
-        .onTrue(
-            Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
-                .ignoringDisable(true));
+    // m_mech
+    //     .leftBumper()
+    //     .onTrue(
+    //         Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
+    //             .ignoringDisable(true));
 
     new Trigger(drivetrain::inAllianceZone)
         .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
