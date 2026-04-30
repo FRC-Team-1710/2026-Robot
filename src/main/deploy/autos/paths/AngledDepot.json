@@ -14,15 +14,15 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.0,
+      "t_ratio": -0.0,
       "lib_key": "IntakeAuto"
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 0.5429170322908701,
-        "y_meters": 5.062197400487408,
-        "intermediate_handoff_radius_meters": 0.25
+        "x_meters": 0.7630843963076064,
+        "y_meters": 5.098891961156864,
+        "intermediate_handoff_radius_meters": 0.15000000000000002
       },
       "rotation_target": {
         "rotation_radians": 2.4643736042452087,
@@ -32,9 +32,9 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 0.5144198755077674,
-        "y_meters": 6.894610777213698,
-        "intermediate_handoff_radius_meters": 0.25
+        "x_meters": 0.7712818001939599,
+        "y_meters": 6.833453176097938,
+        "intermediate_handoff_radius_meters": 0.15000000000000002
       },
       "rotation_target": {
         "rotation_radians": 2.476653340002916,
