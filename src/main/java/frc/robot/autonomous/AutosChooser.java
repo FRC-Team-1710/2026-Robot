@@ -94,6 +94,9 @@ public class AutosChooser {
     addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
     addPath(Auto.OPTIMIZUM_BUT_IT_IS_DIFFERENT, paths.get("OPTIMIZUM_BUT_IT_IS_DIFFERENT"));
     addPath(Auto.DEPOT, paths.get("DEPOT"));
+    addPath(Auto.superangleddepot, paths.get("superangleddepot"));
+    addPath(Auto.superfardepot, paths.get("superfardepot"));
+    addPath(Auto.superspeedsDepot, paths.get("superspeedsDepot"));
     // addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
     // addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
 
@@ -169,13 +172,13 @@ public class AutosChooser {
                   if (superstructure.flywheelAtTarget()) {
                     timer.start(); // Only count actual shooting time
                   }
-                  if (timer.get() >= 2.25) {
+                  if (timer.get() >= 1.75) {
                     superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                   } else {
                     superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                   }
                 }))
-        .until(() -> timer.get() > 3.75)
+        .until(() -> timer.get() > 3.125)
         .finallyDo(
             () -> {
               superstructure.setWantedState(WantedStates.DefaultAuto);
@@ -251,6 +254,21 @@ public class AutosChooser {
         Commands.sequence(
             pathBuilder.build(new Path("AngledDepot")),
             getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "superangleddepot",
+        Commands.sequence(
+            pathBuilder.build(new Path("superangleddepot")),
+            getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "superfardepot",
+        Commands.sequence(
+            pathBuilder.build(new Path("superfardepot")),
+            getShootCommand(superstructure, drivetrain)));
+    listOfPaths.put(
+        "superspeedsDepot",
+        Commands.sequence(
+            pathBuilder.build(new Path("superspeedsDepot")),
+            getShootCommand(superstructure, drivetrain)));
     // listOfPaths.put(
     //     "DOUBLESWEEPER",
     //     Commands.sequence(
@@ -295,6 +313,9 @@ public class AutosChooser {
     OPTIMIZUM(),
     DEPOT(),
     OPTIMIZUM_BUT_IT_IS_DIFFERENT(),
+    superangleddepot(),
+    superfardepot(),
+    superspeedsDepot(),
     // DOUBLESWEEPER(),
     // MIDDLETHENDEPOT()
   }
