@@ -197,6 +197,10 @@ public class RobotContainer {
     configureBindings();
   }
 
+  public void setTeleCurrentLimits() {
+    drivetrain.setTeleCurrentLimits();
+  }
+
   /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
     m_notDriver

@@ -291,7 +291,8 @@ public class Intake {
     Down(Milliseconds.of(60), Degrees.of(0), 0, 1.75, 1.5),
     Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 0.7, 1.75, 1.5),
     Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1.75, 1.5),
-    Intaking(Milliseconds.of(20), Degrees.of(0), 0.7, 1.75, 1.5);
+    Intaking(Milliseconds.of(20), Degrees.of(0), 0.7, 1.75, 1.5),
+    IntakingAuto(Milliseconds.of(20), Degrees.of(0), 0.7, 1.75, 1.5);
 
     private final Time m_subsystemPeriodicFrequency;
     final Angle setpoint;

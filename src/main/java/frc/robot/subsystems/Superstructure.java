@@ -53,7 +53,7 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
 
-  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.85);
+  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.01);
 
   @NotLogged private final Debouncer m_debouncerDrive = new Debouncer(0.5);
 
@@ -455,7 +455,7 @@ public class Superstructure {
   }
 
   private void intakeAuto() {
-    m_intake.setState(IntakeStates.Intaking);
+    m_intake.setState(IntakeStates.IntakingAuto);
     m_shooter.setState(SHOOTER_STATE.IDLE);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);

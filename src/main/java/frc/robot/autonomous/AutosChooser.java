@@ -176,13 +176,13 @@ public class AutosChooser {
                   if (m_debouncer.calculate(superstructure.flywheelAtTarget())) {
                     timer.start(); // Only count actual shooting time
                   }
-                  if (timer.get() >= 1.0) {
+                  if (timer.get() >= 1.5) {
                     superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                   } else {
                     superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                   }
                 }))
-        .until(() -> timer.get() > 3.125 - 0.75)
+        .until(() -> timer.get() > 3.125 - 0.25)
         .finallyDo(
             () -> {
               superstructure.setWantedState(WantedStates.DefaultAuto);

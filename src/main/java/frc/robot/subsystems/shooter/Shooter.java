@@ -42,8 +42,6 @@ public class Shooter {
   @Logged(importance = Importance.INFO)
   private boolean m_shouldOverride;
 
-  @NotLogged private boolean m_shouldCheckNewSetpoint = false;
-
   @NotLogged private final Timer m_timer = new Timer();
 
   /**
@@ -89,11 +87,15 @@ public class Shooter {
   /** Returns whether the flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
-    if (!m_shouldCheckNewSetpoint && m_timer.get() >= 0.1) {
-      m_shouldCheckNewSetpoint = m_io.getSetpointReferenceVelocityIsZero();
+    if (m_timer.get() >= 0.1) {
+      return Mode.currentMode == CurrentMode.REAL
+          ? m_io.getSetpointReferenceVelocityIsZero()
+          // ? (this.m_targetVelocity.isNear(
+          //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
+          : true;
     }
     return Mode.currentMode == CurrentMode.REAL
-        ? m_shouldCheckNewSetpoint
+        ? false
         // ? (this.m_targetVelocity.isNear(
         //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
         : true;
@@ -174,7 +176,6 @@ public class Shooter {
     }
     if (this.m_currentState != pState) {
       m_timer.restart();
-      m_shouldCheckNewSetpoint = true;
     }
 
     this.m_currentState = pState;
