@@ -177,11 +177,12 @@ public class Vision implements Subsystem {
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);
 
-    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
-
     xyStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
+
+    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
+    Robot.telemetry().log(m_logPath + "XYStdDev", xyStdDev);
 
     m_drivetrain.addVisionMeasurement(
         m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
