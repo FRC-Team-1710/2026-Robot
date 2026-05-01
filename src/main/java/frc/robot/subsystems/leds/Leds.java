@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
@@ -31,13 +32,14 @@ public class Leds {
 
     timer.stop();
     timer.reset();
+
+    SmartDashboard.putBoolean("Leds/manual", false);
+    SmartDashboard.putNumber("Leds/manualNum", 0);
   }
 
   private Integer commandValue = 0;
 
   /** Priority booleans for the LEDs */
-  // Autonomous?, Can shoot?, Can't shoot?, Intaking?, Won auto?, Brownout?, Disabled?,
-  // Disconnected?
   public Boolean[] inputBooleans = {false, false, false, false, false, false, false, false};
 
   public void periodic() {
@@ -92,18 +94,22 @@ public class Leds {
 
   /** Sets the input booleans to send based on the priorities of the states */
   private void encoder() { // Transition phase
-    if (inputBooleans[0]) { // If won in auto is present, it takes priority over everything else
-      commandValue = inputBooleans[1] ? 0 : 1;
-      return;
-    }
-
-    for (int i = 2;
-        i < inputBooleans.length;
-        i++) { // Picks the first true sequence based on priority
-      if (inputBooleans[i]) {
-        commandValue = i;
-        break;
+    if (!SmartDashboard.getBoolean("Leds/manual", false)) {
+      if (inputBooleans[0]) { // If won in auto is present, it takes priority over everything else
+        commandValue = inputBooleans[1] ? 0 : 1;
+        return;
       }
+
+      for (int i = 2;
+          i < inputBooleans.length;
+          i++) { // Picks the first true sequence based on priority
+        if (inputBooleans[i]) {
+          commandValue = i;
+          break;
+        }
+      }
+    } else {
+      commandValue = (int) SmartDashboard.getNumber("Leds/manualNum", 0);
     }
   }
 

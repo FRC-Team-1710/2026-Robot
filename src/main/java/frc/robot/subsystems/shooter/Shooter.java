@@ -134,7 +134,7 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(15), Degrees.of(ShooterConstants.HOOD_MIN)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     PASS(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     TEST(

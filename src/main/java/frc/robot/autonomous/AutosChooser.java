@@ -6,6 +6,7 @@ package frc.robot.autonomous;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
@@ -40,6 +41,8 @@ public class AutosChooser {
   private boolean m_depot;
 
   Timer timer = new Timer();
+
+  private final Debouncer m_debouncer = new Debouncer(0.75);
 
   /**
    * Creates a new AutosChooser that configures autonomous paths and related event triggers.
@@ -151,6 +154,7 @@ public class AutosChooser {
               timer.stop();
               timer.reset();
               hasResetRotation = false;
+              m_debouncer.calculate(false);
             })
         .andThen(
             Commands.run(
@@ -169,7 +173,7 @@ public class AutosChooser {
                     drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);
                     hasResetRotation = true;
                   }
-                  if (superstructure.flywheelAtTarget()) {
+                  if (m_debouncer.calculate(superstructure.flywheelAtTarget())) {
                     timer.start(); // Only count actual shooting time
                   }
                   if (timer.get() >= 1.75) {
@@ -185,6 +189,7 @@ public class AutosChooser {
               superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
               drivetrain.setAutonomousRequestOverride(false);
               superstructure.setShooterAddableState(ShooterAddableStates.Idle);
+              m_debouncer.calculate(false);
             });
   }
 

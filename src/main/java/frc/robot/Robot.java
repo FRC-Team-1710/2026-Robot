@@ -6,7 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.HootEpilogueBackend;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
@@ -54,8 +53,7 @@ public class Robot extends DynamicTimedRobot {
     DataLogManager.start();
 
     epilogueConfig.backend =
-        EpilogueBackend.multi(
-            new HootEpilogueBackend(), new NTEpilogueBackend(NetworkTableInstance.getDefault()));
+        EpilogueBackend.multi(new NTEpilogueBackend(NetworkTableInstance.getDefault()));
 
     if (Mode.currentMode == CurrentMode.SIMULATION) {
       epilogueConfig.minimumImportance = Importance.DEBUG;
