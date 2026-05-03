@@ -56,27 +56,27 @@ public class VisionConstants {
         "FrontLeft",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(10.24),
-                Units.inchesToMeters(13.685),
-                Units.inchesToMeters(15.669)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 29.8), Math.toRadians(180))),
+                Units.inchesToMeters(10.182),
+                Units.inchesToMeters(13.935),
+                Units.inchesToMeters(15.640)),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 29.36), Math.toRadians(180))),
         true),
     new PoseCameraConfig(
         "FrontRight",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(10.24),
-                Units.inchesToMeters(-13.685),
-                Units.inchesToMeters(15.669)),
-            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 29.8), Math.toRadians(180))),
+                Units.inchesToMeters(10.182),
+                Units.inchesToMeters(-13.935),
+                Units.inchesToMeters(15.640)),
+            new Rotation3d(Math.toRadians(180), Math.toRadians(180 + 29.36), Math.toRadians(180))),
         true),
     new PoseCameraConfig(
         "BackLeft",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-6.257),
-                Units.inchesToMeters(16.373),
-                Units.inchesToMeters(11.261)),
+                Units.inchesToMeters(-6.334),
+                Units.inchesToMeters(16.404),
+                Units.inchesToMeters(10.278)),
             new Rotation3d(
                 Math.toRadians(180), Math.toRadians(180 + 25), Math.toRadians(-90.0 + 25.0))),
         false),
@@ -84,9 +84,9 @@ public class VisionConstants {
         "BackRight",
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-6.257),
-                Units.inchesToMeters(-16.373),
-                Units.inchesToMeters(11.261)),
+                Units.inchesToMeters(-6.334),
+                Units.inchesToMeters(-16.404),
+                Units.inchesToMeters(10.278)),
             new Rotation3d(
                 Math.toRadians(180), Math.toRadians(180 + 25), Math.toRadians(90.0 - 25.0))),
         false),
@@ -102,10 +102,7 @@ public class VisionConstants {
                 Units.inchesToMeters(15.247),
                 Units.inchesToMeters(0.0),
                 Units.inchesToMeters(21.381)),
-            new Rotation3d(
-                0.0,
-                Math.toRadians(0.0),
-                Math.toRadians(90.0)))), // TODO: Change 0.0 pitch to 25 degrees in version 2  };
+            new Rotation3d(0.0, Math.toRadians(0.0), Math.toRadians(90.0)))),
   };
 
   private VisionConstants() {

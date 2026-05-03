@@ -56,6 +56,11 @@ public interface ShooterIO {
     return Degrees.of(0);
   }
 
+  /** Returns the closed loop reference slope == 0 */
+  public default boolean getSetpointReferenceVelocityIsZero() {
+    return false;
+  }
+
   /**
    * Injects the fuel simulator reference for simulation-backed IO implementations.
    *

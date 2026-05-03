@@ -17,16 +17,16 @@ public final class ShooterConstants {
   // ==================== PID Control Values ====================
 
   /** Static friction compensation */
-  public static final double kFlyS = 0.213;
+  public static final double kFlyS = 4.6;
 
   /** Velocity feedforward (predicts voltage needed for a speed) */
-  public static final double kFlyV = 0.11;
+  public static final double kFlyV = 0.01;
 
   /** Acceleration feedforward (predicts voltage needed for an acceleration) */
-  public static final double kFlyA = 0.005;
+  public static final double kFlyA = 0.0;
 
   /** Proportional gain (corrects speed errors) */
-  public static final double kFlyP = 0.55;
+  public static final double kFlyP = 10.0;
 
   /** Derivative gain (corrects acceleration errors) */
   public static final double kFlyD = 0.0;
@@ -41,26 +41,26 @@ public final class ShooterConstants {
   public static final double kHoodV = 0.0;
 
   /** Proportional gain (corrects position errors) */
-  public static final double kHoodP = 250.0;
+  public static final double kHoodP = 600.0;
 
   /** Derivative gain (corrects speed errors) */
   public static final double kHoodD = 0.0;
 
   // ==================== Current Limits ====================
-  public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60;
-  public static final int FLYWHEEL_STATOR_CURRENT_LIMIT = 80;
+  public static final int FLYWHEEL_SUPPLY_CURRENT_LIMIT = 60; // 40;
+  public static final int FLYWHEEL_STATOR_CURRENT_LIMIT = 80; // 60;
 
   // ==================== Motion Magic (Speed Limits) ====================
   public static final double FLYWHEEL_MOTION_MAGIC_CRUISE_VELOCITY = 100.0;
-  public static final double FLYWHEEL_MOTION_MAGIC_ACCELERATION = 45.0;
+  public static final double FLYWHEEL_MOTION_MAGIC_ACCELERATION = 85.0;
 
-  public static final double HOOD_MOTION_MAGIC_CRUISE_VELOCITY = 1.25;
-  public static final double HOOD_MOTION_MAGIC_ACCELERATION = 0.375;
+  public static final double HOOD_MOTION_MAGIC_CRUISE_VELOCITY = 5.0;
+  public static final double HOOD_MOTION_MAGIC_ACCELERATION = 5.0;
 
   // ======================== Shooter Physical Constants ===========================
   // Degrees from horizontal
-  public static final double HOOD_MAX = 38.5; // 0.1069444444444444 rotns
-  public static final double HOOD_MIN = 11.0; // 0.0305555555555556 rotns
+  public static final double HOOD_MAX = 50.0; // 0.1388888888888889
+  public static final double HOOD_MIN = 10.0; // 0.0277777777777778
 
   /** Range of error for the "isAtTargetVelocity" function */
   public static final AngularVelocity FLYWHEEL_TARGET_ERROR_RANGE = RotationsPerSecond.of(10);

@@ -6,7 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.HootEpilogueBackend;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.EpilogueConfiguration;
@@ -37,6 +36,9 @@ public class Robot extends DynamicTimedRobot {
   private Command m_autonomousCommand;
 
   @Logged(importance = Importance.CRITICAL)
+  private boolean m_wasAuto = false;
+
+  @Logged(importance = Importance.CRITICAL)
   private final RobotContainer m_robotContainer;
 
   @Logged(importance = Importance.INFO)
@@ -50,11 +52,11 @@ public class Robot extends DynamicTimedRobot {
     Alliance.updateRedAlliance();
 
     m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
+
     DataLogManager.start();
 
     epilogueConfig.backend =
-        EpilogueBackend.multi(
-            new HootEpilogueBackend(), new NTEpilogueBackend(NetworkTableInstance.getDefault()));
+        EpilogueBackend.multi(new NTEpilogueBackend(NetworkTableInstance.getDefault()));
 
     if (Mode.currentMode == CurrentMode.SIMULATION) {
       epilogueConfig.minimumImportance = Importance.DEBUG;
@@ -101,8 +103,11 @@ public class Robot extends DynamicTimedRobot {
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
+    SignalLogger.stop();
     SignalLogger.setPath("/media/sda1");
-    // SignalLogger.stop();
+    SignalLogger.start();
+
+    m_wasAuto = false;
   }
 
   @Override
@@ -113,7 +118,11 @@ public class Robot extends DynamicTimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    if (m_wasAuto) {
+      m_robotContainer.setTeleCurrentLimits();
+    }
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -130,6 +139,8 @@ public class Robot extends DynamicTimedRobot {
     if (m_autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
+
+    m_wasAuto = true;
   }
 
   @Override

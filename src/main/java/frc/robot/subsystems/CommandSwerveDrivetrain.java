@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -244,6 +245,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     fieldCentricBLine = new RobotCentric();
   }
 
+  public void setTeleCurrentLimits() {
+    for (int i = 0; i < getModules().length; i++) {
+      getModules()[i]
+          .getDriveMotor()
+          .getConfigurator()
+          .apply(
+              new CurrentLimitsConfigs()
+                  .withStatorCurrentLimit(110) // 120
+                  .withStatorCurrentLimitEnable(true)
+                  .withSupplyCurrentLimit(45) // 50
+                  .withSupplyCurrentLimitEnable(true));
+    }
+  }
+
   /**
    * Returns a command that applies the specified control request to this swerve drivetrain.
    *
@@ -475,6 +490,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public enum DriveStates {
     DRIVER_CONTROLLED,
     ROTATION_LOCK,
-    X_LOCK
+    // X_LOCK
   }
 }

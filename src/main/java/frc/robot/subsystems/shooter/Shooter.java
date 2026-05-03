@@ -11,6 +11,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.ShooterConstants;
@@ -40,6 +41,8 @@ public class Shooter {
 
   @Logged(importance = Importance.INFO)
   private boolean m_shouldOverride;
+
+  @NotLogged private final Timer m_timer = new Timer();
 
   /**
    * Constructs a new Shooter.
@@ -84,9 +87,17 @@ public class Shooter {
   /** Returns whether the flywheel is at its target velocity. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
+    if (m_timer.get() >= 0.1) {
+      return Mode.currentMode == CurrentMode.REAL
+          ? m_io.getSetpointReferenceVelocityIsZero()
+          // ? (this.m_targetVelocity.isNear(
+          //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
+          : true;
+    }
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.m_targetVelocity.isNear(
-            this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
+        ? false
+        // ? (this.m_targetVelocity.isNear(
+        //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
         : true;
   }
 
@@ -125,28 +136,20 @@ public class Shooter {
 
   public enum SHOOTER_STATE {
     STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    IDLE(
-        Milliseconds.of(60),
-        RotationsPerSecond.of(0), // TODO: tune for fastest without drawing too much current
-        Degrees.of(ShooterConstants.HOOD_MIN)),
+    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     PASS(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
     TEST(
         Milliseconds.of(20),
         RotationsPerSecond.of(40),
         Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
-    TRENCH(
+    TEST_FAST(
         Milliseconds.of(20),
-        RotationsPerSecond.of(0),
-        Degrees.of(ShooterConstants.HOOD_MIN)), // TODO: tune presets
-    CORNER(
-        Milliseconds.of(20),
-        RotationsPerSecond.of(0),
-        Degrees.of(ShooterConstants.HOOD_MIN)), // TODO: tune presets
-    TOWER(
-        Milliseconds.of(20),
-        RotationsPerSecond.of(0),
-        Degrees.of(ShooterConstants.HOOD_MIN)); // TODO: tune presets
+        RotationsPerSecond.of(85),
+        Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
+    TRENCH(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    CORNER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
+    TOWER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN));
 
     private final Time m_subsystemPeriodicFrequency;
     private final AngularVelocity m_velocity;
@@ -171,6 +174,10 @@ public class Shooter {
         pState.m_subsystemPeriodicFrequency)) {
       m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
     }
+    if (this.m_currentState != pState) {
+      m_timer.restart();
+    }
+
     this.m_currentState = pState;
   }
 

@@ -30,6 +30,8 @@ public class FeederIOCTRE implements FeederIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     // Requirement: Counterclockwise is forward/feeding direction.
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.CurrentLimits.StatorCurrentLimit = 160;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyConfigWithRetries(this.m_feederMotor, config, 2);
 

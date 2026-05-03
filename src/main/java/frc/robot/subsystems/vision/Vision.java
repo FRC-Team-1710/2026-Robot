@@ -5,6 +5,7 @@ import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
@@ -49,6 +50,8 @@ public class Vision implements Subsystem {
 
   private final HootAutoReplay m_autoReplay;
 
+  private final String cameraName;
+
   // private final Set<Integer> rejectTagIds =
   //     Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
 
@@ -92,6 +95,8 @@ public class Vision implements Subsystem {
                 () -> m_ambiguity,
                 val -> m_ambiguity = val.value)
             .withTimestampReplay();
+    SmartDashboard.putBoolean(cameraName + "/rejectWhenDisabled", false);
+    this.cameraName = cameraName;
   }
 
   /**
@@ -126,6 +131,12 @@ public class Vision implements Subsystem {
     //         result.getMultiTagResult().isPresent() ? result.getMultiTagResult() :
     // Optional.empty());
     if (!result.hasTargets()) {
+      reset();
+      return;
+    }
+
+    if (SmartDashboard.getBoolean(cameraName + "/rejectWhenDisabled", false)
+        && DriverStation.isDisabled()) {
       reset();
       return;
     }
@@ -177,13 +188,13 @@ public class Vision implements Subsystem {
     // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);
 
-    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
-
     xyStdDev *= distanceScale;
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
 
-    // TODO: make sure vision doesn't correct rotation
+    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
+    Robot.telemetry().log(m_logPath + "XYStdDev", xyStdDev);
+
     m_drivetrain.addVisionMeasurement(
         m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }
