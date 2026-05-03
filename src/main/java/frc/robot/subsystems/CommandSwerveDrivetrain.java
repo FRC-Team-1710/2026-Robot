@@ -252,9 +252,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           .getConfigurator()
           .apply(
               new CurrentLimitsConfigs()
-                  .withStatorCurrentLimit(120)
+                  .withStatorCurrentLimit(110) // 120
                   .withStatorCurrentLimitEnable(true)
-                  .withSupplyCurrentLimit(50)
+                  .withSupplyCurrentLimit(45) // 50
                   .withSupplyCurrentLimitEnable(true));
     }
   }

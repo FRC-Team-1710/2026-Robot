@@ -182,9 +182,9 @@ public class ShooterIOCTRE implements ShooterIO {
     }
 
     m_flywheels[0].setControl(this.m_velocityRequest.withVelocity(pVelocity));
-    m_flywheels[1].setControl(this.m_velocityRequest.withVelocity(pVelocity));
-    m_flywheels[2].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
-    m_flywheels[3].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
+    // m_flywheels[1].setControl(this.m_velocityRequest.withVelocity(pVelocity));
+    // m_flywheels[2].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
+    // m_flywheels[3].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
   }
 
   /** Returns the closed loop reference slope == 0 */

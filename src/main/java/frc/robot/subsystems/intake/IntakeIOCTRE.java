@@ -80,6 +80,11 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
     m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
+    m_motorConfig.CurrentLimits.StatorCurrentLimit = 80;
+    m_motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    m_motorConfig.CurrentLimits.SupplyCurrentLimit = 50; // 55
+    m_motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
     m_intakeMotor.getConfigurator().apply(m_motorConfig);
     m_intakeMotorFollower.getConfigurator().apply(m_motorConfig);
 
@@ -99,6 +104,8 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     m_motorConfig.CurrentLimits.StatorCurrentLimit = 45;
     m_motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    m_motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
+    m_motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     m_deploymentMotor.getConfigurator().apply(m_motorConfig);
 

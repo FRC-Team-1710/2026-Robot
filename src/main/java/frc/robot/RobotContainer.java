@@ -431,8 +431,8 @@ public class RobotContainer {
     //         Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
     //             .ignoringDisable(true));
 
-    new Trigger(drivetrain::inAllianceZone)
-        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
+    // new Trigger(drivetrain::inAllianceZone)
+    //     .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
 
     new Trigger(DriverStation::isTeleopEnabled)
         .onTrue(
