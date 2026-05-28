@@ -7,14 +7,11 @@ package frc.robot.autonomous;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
@@ -28,6 +25,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import java.util.HashMap;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class AutosChooser {
@@ -135,16 +133,13 @@ public class AutosChooser {
         "SpinUp", () -> superstructure.setShooterAddableState(ShooterAddableStates.SpinUp));
 
     FollowPath.setPoseLoggingConsumer(
-        (data) ->
-            Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond(), Pose2d.struct));
+        (data) -> Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond()));
     FollowPath.setTranslationListLoggingConsumer(
-        (data) ->
-            Robot.telemetry()
-                .log("Auto/" + data.getFirst(), data.getSecond(), Translation2d.struct));
+        (data) -> Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond()));
     FollowPath.setBooleanLoggingConsumer(
-        (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
+        (data) -> Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond()));
     FollowPath.setDoubleLoggingConsumer(
-        (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
+        (data) -> Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond()));
   }
 
   private Command getShootCommand(

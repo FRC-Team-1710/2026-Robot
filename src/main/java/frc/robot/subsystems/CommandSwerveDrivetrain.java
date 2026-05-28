@@ -11,9 +11,6 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -35,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
@@ -48,49 +44,40 @@ import java.util.function.Supplier;
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
  * be used in command-based projects.
  */
-@Logged
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-  @NotLogged private static final double kSimLoopPeriod = 0.005; // 5 ms
+  private static final double kSimLoopPeriod = 0.005; // 5 ms
 
-  @NotLogged private Notifier m_simNotifier = null;
+  private Notifier m_simNotifier = null;
 
-  @Logged(importance = Importance.DEBUG)
   private double m_lastSimTime;
 
-  @NotLogged private LinearVelocity m_maxSpeed = TunerConstants.kSpeedAt12Volts;
+  private LinearVelocity m_maxSpeed = TunerConstants.kSpeedAt12Volts;
 
-  @NotLogged private AngularVelocity m_maxAngularRate = TunerConstants.kMaxAngularRate;
+  private AngularVelocity m_maxAngularRate = TunerConstants.kMaxAngularRate;
 
-  @Logged(importance = Importance.CRITICAL)
   public final CustomFieldCentric fieldCentric;
+  public final RobotCentric fieldCentricBLine;
 
-  // @Logged(importance = Importance.INFO)
-  // public final CustomFieldCentric fieldCentricBLine;
-
-  @NotLogged public final RobotCentric fieldCentricBLine;
-
-  @Logged(importance = Importance.INFO)
   private DriveStates m_currentState = DriveStates.DRIVER_CONTROLLED;
 
-  @NotLogged private boolean m_sysid = false;
+  private boolean m_sysid = false;
 
   /** Controller inputs for default teleop */
-  @NotLogged private CommandXboxController m_inputController;
+  private CommandXboxController m_inputController;
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
-  @NotLogged private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
+  private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
 
   /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
-  @NotLogged private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
+  private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
 
   /* Keep track if we've ever applied the operator perspective before or not */
-  @NotLogged private boolean m_hasAppliedOperatorPerspective = false;
+  private boolean m_hasAppliedOperatorPerspective = false;
 
   /* Override default swerve request for a higher priority one (used in auto) */
-  @Logged(importance = Importance.CRITICAL)
   private boolean m_autonomousRequestOverride = false;
 
-  @NotLogged private boolean m_shouldAcceptNextVisionMeasurementRotation = false;
+  private boolean m_shouldAcceptNextVisionMeasurementRotation = false;
 
   // SysId routines
 
@@ -122,11 +109,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   //////////////////////////////// Translation /////////////////////////
 
-  @NotLogged
   private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
       new SwerveRequest.SysIdSwerveTranslation();
 
-  @NotLogged
   private final SysIdRoutine m_sysIdRoutineToApply =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -138,7 +123,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           new SysIdRoutine.Mechanism(
               output -> {
                 setControl(m_translationCharacterization.withVolts(output.in(Volts)));
-                Robot.telemetry().log("Translation_Rate", output.in(Volts));
+                org.littletonrobotics.junction.Logger.recordOutput(
+                    "Drive/TranslationRate", output.in(Volts));
               },
               null,
               this));
@@ -315,10 +301,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     ShooterMath4.calculate(getPose());
+    org.littletonrobotics.junction.Logger.recordOutput("Drive/State", m_currentState);
+    org.littletonrobotics.junction.Logger.recordOutput(
+        "Drive/AutonomousRequestOverride", m_autonomousRequestOverride);
+    org.littletonrobotics.junction.Logger.recordOutput(
+        "Drive/ShouldAcceptNextVisionMeasurementRotation",
+        m_shouldAcceptNextVisionMeasurementRotation);
   }
 
   public void sysid(boolean sysid) {
     m_sysid = sysid;
+    org.littletonrobotics.junction.Logger.recordOutput("Drive/SysIdEnabled", sysid);
   }
 
   /** Rescales the translation input vector with deadband and power curve. */
@@ -334,10 +327,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Sets whether autonomous requests should override normal control. */
   public void setAutonomousRequestOverride(boolean override) {
     this.m_autonomousRequestOverride = override;
+    org.littletonrobotics.junction.Logger.recordOutput("Drive/AutonomousRequestOverride", override);
   }
 
   private void startSimThread() {
     m_lastSimTime = Utils.getCurrentTimeSeconds();
+    org.littletonrobotics.junction.Logger.recordOutput("Drive/LastSimTime", m_lastSimTime);
 
     /* Run simulation at a faster rate so PID gains behave more reasonably */
     m_simNotifier =
@@ -346,6 +341,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               final double currentTime = Utils.getCurrentTimeSeconds();
               double deltaTime = currentTime - m_lastSimTime;
               m_lastSimTime = currentTime;
+              org.littletonrobotics.junction.Logger.recordOutput(
+                  "Drive/LastSimTime", m_lastSimTime);
 
               /* use the measured time delta, get battery voltage from WPILib */
               updateSimState(deltaTime, RobotController.getBatteryVoltage());
@@ -363,6 +360,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
     super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
+    org.littletonrobotics.junction.Logger.recordOutput(
+        "Drive/VisionMeasurementPose", visionRobotPoseMeters);
   }
 
   /**
@@ -398,44 +397,41 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (m_shouldAcceptNextVisionMeasurementRotation) {
       m_shouldAcceptNextVisionMeasurementRotation = false;
       resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
+      org.littletonrobotics.junction.Logger.recordOutput(
+          "Drive/ShouldAcceptNextVisionMeasurementRotation", false);
     }
   }
 
   public void setShouldAcceptNextVisionMeasurementRotation(boolean shouldAccept) {
     this.m_shouldAcceptNextVisionMeasurementRotation = shouldAccept;
+    org.littletonrobotics.junction.Logger.recordOutput(
+        "Drive/ShouldAcceptNextVisionMeasurementRotation", shouldAccept);
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public Pose2d getPose() {
     return getState().Pose;
   }
 
-  @Logged(importance = Importance.INFO)
   public Rotation2d getRotation() {
     return getPose().getRotation();
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public SwerveModuleState[] getModuleStates() {
     return getState().ModuleStates;
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public SwerveModuleState[] getModuleTargets() {
     return getState().ModuleTargets;
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public ChassisSpeeds getRobotSpeeds() {
     return getState().Speeds;
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public ChassisSpeeds getFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotSpeeds(), getRotation());
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public ChassisSpeeds getTargetFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(
         getKinematics().toChassisSpeeds(getModuleTargets()), getRotation());
@@ -464,7 +460,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   /** Returns true if the robot is in its own alliance zone. */
-  @Logged(importance = Importance.INFO)
   public boolean inAllianceZone() {
     return (Alliance.redAlliance
         ? getPose().getX()
@@ -480,11 +475,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Set the {@link DriveStates#ROTATION_LOCK} target */
   public void setRotationTarget(Rotation2d target) {
     fieldCentric.withTargetRotation(target);
+    org.littletonrobotics.junction.Logger.recordOutput("Drive/RotationTarget", target);
   }
 
   /** Sets the current drive state. */
   public void setState(DriveStates state) {
     this.m_currentState = state;
+    org.littletonrobotics.junction.Logger.recordOutput("Drive/State", state);
   }
 
   public enum DriveStates {

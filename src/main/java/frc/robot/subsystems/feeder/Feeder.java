@@ -3,24 +3,20 @@ package frc.robot.subsystems.feeder;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import org.littletonrobotics.junction.Logger;
 
-@Logged
 public class Feeder {
-  @Logged(importance = Importance.CRITICAL)
+  // Epilogue annotations removed; using Logger.recordOutput explicitly
   private FEEDER_STATE m_currentState;
 
-  @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
-  @NotLogged private boolean m_testing = false;
+  private boolean m_testing = false;
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private final TimesConsumer m_timesConsumer;
 
   /**
    * Constructs a new Feeder.
@@ -32,6 +28,7 @@ public class Feeder {
     this.m_io = io;
     this.m_timesConsumer = consumer;
     this.m_currentState = FEEDER_STATE.STOP;
+    Logger.recordOutput("Feeder/State", m_currentState);
   }
 
   /** Runs periodic feeder logic based on the current state. */
@@ -51,6 +48,8 @@ public class Feeder {
     this.m_io.setFeeder(output);
 
     this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
+    Logger.recordOutput("Feeder/State", m_currentState);
+    Logger.recordOutput("Feeder/Output", output);
   }
 
   public enum FEEDER_STATE {
@@ -87,6 +86,7 @@ public class Feeder {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     this.m_currentState = state;
+    Logger.recordOutput("Feeder/State", state);
   }
 
   /**
@@ -102,6 +102,7 @@ public class Feeder {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     this.m_currentState = state;
+    Logger.recordOutput("Feeder/State", state);
   }
 
   /**
@@ -114,7 +115,6 @@ public class Feeder {
   }
 
   /** Returns the current feeder state. */
-  @NotLogged
   public FEEDER_STATE getState() {
     return this.m_currentState;
   }

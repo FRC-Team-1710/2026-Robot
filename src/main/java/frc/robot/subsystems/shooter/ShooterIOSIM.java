@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,15 +16,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.MechanismUtil.HoodMechanism;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
 import frc.robot.utils.shooterMath.ShooterMath4;
+import org.littletonrobotics.junction.Logger;
 
 /** Simulation implementation of shooter IO. */
-@Logged
 public class ShooterIOSIM implements ShooterIO {
 
   private AngularVelocity m_velocity = RotationsPerSecond.of(0);
@@ -316,8 +314,8 @@ public class ShooterIOSIM implements ShooterIO {
       m_shooterDebouncer5.setDebounceTime(((1.0 / 15.0) * 5) * (Math.random() * 0.5 + 0.75));
     }
 
-    Robot.telemetry().log("FuelLeft", m_fuelSim.getCurrentFuelStorage());
-    Robot.telemetry().log("FuelScored", FuelSim.Hub.BLUE_HUB.getScore());
+    Logger.recordOutput("FuelLeft", m_fuelSim.getCurrentFuelStorage());
+    Logger.recordOutput("FuelScored", FuelSim.Hub.BLUE_HUB.getScore());
   }
 
   /** {@inheritDoc} */

@@ -10,22 +10,17 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
-@Logged
 /** Creates a new IndexerIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
-  @Logged(importance = Logged.Importance.CRITICAL)
   private final TalonFX m_indexerMotor;
 
-  @NotLogged TalonFXConfiguration motorConfig;
+  TalonFXConfiguration motorConfig;
 
-  @NotLogged private final BaseStatusSignal[] m_indexerSignals;
+  private final BaseStatusSignal[] m_indexerSignals;
 
-  @NotLogged
   private final VoltageOut m_indexerVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public IndexerIOCTRE() {

@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -150,7 +149,8 @@ public class Vision implements Subsystem {
 
     EstimatedRobotPose visionEstimate = estimate.get();
 
-    Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
+    org.littletonrobotics.junction.Logger.recordOutput(
+        m_logPath + "RawPose", visionEstimate.estimatedPose);
 
     m_robotPose = visionEstimate.estimatedPose.toPose2d();
     m_robotPoseTimestamp = visionEstimate.timestampSeconds;
@@ -192,8 +192,8 @@ public class Vision implements Subsystem {
     // Inject measurement into drivetrain pose estimator.
     // Std deviations control how much the estimator trusts vision vs odometry.
 
-    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
-    Robot.telemetry().log(m_logPath + "XYStdDev", xyStdDev);
+    org.littletonrobotics.junction.Logger.recordOutput(m_logPath + "AcceptedPose", m_robotPose);
+    org.littletonrobotics.junction.Logger.recordOutput(m_logPath + "XYStdDev", xyStdDev);
 
     m_drivetrain.addVisionMeasurement(
         m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));

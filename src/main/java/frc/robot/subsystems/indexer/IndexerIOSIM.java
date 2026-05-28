@@ -4,13 +4,11 @@
 
 package frc.robot.subsystems.indexer;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 import frc.robot.utils.MechanismUtil.IndexerVisualSim;
+import org.littletonrobotics.junction.Logger;
 
-@Logged
 public class IndexerIOSIM implements IndexerIO {
 
   private final IndexerVisualSim m_indexerMotorAlphaSim;
@@ -33,10 +31,10 @@ public class IndexerIOSIM implements IndexerIO {
 
   public void update() {
     m_indexerMotorAlphaSim.updateIndexer(m_speed * 20);
-    Robot.telemetry().log("Indexer Alpha Speed", m_speed);
+    Logger.recordOutput("Indexer Alpha Speed", m_speed);
     SmartDashboard.putData("Indexer Alpha Visual", this.m_indexerMotorAlphaSim.getMechanism());
     m_indexerMotorBetaSim.updateIndexer(m_speed * 20);
-    Robot.telemetry().log("Indexer Beta Speed", m_speed);
+    Logger.recordOutput("Indexer Beta Speed", m_speed);
     SmartDashboard.putData("Indexer Beta Visual", this.m_indexerMotorBetaSim.getMechanism());
   }
 }

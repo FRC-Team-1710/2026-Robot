@@ -10,9 +10,6 @@ import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,93 +26,69 @@ import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
+import org.littletonrobotics.junction.Logger;
 
-@Logged
 public class CustomFieldCentric implements SwerveRequest {
-  @Logged(importance = Importance.CRITICAL)
+  // Epilogue annotations removed; using Logger.recordOutput instead
   public Rotation2d rotationTarget = Rotation2d.kZero;
 
-  @Logged(importance = Importance.INFO)
   public Rotation2d bumpRotationTarget = Rotation2d.kZero;
 
-  @Logged(importance = Importance.DEBUG)
   public Pose2d currentBumpLocation = Pose2d.kZero;
 
-  @Logged(importance = Importance.INFO)
   public LinearVelocity xVelocity = MetersPerSecond.of(0);
 
-  @Logged(importance = Importance.INFO)
   public LinearVelocity yVelocity = MetersPerSecond.of(0);
 
-  @Logged(importance = Importance.INFO)
   public AngularVelocity angularVelocity = RadiansPerSecond.of(0);
 
-  @NotLogged private final Pigeon2 gyro;
+  private final Pigeon2 gyro;
 
-  @Logged(importance = Importance.INFO)
   private boolean m_shouldRaiseIntake = false;
 
-  @Logged(importance = Importance.INFO)
   private boolean m_isGoingTowardsAllianceZone = false;
 
-  @Logged(importance = Importance.INFO)
   private final PIDController yAssistPID =
       new PIDController(
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.0,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 2 : 0.0);
 
-  @Logged(importance = Importance.INFO)
   private final ProfiledPIDController rotationLockPID =
       new ProfiledPIDController(
           Mode.currentMode == CurrentMode.SIMULATION ? 50 : 9.0,
           0.0,
           Mode.currentMode == CurrentMode.SIMULATION ? 15 : 0.5,
-          new Constraints(
-              // Mode.currentMode == CurrentMode.SIMULATION ?
-              3,
-              //  : 0.0,
-              // Mode.currentMode == CurrentMode.SIMULATION ?
-              4
-              //  : 0.0
-              ));
+          new Constraints(3, 4));
 
-  @NotLogged private boolean shouldResetYAssistPID = true;
-  @NotLogged private boolean shouldResetRotationPID = true;
+  private boolean shouldResetYAssistPID = true;
+  private boolean shouldResetRotationPID = true;
 
-  @Logged(importance = Importance.INFO)
   private double maxBumpSpeed = 0;
 
-  @Logged(importance = Importance.CRITICAL)
   public RequestStates currentDriveState = RequestStates.DRIVER_CONTROLLED;
 
-  @NotLogged
   private final SwerveRequest.FieldCentric driveRequest =
       new SwerveRequest.FieldCentric()
           .withDriveRequestType(DriveRequestType.Velocity)
           .withSteerRequestType(SteerRequestType.Position);
 
-  @NotLogged private boolean m_shouldAcceptRobotSpeeds = false;
+  private boolean m_shouldAcceptRobotSpeeds = false;
 
-  @NotLogged private ChassisSpeeds m_robotSpeeds = new ChassisSpeeds();
+  private ChassisSpeeds m_robotSpeeds = new ChassisSpeeds();
 
   /* Logging vars */
-  @Logged(importance = Importance.CRITICAL)
   private boolean stillGoingOverBump = false;
 
-  @Logged(importance = Importance.CRITICAL)
   private boolean towardsBump = false;
 
-  @Logged(importance = Importance.INFO)
   private double m_lastLoopTime = 0;
 
-  @Logged(importance = Importance.CRITICAL)
   private ChassisSpeeds wantedSpeeds = new ChassisSpeeds();
 
-  @Logged(importance = Importance.CRITICAL)
   private ChassisSpeeds wantedSpeedsAfterLimits = new ChassisSpeeds();
 
-  @NotLogged private Translation2d previousTargetTranslation = new Translation2d();
+  private Translation2d previousTargetTranslation = new Translation2d();
 
   public CustomFieldCentric(Pigeon2 gyro) {
     this.gyro = gyro;
@@ -295,6 +268,14 @@ public class CustomFieldCentric implements SwerveRequest {
             parameters.currentChassisSpeed.vyMetersPerSecond);
 
     m_lastLoopTime = RobotController.getFPGATime() - loopStartTime;
+    Logger.recordOutput("CustomFieldCentric/CurrentDriveState", currentDriveState);
+    Logger.recordOutput("CustomFieldCentric/RotationTarget", rotationTarget);
+    Logger.recordOutput("CustomFieldCentric/XVelocity", xVelocity);
+    Logger.recordOutput("CustomFieldCentric/YVelocity", yVelocity);
+    Logger.recordOutput("CustomFieldCentric/AngularVelocity", angularVelocity);
+    Logger.recordOutput("CustomFieldCentric/WantedSpeeds", wantedSpeeds);
+    Logger.recordOutput("CustomFieldCentric/WantedSpeedsAfterLimits", wantedSpeedsAfterLimits);
+    Logger.recordOutput("CustomFieldCentric/LastLoopTime", m_lastLoopTime);
 
     return driveRequest
         .withVelocityX(wantedSpeedsAfterLimits.vxMetersPerSecond)
@@ -366,11 +347,10 @@ public class CustomFieldCentric implements SwerveRequest {
   //   return m_isGoingTowardsAllianceZone;
   // }
 
-  // @NotLogged
-  // public boolean shouldRaiseIntake() {
-  //   return false;
-  //   // return m_shouldRaiseIntake;
-  // }
+  public boolean shouldRaiseIntake() {
+    return false;
+    // return m_shouldRaiseIntake;
+  }
 
   /**
    * Sets the target rotation
@@ -380,6 +360,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withTargetRotation(Rotation2d target) {
     this.rotationTarget = target;
+    Logger.recordOutput("CustomFieldCentric/RotationTarget", target);
     return this;
   }
 
@@ -391,6 +372,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withVelocityX(LinearVelocity velocity) {
     this.xVelocity = velocity;
+    Logger.recordOutput("CustomFieldCentric/XVelocity", velocity);
     return this;
   }
 
@@ -402,6 +384,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withVelocityX(double velocity) {
     this.xVelocity = MetersPerSecond.of(velocity);
+    Logger.recordOutput("CustomFieldCentric/XVelocity", this.xVelocity);
     return this;
   }
 
@@ -413,6 +396,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withVelocityY(LinearVelocity velocity) {
     this.yVelocity = velocity;
+    Logger.recordOutput("CustomFieldCentric/YVelocity", velocity);
     return this;
   }
 
@@ -424,6 +408,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withVelocityY(double velocity) {
     this.yVelocity = MetersPerSecond.of(velocity);
+    Logger.recordOutput("CustomFieldCentric/YVelocity", this.yVelocity);
     return this;
   }
 
@@ -435,6 +420,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withRotationalRate(AngularVelocity velocity) {
     this.angularVelocity = velocity;
+    Logger.recordOutput("CustomFieldCentric/AngularVelocity", velocity);
     return this;
   }
 
@@ -446,6 +432,7 @@ public class CustomFieldCentric implements SwerveRequest {
    */
   public CustomFieldCentric withRotationalRate(double velocity) {
     this.angularVelocity = RadiansPerSecond.of(velocity);
+    Logger.recordOutput("CustomFieldCentric/AngularVelocity", this.angularVelocity);
     return this;
   }
 
@@ -494,6 +481,7 @@ public class CustomFieldCentric implements SwerveRequest {
         //   this.shouldResetYAssistPID = true;
         //   break;
     }
+    Logger.recordOutput("CustomFieldCentric/CurrentDriveState", this.currentDriveState);
     return this;
   }
 

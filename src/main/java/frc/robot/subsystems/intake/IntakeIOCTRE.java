@@ -18,9 +18,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -36,34 +33,29 @@ import frc.robot.utils.TalonFXUtil;
  * motor, exposes status signals, and provides methods used by the {@link Intake} subsystem to
  * command motion and read sensor feedback.
  */
-@Logged
 public class IntakeIOCTRE implements IntakeIO {
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotor; // LEFT MOTOR
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_intakeMotorFollower; // RIGHT MOTOR
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_deploymentMotor;
 
-  @NotLogged private final DynamicMotionMagicVoltage m_deploymentRequest;
+  private final DynamicMotionMagicVoltage m_deploymentRequest;
 
-  @NotLogged private final VoltageOut m_intakeRequest;
+  private final VoltageOut m_intakeRequest;
 
-  @Logged(importance = Importance.INFO)
   private Angle m_angleSetpoint;
 
   /** Cached status signals for the intake TalonFX used to sample sensor values. */
-  @NotLogged private final BaseStatusSignal[] m_intakeSignals;
+  private final BaseStatusSignal[] m_intakeSignals;
 
   /** Cached status signals for the intake follower TalonFX used to sample sensor values. */
-  @NotLogged private final BaseStatusSignal[] m_intakeFollowerSignals;
+  private final BaseStatusSignal[] m_intakeFollowerSignals;
 
   /** Cached status signals for the deployment TalonFX used to sample sensor values. */
-  @NotLogged private final BaseStatusSignal[] m_deploymentSignals;
+  private final BaseStatusSignal[] m_deploymentSignals;
 
-  @NotLogged private final BaseStatusSignal m_deploymentSetpointVelocitySignal;
+  private final BaseStatusSignal m_deploymentSetpointVelocitySignal;
 
   public IntakeIOCTRE() {
     m_intakeMotor = new TalonFX(CanIdConstants.Intake.INTAKE_MOTOR);
@@ -179,7 +171,6 @@ public class IntakeIOCTRE implements IntakeIO {
   /**
    * @return the rotor/angular velocity of the intake roller motor.
    */
-  @NotLogged
   public AngularVelocity getRollerVelocity() {
     return m_intakeMotor.getRotorVelocity(false).getValue();
   }
@@ -187,7 +178,6 @@ public class IntakeIOCTRE implements IntakeIO {
   /**
    * @return the angular velocity of the intake follower motor.
    */
-  @NotLogged
   public AngularVelocity getFollowerVelocity() {
     return m_intakeMotorFollower.getVelocity(false).getValue();
   }
@@ -195,7 +185,6 @@ public class IntakeIOCTRE implements IntakeIO {
   /**
    * @return the stator current draw of the intake roller motor.
    */
-  @NotLogged
   public Current getRollerCurrent() {
     return m_intakeMotor.getStatorCurrent(false).getValue();
   }
@@ -203,7 +192,6 @@ public class IntakeIOCTRE implements IntakeIO {
   /**
    * @return the stator current draw of the intake follower motor.
    */
-  @NotLogged
   public Current getFollowerCurrent() {
     return m_intakeMotorFollower.getStatorCurrent(false).getValue();
   }
@@ -211,7 +199,6 @@ public class IntakeIOCTRE implements IntakeIO {
   /**
    * @return the stator current draw of the deployment motor.
    */
-  @NotLogged
   public Current getDeploymentCurrent() {
     return m_deploymentMotor.getStatorCurrent(false).getValue();
   }

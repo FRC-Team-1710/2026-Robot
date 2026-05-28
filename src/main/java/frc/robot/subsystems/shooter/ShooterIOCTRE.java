@@ -13,9 +13,6 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -25,35 +22,29 @@ import frc.robot.utils.FuelSim;
 import frc.robot.utils.TalonFXUtil;
 
 /** CTRE hardware implementation of shooter IO. */
-@Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  @NotLogged private final MotionMagicVelocityTorqueCurrentFOC m_velocityRequest;
-  @NotLogged private final MotionMagicVoltage m_hoodPositionRequest;
+  private final MotionMagicVelocityTorqueCurrentFOC m_velocityRequest;
+  private final MotionMagicVoltage m_hoodPositionRequest;
 
   // Four flywheel motors: left master, left follower, right follower, right follower
-  @NotLogged private final TalonFX[] m_flywheels;
+  private final TalonFX[] m_flywheels;
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_leftFlywheelLeader;
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_leftFlywheelFollower;
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_rightFlywheelFollower1;
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_rightFlywheelFollower2;
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_hoodMotor;
 
-  @NotLogged private final BaseStatusSignal[] m_hoodSignals;
+  private final BaseStatusSignal[] m_hoodSignals;
 
-  @NotLogged private final BaseStatusSignal[] m_flywheelSignals;
+  private final BaseStatusSignal[] m_flywheelSignals;
 
-  @NotLogged private final BaseStatusSignal m_flywheelSetpointVelocitySignal;
+  private final BaseStatusSignal m_flywheelSetpointVelocitySignal;
 
   /** Constructs the CTRE-backed shooter IO implementation. */
   public ShooterIOCTRE() {
@@ -194,7 +185,6 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  @NotLogged
   @Override
   public AngularVelocity getVelocity() {
     var avg = 0.0;
@@ -205,7 +195,6 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  @NotLogged
   @Override
   public void setHoodTarget(Angle pAngle) {
     this.m_hoodMotor.setControl(
@@ -216,7 +205,6 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  @NotLogged
   @Override
   public Angle getHoodPosition() {
     return this.m_hoodMotor.getPosition(false).getValue();

@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -19,10 +18,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.utils.MechanismUtil;
 import frc.robot.utils.MechanismUtil.IntakeVisualSim;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Simulation implementation of {@link IntakeIO} used for robot simulation.
@@ -31,7 +30,6 @@ import frc.robot.utils.MechanismUtil.IntakeVisualSim;
  * visual/telemetry simulation for the rollers. Values are exposed to SmartDashboard for easy
  * tweaking while simulating.
  */
-@Logged
 public class IntakeIOSIM implements IntakeIO {
   private final DCMotor m_gearbox;
 
@@ -91,7 +89,7 @@ public class IntakeIOSIM implements IntakeIO {
    */
   public void setIntakeMotor(double speed) {
     m_intakeVisualSim.updateRoller(speed); // updates roller visuals
-    Robot.telemetry().log("RollerSpeed", speed);
+    Logger.recordOutput("RollerSpeed", speed);
   }
 
   /**

@@ -7,11 +7,9 @@ package frc.robot.subsystems.indexer;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 
-@Logged
 public interface IndexerIO {
   public default void setIndexMotor(double speed) {}
 

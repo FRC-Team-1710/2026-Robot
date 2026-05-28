@@ -4,18 +4,7 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.epilogue.Epilogue;
-import edu.wpi.first.epilogue.EpilogueConfiguration;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
-import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
-import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -27,26 +16,22 @@ import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
-import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-@Logged
 public class Robot extends DynamicTimedRobot {
-  @Logged(importance = Importance.DEBUG)
+
   private Command m_autonomousCommand;
 
-  @Logged(importance = Importance.CRITICAL)
   private boolean m_wasAuto = false;
 
-  @Logged(importance = Importance.CRITICAL)
   private final RobotContainer m_robotContainer;
 
-  @Logged(importance = Importance.INFO)
   private final PowerDistribution pdhLogging = new PowerDistribution();
 
-  @NotLogged private boolean m_hasAppliedTestingControls = false;
-
-  @NotLogged public static final EpilogueConfiguration epilogueConfig = new EpilogueConfiguration();
+  private boolean m_hasAppliedTestingControls = false;
 
   public Robot() {
     Alliance.updateRedAlliance();
@@ -55,40 +40,13 @@ public class Robot extends DynamicTimedRobot {
 
     DataLogManager.start();
 
-    epilogueConfig.backend =
-        EpilogueBackend.multi(new NTEpilogueBackend(NetworkTableInstance.getDefault()));
-
-    if (Mode.currentMode == CurrentMode.SIMULATION) {
-      epilogueConfig.minimumImportance = Importance.DEBUG;
-      epilogueConfig.errorHandler = ErrorHandler.crashOnError();
-    } else {
-      epilogueConfig.minimumImportance = Importance.INFO;
-      epilogueConfig.errorHandler = ErrorHandler.printErrorMessages();
-    }
-
-    epilogueConfig.root = "Robot";
-
-    epilogueConfig.loggingPeriod = Seconds.of(0.02);
-    epilogueConfig.loggingPeriodOffset = Seconds.of(0.02 - (0.02 / Subsystems.values().length));
-
-    Epilogue.configure(
-        config -> {
-          config = epilogueConfig;
-        });
-
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    // Epilogue dislikes the custom DynamicTimedRobot class so we manually update it
-    addSubsystem(
-        new SubsystemInfo(
-            Subsystems.Epilogue,
-            () ->
-                Epilogue.robotLogger.tryUpdate(
-                    epilogueConfig.backend.getNested(epilogueConfig.root),
-                    this,
-                    epilogueConfig.errorHandler),
-            epilogueConfig.loggingPeriod,
-            epilogueConfig.loggingPeriodOffset));
+    Logger.recordMetadata("ProjectName", "2026-Robot");
+    Logger.addDataReceiver(new NT4Publisher());
+    Logger.addDataReceiver(
+        new WPILOGWriter(Mode.currentMode == CurrentMode.SIMULATION ? "logs" : "/media/sda1"));
+    Logger.start();
 
     addAllSubsystems(m_robotContainer.getAllSubsystems());
 
@@ -115,6 +73,7 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     MatchState.updateAutonomousWinner();
+    Logger.recordOutput("Robot/PDHVoltage", pdhLogging.getVoltage());
   }
 
   @Override
@@ -199,7 +158,5 @@ public class Robot extends DynamicTimedRobot {
     m_robotContainer.setAllSubsystemTesting(false);
   }
 
-  public static EpilogueBackend telemetry() {
-    return Epilogue.getConfig().backend.getNested("Outputs");
-  }
+  // Telemetry compatibility shim removed; use Logger.recordOutput directly.
 }

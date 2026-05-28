@@ -3,11 +3,9 @@ package frc.robot.subsystems.feeder;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.MechanismUtil.WheelMechanism;
 
-@Logged
 public class FeederIOSIM implements FeederIO {
 
   private double m_velocity;
