@@ -5,9 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,52 +14,76 @@ import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
-import frc.robot.utils.DynamicTimedRobot;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-public class Robot extends DynamicTimedRobot {
-
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
   private boolean m_wasAuto = false;
 
   private final RobotContainer m_robotContainer;
 
-  private final PowerDistribution pdhLogging = new PowerDistribution();
-
   private boolean m_hasAppliedTestingControls = false;
 
   public Robot() {
+    // Record metadata
+    Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
+    Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
+    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+    Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+    Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+    Logger.recordMetadata(
+        "GitDirty",
+        switch (BuildConstants.DIRTY) {
+          case 0 -> "All changes committed";
+          case 1 -> "Uncommitted changes";
+          default -> "Unknown";
+        });
+
+    // Set up data receivers & replay source
+    switch (Mode.currentMode) {
+      case REAL:
+        // Running on a real robot, log to a USB stick ("/U/logs")
+        Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new NT4Publisher());
+        break;
+
+      case SIM:
+        // Running a physics simulator, log to NT
+        Logger.addDataReceiver(new NT4Publisher());
+        break;
+
+      case REPLAY:
+        // Replaying a log, set up replay source
+        setUseTiming(false); // Run as fast as possible
+        String logPath = LogFileUtil.findReplayLog();
+        Logger.setReplaySource(new WPILOGReader(logPath));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        break;
+    }
+
+    Logger.start();
+
     Alliance.updateRedAlliance();
 
-    m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
-
-    DataLogManager.start();
+    m_robotContainer = new RobotContainer();
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    Logger.recordMetadata("ProjectName", "2026-Robot");
-    Logger.addDataReceiver(new NT4Publisher());
-    Logger.addDataReceiver(
-        new WPILOGWriter(Mode.currentMode == CurrentMode.SIMULATION ? "logs" : "/media/sda1"));
-    Logger.start();
-
-    addAllSubsystems(m_robotContainer.getAllSubsystems());
-
-    if (Mode.currentMode == CurrentMode.SIMULATION) {
-      SmartDashboard.putBoolean("Reset Fuel Sim", false);
+    if (Mode.currentMode == CurrentMode.SIM) {
+      SmartDashboard.putBoolean("Sim/Fuel/Reset", false);
     }
-
-    SmartDashboard.putBoolean("MatchState/IgnoreFMS", false);
 
     // Lowers brownout threshold to 6.0V
     RobotController.setBrownoutVoltage(6.0);
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    SignalLogger.stop();
     SignalLogger.setPath("/media/sda1");
     SignalLogger.start();
 
@@ -73,7 +95,6 @@ public class Robot extends DynamicTimedRobot {
     CommandScheduler.getInstance().run();
 
     MatchState.updateAutonomousWinner();
-    Logger.recordOutput("Robot/PDHVoltage", pdhLogging.getVoltage());
   }
 
   @Override
@@ -123,10 +144,13 @@ public class Robot extends DynamicTimedRobot {
   public void teleopPeriodic() {}
 
   @Override
+  public void teleopExit() {}
+
+  @Override
   public void simulationPeriodic() {
     // Reset Fuel
-    if (SmartDashboard.getBoolean("Reset Fuel Sim", false)) {
-      SmartDashboard.putBoolean("Reset Fuel Sim", false);
+    if (SmartDashboard.getBoolean("Sim/Fuel/Reset", false)) {
+      SmartDashboard.putBoolean("Sim/Fuel/Reset", false);
 
       m_robotContainer.fuelSim.clearFuel();
       m_robotContainer.fuelSim.spawnStartingFuel();
@@ -134,9 +158,6 @@ public class Robot extends DynamicTimedRobot {
 
     m_robotContainer.fuelSim.updateSim();
   }
-
-  @Override
-  public void teleopExit() {}
 
   @Override
   public void testInit() {
@@ -157,6 +178,4 @@ public class Robot extends DynamicTimedRobot {
   public void testExit() {
     m_robotContainer.setAllSubsystemTesting(false);
   }
-
-  // Telemetry compatibility shim removed; use Logger.recordOutput directly.
 }

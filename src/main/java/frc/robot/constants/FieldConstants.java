@@ -11,46 +11,47 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.constants.Mode.CurrentMode;
 import java.io.IOException;
-import java.util.HashMap;
 
 /** Field constants RELATIVE TO THE BLUE ALLIANCE (frc coordinate system) */
 public class FieldConstants {
   public static final Distance kFieldLength = Inches.of(651.2225);
   public static final Distance kFieldWidth = Inches.of(317.6875);
 
-  public static final Distance kBumpWidth = Inches.of(73.08122);
-  public static final Distance kBumpDepth = Inches.of(47);
-  public static final Distance kBumpDistanceFromWall = Inches.of(62.37375);
+  public static final Distance kBumpWidth = Inches.of(73.0);
+  public static final Distance kBumpDepth = Inches.of(47.0);
+  public static final Distance kBumpDistanceFromWall = Inches.of(62.343750);
   public static final Distance kBumpDistanceFromDS = Inches.of(182.11125);
 
   public static final Distance kTrenchWidth = Inches.of(50.34375);
 
-  public static final Distance kMaxHubWidth =
-      Inches.of(58.413)
-          .plus(Inches.of(28)); // Add tolerance to account for ball diameter and shooter separation
-  public static final Distance kMaxHubDistanceFromDS = Inches.of(215.4186745);
+  public static final Distance kHubWidth = Inches.of(47.0);
+  public static final Distance kMaxHubWidth = Inches.of(58.435559);
+  public static final Distance kMaxHubDistanceFromDS = Inches.of(215.605208);
 
   public static final Distance kBumpCenterYFromFieldCenter =
       kFieldWidth.div(2).minus(kBumpDistanceFromWall.plus(kBumpWidth.div(2)));
   public static final Distance kTrenchCenterYFromFieldCenter =
       kFieldWidth.div(2).minus(kTrenchWidth.div(2));
 
-  public static final Distance kStartingLineDistance = Inches.of(158.6);
+  public static final Distance kStartingLineDistance = Inches.of(157.61125);
+
+  public static final Translation2d kFieldCenter =
+      new Translation2d(kFieldLength.div(2), kFieldWidth.div(2));
 
   public static final Translation3d kHubCenterBlue =
       new Translation3d(Inches.of(182.112411), kFieldWidth.div(2), Inches.of(72.0));
   public static final Translation3d kHubCenterRed =
-      new Translation3d(Inches.of(469.11125), kFieldWidth.div(2), Inches.of(72.0));
+      new Translation3d(
+          kFieldLength.minus(kHubCenterBlue.getMeasureX()), kFieldWidth.div(2), Inches.of(72.0));
 
   public static final Distance kDepotWidth = Inches.of(42);
-  public static final Distance kDepotLength = Inches.of(24);
+  public static final Distance kDepotDepth = Inches.of(24);
   public static final Distance kDepotDistanceFromWall = Inches.of(213.84375);
 
   public static final Distance kHexagonRadius = Inches.of(20.9659045).times(2 / Math.sqrt(3));
   public static final Translation3d[] kHexagonBlue = {
     kHubCenterBlue.plus(
-        new Translation3d(
-            new Translation2d(kHexagonRadius.in(Meters), Rotation2d.k180deg))), // closest to ds
+        new Translation3d(new Translation2d(kHexagonRadius.in(Meters), Rotation2d.k180deg))),
     kHubCenterBlue.plus(
         new Translation3d(
             new Translation2d(
@@ -74,8 +75,7 @@ public class FieldConstants {
   };
   public static final Translation3d[] kHexagonRed = {
     kHubCenterRed.plus(
-        new Translation3d(
-            new Translation2d(kHexagonRadius.in(Meters), Rotation2d.kZero))), // closest to ds
+        new Translation3d(new Translation2d(kHexagonRadius.in(Meters), Rotation2d.kZero))),
     kHubCenterRed.plus(
         new Translation3d(
             new Translation2d(
@@ -102,7 +102,7 @@ public class FieldConstants {
 
   static {
     try {
-      if (Mode.currentMode == CurrentMode.SIMULATION) {
+      if (Mode.currentMode == CurrentMode.SIM) {
         kAprilTags = AprilTagFieldLayout.loadFromResource(kDefaultField.m_resourceFile);
       } else {
         kAprilTags = AprilTagFieldLayout.loadField(kDefaultField);
@@ -117,97 +117,66 @@ public class FieldConstants {
   public static final Distance kDepotCenterDistanceFromWall =
       kDepotDistanceFromWall.plus(kDepotWidth.div(2));
 
-  public static final Distance kOutpostCenterFromWall = Inches.of(47.5).div(2);
+  public static final Distance kOutpostCenterFromWall =
+      Inches.of(49.25).div(2).plus(Inches.of(1.59375));
 
   public static final Distance kRobotLength = Inches.of(46);
 
-  public static final Translation2d kHubCornerNeutralZone1 =
-      new Translation2d(kMaxHubDistanceFromDS, kFieldWidth.div(2).plus(kMaxHubWidth.div(2)));
-  public static final Translation2d kHubCornerNeutralZone2 =
-      new Translation2d(kMaxHubDistanceFromDS, kFieldWidth.div(2).minus(kMaxHubWidth.div(2)));
-
-  // Add a new value and automatically adds it to the auto chooser
-  public static HashMap<String, Translation2d> AutoConstants() {
-    HashMap<String, Translation2d> points = new HashMap<>();
-    points.put(
-        "Bump REn, ",
-        new Translation2d(
-            kStartingLineDistance.minus(kBumpDepth.div(2)),
-            kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-    points.put(
-        "Bump REx, ",
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
-            kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-    points.put(
-        "Bump LEn, ",
-        new Translation2d(
-            kStartingLineDistance.minus(kBumpDepth.div(2)),
-            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
-    points.put(
-        "Bump LEx, ",
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
-            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
-
-    return points;
-  }
-
-  public class Bump {
-
-    public enum BumpLocation {
-      BLUE_LEFT(
+  /** Trench + Bump = Tump */
+  public class Tumps {
+    public enum BlueTump {
+      BLUE_LEFT_BUMP(
           new Translation2d(
               kBumpDistanceFromDS,
               kFieldWidth.div(2).plus(kBumpCenterYFromFieldCenter.minus(kBumpWidth.div(2)))),
           new Translation2d(
               kBumpDistanceFromDS,
               kFieldWidth.div(2).plus(kBumpCenterYFromFieldCenter.plus(kBumpWidth.div(2))))),
-      BLUE_RIGHT(
+      BLUE_RIGHT_BUMP(
           new Translation2d(
               kBumpDistanceFromDS,
               kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter.minus(kBumpWidth.div(2)))),
           new Translation2d(
               kBumpDistanceFromDS,
               kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter.plus(kBumpWidth.div(2))))),
-      RED_RIGHT(
+      BLUE_LEFT_TRENCH(
           new Translation2d(
-              kFieldLength.minus(kBumpDistanceFromDS),
-              kFieldWidth.div(2).plus(kBumpCenterYFromFieldCenter.minus(kBumpWidth.div(2)))),
+              kBumpDistanceFromDS,
+              kFieldWidth.div(2).plus(kTrenchCenterYFromFieldCenter.minus(kTrenchWidth.div(2)))),
           new Translation2d(
-              kFieldLength.minus(kBumpDistanceFromDS),
-              kFieldWidth.div(2).plus(kBumpCenterYFromFieldCenter.plus(kBumpWidth.div(2))))),
-      RED_LEFT(
+              kBumpDistanceFromDS,
+              kFieldWidth.div(2).plus(kTrenchCenterYFromFieldCenter.plus(kTrenchWidth.div(2))))),
+      BLUE_RIGHT_TRENCH(
           new Translation2d(
-              kFieldLength.minus(kBumpDistanceFromDS),
-              kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter.minus(kBumpWidth.div(2)))),
+              kBumpDistanceFromDS,
+              kFieldWidth.div(2).minus(kTrenchCenterYFromFieldCenter.minus(kTrenchWidth.div(2)))),
           new Translation2d(
-              kFieldLength.minus(kBumpDistanceFromDS),
-              kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter.plus(kBumpWidth.div(2)))));
+              kBumpDistanceFromDS,
+              kFieldWidth.div(2).minus(kTrenchCenterYFromFieldCenter.plus(kTrenchWidth.div(2)))));
 
-      public final Translation2d translationInside;
-      public final Translation2d translationOutside;
+      public final Translation2d translation1;
+      public final Translation2d translation2;
       public final Translation2d average;
 
-      BumpLocation(Translation2d translationInside, Translation2d translationOutside) {
-        this.translationInside = translationInside;
-        this.translationOutside = translationOutside;
-        this.average = translationInside.plus(translationOutside).div(2);
+      BlueTump(Translation2d translation1, Translation2d translation2) {
+        this.translation1 = translation1;
+        this.translation2 = translation2;
+        this.average = translation1.plus(translation2).div(2);
       }
 
-      public static BumpLocation getClosest(Translation2d translation) {
+      public static BlueTump getClosest(Translation2d translation) {
         double closestDistance = Double.MAX_VALUE;
-        BumpLocation closestBumpLocation = BLUE_LEFT;
+        BlueTump closestTump = BLUE_LEFT_BUMP;
 
-        for (BumpLocation bumpLocation : BumpLocation.values()) {
-          double distance = translation.getDistance(bumpLocation.translationInside);
+        for (BlueTump tump : BlueTump.values()) {
+          double distance = translation.getDistance(tump.average);
           if (distance < closestDistance) {
             closestDistance = distance;
-            closestBumpLocation = bumpLocation;
+            closestTump = tump;
           }
         }
 
-        return closestBumpLocation;
+        return closestTump;
       }
     }
   }

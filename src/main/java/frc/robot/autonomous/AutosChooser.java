@@ -62,7 +62,7 @@ public class AutosChooser {
                 (speeds) ->
                     drivetrain.applyRequest(
                         drivetrain
-                            .fieldCentricBLine
+                            .robotCentricBLine
                             .withVelocityX(speeds.vxMetersPerSecond)
                             .withVelocityY(speeds.vyMetersPerSecond)
                             .withRotationalRate(

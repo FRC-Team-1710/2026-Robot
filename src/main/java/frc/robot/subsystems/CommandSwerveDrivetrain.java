@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -8,8 +7,11 @@ import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
@@ -33,12 +35,12 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Alliance;
-import frc.robot.constants.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.utils.CustomFieldCentric;
 import frc.robot.utils.shooterMath.ShooterMath4;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -47,20 +49,23 @@ import java.util.function.Supplier;
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
   private static final double kSimLoopPeriod = 0.005; // 5 ms
 
+  private double m_lastSimTime;
   private Notifier m_simNotifier = null;
 
-  private double m_lastSimTime;
-
   private LinearVelocity m_maxSpeed = TunerConstants.kSpeedAt12Volts;
-
   private AngularVelocity m_maxAngularRate = TunerConstants.kMaxAngularRate;
 
-  public final CustomFieldCentric fieldCentric;
-  public final RobotCentric fieldCentricBLine;
+  public final FieldCentric fieldCentric =
+      new FieldCentric().withDriveRequestType(DriveRequestType.Velocity);
+
+  public final FieldCentricFacingAngle fieldCentricFacingAngle =
+      new FieldCentricFacingAngle()
+          .withDriveRequestType(DriveRequestType.Velocity)
+          .withHeadingPID(0, 0, 0);
+
+  public final RobotCentric robotCentricBLine = new RobotCentric();
 
   private DriveStates m_currentState = DriveStates.DRIVER_CONTROLLED;
-
-  private boolean m_sysid = false;
 
   /** Controller inputs for default teleop */
   private CommandXboxController m_inputController;
@@ -170,8 +175,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    fieldCentric = new CustomFieldCentric(getPigeon2());
-    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -193,8 +196,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    fieldCentric = new CustomFieldCentric(getPigeon2());
-    fieldCentricBLine = new RobotCentric();
   }
 
   /**
@@ -227,8 +228,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    fieldCentric = new CustomFieldCentric(getPigeon2());
-    fieldCentricBLine = new RobotCentric();
   }
 
   public void setTeleCurrentLimits() {
@@ -238,10 +237,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           .getConfigurator()
           .apply(
               new CurrentLimitsConfigs()
-                  .withStatorCurrentLimit(110) // 120
+                  .withStatorCurrentLimit(110)
                   .withStatorCurrentLimitEnable(true)
-                  .withSupplyCurrentLimit(45) // 50
-                  .withSupplyCurrentLimitEnable(true));
+                  .withSupplyCurrentLimit(45)
+                  .withSupplyCurrentLimitEnable(true),
+              0);
     }
   }
 
@@ -290,28 +290,32 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Vector<N2> scaledTranslationInputs =
         rescaleTranslation(m_inputController.getLeftY(), m_inputController.getLeftX());
 
-    if (!DriverStation.isAutonomous() && !m_sysid) {
-      setControl(
-          fieldCentric
-              .withVelocityX(m_maxSpeed.times(-scaledTranslationInputs.get(0, 0)))
-              .withVelocityY(m_maxSpeed.times(-scaledTranslationInputs.get(1, 0)))
-              .withRotationalRate(
-                  m_maxAngularRate.times(-rescaleRotation(m_inputController.getRightX())))
-              .withDriveState(m_currentState));
+    if (!DriverStation.isAutonomous()) {
+      switch (m_currentState) {
+        case DRIVER_CONTROLLED:
+          setControl(
+              fieldCentric
+                  .withVelocityX(m_maxSpeed.times(-scaledTranslationInputs.get(0, 0)))
+                  .withVelocityY(m_maxSpeed.times(-scaledTranslationInputs.get(1, 0)))
+                  .withRotationalRate(
+                      m_maxAngularRate.times(-rescaleRotation(m_inputController.getRightX()))));
+          break;
+        case ROTATION_LOCK:
+          setControl(
+              fieldCentricFacingAngle
+                  .withVelocityX(m_maxSpeed.times(-scaledTranslationInputs.get(0, 0)))
+                  .withVelocityY(m_maxSpeed.times(-scaledTranslationInputs.get(1, 0)))
+                  .withTargetRateFeedforward(-rescaleRotation(m_inputController.getRightX())));
+          break;
+        default:
+          break;
+      }
     }
 
     ShooterMath4.calculate(getPose());
-    org.littletonrobotics.junction.Logger.recordOutput("Drive/State", m_currentState);
-    org.littletonrobotics.junction.Logger.recordOutput(
-        "Drive/AutonomousRequestOverride", m_autonomousRequestOverride);
-    org.littletonrobotics.junction.Logger.recordOutput(
-        "Drive/ShouldAcceptNextVisionMeasurementRotation",
-        m_shouldAcceptNextVisionMeasurementRotation);
-  }
 
-  public void sysid(boolean sysid) {
-    m_sysid = sysid;
-    org.littletonrobotics.junction.Logger.recordOutput("Drive/SysIdEnabled", sysid);
+    Logger.recordOutput("Drivetrain/State", m_currentState);
+    Logger.recordOutput("Drivetrain/AutonomousRequestOverride", m_autonomousRequestOverride);
   }
 
   /** Rescales the translation input vector with deadband and power curve. */
@@ -327,12 +331,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /** Sets whether autonomous requests should override normal control. */
   public void setAutonomousRequestOverride(boolean override) {
     this.m_autonomousRequestOverride = override;
-    org.littletonrobotics.junction.Logger.recordOutput("Drive/AutonomousRequestOverride", override);
   }
 
   private void startSimThread() {
     m_lastSimTime = Utils.getCurrentTimeSeconds();
-    org.littletonrobotics.junction.Logger.recordOutput("Drive/LastSimTime", m_lastSimTime);
+    Logger.recordOutput("Drivetrain/LastSimTime", m_lastSimTime);
 
     /* Run simulation at a faster rate so PID gains behave more reasonably */
     m_simNotifier =
@@ -341,8 +344,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               final double currentTime = Utils.getCurrentTimeSeconds();
               double deltaTime = currentTime - m_lastSimTime;
               m_lastSimTime = currentTime;
-              org.littletonrobotics.junction.Logger.recordOutput(
-                  "Drive/LastSimTime", m_lastSimTime);
+              Logger.recordOutput("Drivetrain/LastSimTime", m_lastSimTime);
 
               /* use the measured time delta, get battery voltage from WPILib */
               updateSimState(deltaTime, RobotController.getBatteryVoltage());
@@ -360,8 +362,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
     super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
-    org.littletonrobotics.junction.Logger.recordOutput(
-        "Drive/VisionMeasurementPose", visionRobotPoseMeters);
   }
 
   /**
@@ -382,32 +382,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
-    // if (!getPigeon2().isConnected()) {
-    //   super.addVisionMeasurement(
-    //       visionRobotPoseMeters,
-    //       Utils.fpgaToCurrentTime(timestampSeconds),
-    //       VecBuilder.fill(0.05, 0.05, 0.05));
-    //   DriverStation.reportError(
-    //       "--- PIGEON NOT CONNECTED", false); // Set vision StdDev to low if pigeon is
-    // disconnected
-    //   return;
-    // }
     super.addVisionMeasurement(
         visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     if (m_shouldAcceptNextVisionMeasurementRotation) {
       m_shouldAcceptNextVisionMeasurementRotation = false;
       resetRotation(visionRobotPoseMeters.getRotation().plus(Rotation2d.k180deg));
-      org.littletonrobotics.junction.Logger.recordOutput(
-          "Drive/ShouldAcceptNextVisionMeasurementRotation", false);
     }
   }
 
   public void setShouldAcceptNextVisionMeasurementRotation(boolean shouldAccept) {
     this.m_shouldAcceptNextVisionMeasurementRotation = shouldAccept;
-    org.littletonrobotics.junction.Logger.recordOutput(
-        "Drive/ShouldAcceptNextVisionMeasurementRotation", shouldAccept);
   }
 
+  @AutoLogOutput(key = "Drivetrain/Pose")
   public Pose2d getPose() {
     return getState().Pose;
   }
@@ -416,25 +403,35 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return getPose().getRotation();
   }
 
+  @AutoLogOutput(key = "Drivetrain/ModuleStates")
   public SwerveModuleState[] getModuleStates() {
     return getState().ModuleStates;
   }
 
+  @AutoLogOutput(key = "Drivetrain/ModuleTargets")
   public SwerveModuleState[] getModuleTargets() {
     return getState().ModuleTargets;
   }
 
+  @AutoLogOutput(key = "Drivetrain/RobotSpeeds")
   public ChassisSpeeds getRobotSpeeds() {
     return getState().Speeds;
   }
 
+  @AutoLogOutput(key = "Drivetrain/FieldSpeeds")
   public ChassisSpeeds getFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotSpeeds(), getRotation());
   }
 
+  @AutoLogOutput(key = "Drivetrain/TargetFieldSpeeds")
   public ChassisSpeeds getTargetFieldSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(
         getKinematics().toChassisSpeeds(getModuleTargets()), getRotation());
+  }
+
+  @AutoLogOutput(key = "Drivetrain/RotationTarget")
+  public Rotation2d getRotationTarget() {
+    return fieldCentricFacingAngle.TargetDirection;
   }
 
   /**
@@ -459,14 +456,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return m_sysIdRoutineToApply.dynamic(direction);
   }
 
-  /** Returns true if the robot is in its own alliance zone. */
-  public boolean inAllianceZone() {
-    return (Alliance.redAlliance
-        ? getPose().getX()
-            > FieldConstants.kFieldLength.minus(FieldConstants.kStartingLineDistance).in(Meters)
-        : getPose().getX() < FieldConstants.kFieldLength.in(Meters));
-  }
-
   /** Set the {@link DriveStates#DRIVER_CONTROLLED} and assists controller */
   public void setController(CommandXboxController controller) {
     this.m_inputController = controller;
@@ -474,19 +463,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /** Set the {@link DriveStates#ROTATION_LOCK} target */
   public void setRotationTarget(Rotation2d target) {
-    fieldCentric.withTargetRotation(target);
-    org.littletonrobotics.junction.Logger.recordOutput("Drive/RotationTarget", target);
+    fieldCentricFacingAngle.withTargetDirection(target);
   }
 
   /** Sets the current drive state. */
   public void setState(DriveStates state) {
     this.m_currentState = state;
-    org.littletonrobotics.junction.Logger.recordOutput("Drive/State", state);
   }
 
   public enum DriveStates {
     DRIVER_CONTROLLED,
     ROTATION_LOCK,
-    // X_LOCK
+    SYSID
   }
 }

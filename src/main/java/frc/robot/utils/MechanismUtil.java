@@ -133,16 +133,13 @@ public class MechanismUtil {
     public void update(double angleDeg, boolean atTarget) {
       // Update the visual representation of the arm
       // The arm ligament is relative to the pivot, which sits at 90° absolute (on top
-      // of vertical
-      // tower)
+      // of vertical tower)
       // Encoder angle is absolute (0° = right, 90° = up per unit circle)
-      // So subtract 90° to convert: encoder 0° → visual -90° (relative to pivot) = 0°
-      // absolute
+      // So subtract 90° to convert: encoder 0° → visual -90° (relative to pivot) = 0° absolute
       // (right)
       armLigament.setAngle(angleDeg - ANGLE_OFFSET);
 
-      // Change color based on whether at target position (green = ready, yellow =
-      // moving)
+      // Change color based on whether at target position (green = ready, yellow = moving)
       Color8Bit currentColor = atTarget ? AT_TARGET_COLOR : MOVING_COLOR;
       armLigament.setColor(currentColor);
     }
@@ -411,7 +408,7 @@ public class MechanismUtil {
       subsystem = new Mechanism2d(CANVAS_WIDTH, CANVAS_HEIGHT);
       MechanismRoot2d root = subsystem.getRoot(name + "Root", ROOT_X, ROOT_Y);
 
-      // Deplopyment Arm
+      // Deployment Arm
       armLigament =
           root.append(new MechanismLigament2d("Arm", armVisualLength, 0, ARM_WIDTH, MOVING_COLOR));
 
@@ -420,7 +417,7 @@ public class MechanismUtil {
       for (int i = 0; i < NUM_SPOKES; i++) {
         double spokeAngle = (360.0 / NUM_SPOKES) * i;
 
-        // Crea te spoke at calculated angle
+        // Create spoke at calculated angle
         spokes[i] =
             armLigament.append(
                 new MechanismLigament2d(

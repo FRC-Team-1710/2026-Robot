@@ -19,14 +19,12 @@ import frc.robot.constants.DrivetrainAccelerationLimits;
 import frc.robot.constants.DrivetrainAutomationConstants;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
-import frc.robot.constants.Subsystems;
 import frc.robot.constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.CurrentStates;
 import frc.robot.subsystems.Superstructure.IntakeAddableStates;
-import frc.robot.subsystems.Superstructure.ShooterAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.Feeder.FEEDER_STATE;
@@ -50,16 +48,12 @@ import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOCTRE;
 import frc.robot.subsystems.shooter.ShooterIOSIM;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.utils.DynamicTimedRobot.SubsystemInfo;
-import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import frc.robot.utils.FuelSim;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class RobotContainer {
-  // Epilogue annotations removed; using AdvantageKit Logger.recordOutput instead
   private final CommandXboxController m_driver = new CommandXboxController(0);
-  private final CommandXboxController m_notDriver = new CommandXboxController(1);
+  private final CommandXboxController m_testing = new CommandXboxController(1);
 
   public FuelSim fuelSim;
 
@@ -68,82 +62,59 @@ public class RobotContainer {
   private boolean m_hasntAcceptedVisionRotation = true;
 
   public final CommandSwerveDrivetrain drivetrain;
-
-  /* Create subsystems (uses simulated versions when running in simulation) */
   private final Intake m_intake;
-
   private final Shooter m_shooter;
-
   private final Indexer m_indexer;
-
   private final Feeder m_feeder;
-
-  private final Leds m_leds; // Everything is logged through Logger
-
-  // Should add logging soon
-  private final Vision[] m_cameras;
+  private final Leds m_leds;
+  private final Vision[] m_cameras; // Should add logging soon
 
   private final Superstructure m_superstructure;
 
-  /**
-   * Constructs the robot container, initializing all subsystems and configuring bindings.
-   *
-   * @param consumer the times consumer for dynamic scheduling
-   */
-  public RobotContainer(TimesConsumer consumer) {
+  /** Constructs the robot container, initializing all subsystems and configuring bindings. */
+  public RobotContainer() {
     drivetrain = TunerConstants.createDrivetrain();
     drivetrain.setController(m_driver);
 
     switch (Mode.currentMode) {
       case REAL:
-        m_intake =
-            new Intake(new IntakeIOCTRE(), consumer, () -> m_driver.leftBumper().getAsBoolean());
-        m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
-        m_feeder = new Feeder(new FeederIOCTRE(), consumer);
-        m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
+        m_intake = new Intake(new IntakeIOCTRE(), () -> m_driver.leftBumper().getAsBoolean());
+        m_shooter = new Shooter(new ShooterIOCTRE());
+        m_feeder = new Feeder(new FeederIOCTRE());
+        m_indexer = new Indexer(new IndexerIOCTRE());
 
         m_cameras =
-            // Create a stream of Vision objects from the camera configs
             Arrays.stream(VisionConstants.kPoseCameraConfigs)
-                // For each config, create a new Vision subsystem with the appropriate arguments
-                .map(
-                    config ->
-                        new Vision(
-                            config.name(),
-                            config.robotToCamera(),
-                            drivetrain)) // TODO: Fix this stuff :p
-                // Collect the stream back into an array of Vision subsystems
+                .map(config -> new Vision(config.name(), config.robotToCamera(), drivetrain))
                 .toArray(Vision[]::new);
 
         break;
 
-      case SIMULATION:
-        m_intake =
-            new Intake(new IntakeIOSIM(), consumer, () -> m_driver.leftBumper().getAsBoolean());
-        m_shooter = new Shooter(new ShooterIOSIM(), consumer);
-        m_feeder = new Feeder(new FeederIOSIM(), consumer);
-        m_indexer = new Indexer(new IndexerIOSIM(), consumer);
+      case SIM:
+        m_intake = new Intake(new IntakeIOSIM(), () -> m_driver.leftBumper().getAsBoolean());
+        m_shooter = new Shooter(new ShooterIOSIM());
+        m_feeder = new Feeder(new FeederIOSIM());
+        m_indexer = new Indexer(new IndexerIOSIM());
         m_cameras = new Vision[0];
         break;
 
       default:
-        m_intake =
-            new Intake(new IntakeIO() {}, consumer, () -> m_driver.leftBumper().getAsBoolean());
-        m_shooter = new Shooter(new ShooterIO() {}, consumer);
-        m_feeder = new Feeder(new FeederIO() {}, consumer);
-        m_indexer = new Indexer(new IndexerIO() {}, consumer);
+        m_intake = new Intake(new IntakeIO() {}, () -> m_driver.leftBumper().getAsBoolean());
+        m_shooter = new Shooter(new ShooterIO() {});
+        m_feeder = new Feeder(new FeederIO() {});
+        m_indexer = new Indexer(new IndexerIO() {});
         m_cameras = new Vision[0];
         break;
     }
 
     m_superstructure =
         new Superstructure(
-            m_driver, m_notDriver, drivetrain, m_intake, m_shooter, m_indexer, m_feeder);
+            m_driver, m_testing, drivetrain, m_intake, m_shooter, m_indexer, m_feeder);
 
     m_leds = new Leds(m_superstructure);
 
     // Fuel Simulation
-    if (Mode.currentMode == CurrentMode.SIMULATION) {
+    if (Mode.currentMode == CurrentMode.SIM) {
       fuelSim = new FuelSim("FuelSim");
       fuelSim.spawnStartingFuel();
 
@@ -159,7 +130,7 @@ public class RobotContainer {
 
       fuelSim.registerIntake(
           width / 2,
-          width / 2 + Units.inchesToMeters(10), // Intake is 10 inches from the edge
+          width / 2 + Units.inchesToMeters(10),
           -length / 2,
           length / 2,
           () ->
@@ -193,27 +164,27 @@ public class RobotContainer {
 
   /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
-    m_notDriver
+    m_testing
         .leftTrigger()
         .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)))
         .onFalse(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Down)));
 
-    m_notDriver
+    m_testing
         .a()
         .onTrue(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Indexing)))
         .onFalse(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Idle)));
 
-    m_notDriver
+    m_testing
         .b()
         .onTrue(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.FEEDING)))
         .onFalse(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.STOP)));
 
-    m_notDriver
+    m_testing
         .x()
         .onTrue(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.CORNER)))
         .onFalse(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.IDLE)));
 
-    m_notDriver
+    m_testing
         .rightTrigger()
         .onTrue(
             Commands.runOnce(
@@ -234,9 +205,7 @@ public class RobotContainer {
                   }
                 }));
 
-    m_notDriver
-        .povRight()
-        .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
+    m_testing.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
   }
 
   /**
@@ -330,12 +299,7 @@ public class RobotContainer {
         .and(m_driver.rightTrigger().negate())
         .onTrue(m_superstructure.setWantedStateCommand(WantedStates.Default));
 
-    m_driver
-        .rightTrigger()
-        .onFalse(
-            m_superstructure
-                .setShooterAddableStateCommand(ShooterAddableStates.Idle)
-                .andThen(Commands.runOnce(() -> m_hasntAcceptedVisionRotation = true)));
+    m_driver.rightTrigger().onFalse(Commands.runOnce(() -> m_hasntAcceptedVisionRotation = true));
 
     m_driver
         .x()
@@ -401,101 +365,17 @@ public class RobotContainer {
         .and(m_superstructure::currentStateUsesIntake)
         .onFalse(m_superstructure.setIntakeAddableStateCommand(IntakeAddableStates.Intaking));
 
-    m_driver
-        .povLeft()
-        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
-
-    m_driver
-        .rightBumper()
-        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
-
-    // m_mech
-    //     .rightBumper()
-    //     .onTrue(
-    //         Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
-    //             .ignoringDisable(true));
-
-    // m_mech
-    //     .leftBumper()
-    //     .onTrue(
-    //         Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
-    //             .ignoringDisable(true));
-
-    // new Trigger(drivetrain::inAllianceZone)
-    //     .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
-
     new Trigger(DriverStation::isTeleopEnabled)
         .onTrue(
             Commands.sequence(
-                    Commands.waitSeconds(3.5),
-                    Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 1)),
-                    Commands.waitSeconds(1.5),
-                    Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 0)))
-                .ignoringDisable(true));
+                Commands.waitSeconds(3.5),
+                Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 1)),
+                Commands.waitSeconds(1.5),
+                Commands.runOnce(() -> m_driver.setRumble(RumbleType.kBothRumble, 0))));
   }
 
   /** Returns the autonomous command to run during autonomous period. */
   public Command getAutonomousCommand() {
     return m_autoChooser.selectAuto();
-  }
-
-  /** Returns all subsystem info for dynamic scheduling. */
-  public SubsystemInfo[] getAllSubsystems() {
-    ArrayList<SubsystemInfo> map = new ArrayList<>();
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Vision,
-            this::cycleVision,
-            Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length))));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Superstructure,
-            m_superstructure::periodic,
-            Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 2)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Drive,
-            drivetrain::periodic,
-            Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 3)));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Shooter,
-            m_shooter::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 4 + (60.0 / 4))));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Feeder,
-            m_feeder::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 5 + ((60.0 / 4) * 2))));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Indexer,
-            m_indexer::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 6 + ((60.0 / 4) * 3))));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Intake,
-            m_intake::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
-    map.add(
-        new SubsystemInfo(
-            Subsystems.Leds,
-            m_leds::periodic,
-            Milliseconds.of(60),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
-    return map.toArray(new SubsystemInfo[0]);
-  }
-
-  private void cycleVision() {
-    for (Vision vision : m_cameras) {
-      vision.periodic();
-    }
   }
 }

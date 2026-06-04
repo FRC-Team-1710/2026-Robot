@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
     id 'com.diffplug.spotless' version '6.25.0'
+    id "com.peterabeles.gversion" version "1.10"
 }
 // version of diffplug spotless plugin is required until gradle spotless extension is updated
 
@@ -194,4 +195,14 @@ spotless {
         indentWithSpaces(2)
         endWithNewline()
     }
+}
+
+project.compileJava.dependsOn(createVersionFile)
+gversion {
+    srcDir       = "src/main/java/"
+    classPackage = "frc.robot"
+    className    = "BuildConstants"
+    dateFormat   = "yyyy-MM-dd HH:mm:ss z"
+    timeZone     = "CST" // Use preferred time zone
+    indent       = "  "
 }
