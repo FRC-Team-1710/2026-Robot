@@ -17,10 +17,11 @@ public class FeederIOSIM implements FeederIO {
   }
 
   /** {@inheritDoc} */
+  //updates the feeder's mechanism simulation based on the current velocity and time step
   public void update(double dtSeconds) {
     this.m_feederMotorMechanism.update(
         RPM.of(this.m_velocity * 6000).in(RadiansPerSecond), dtSeconds, false);
-    SmartDashboard.putData("Feeder", this.m_feederMotorMechanism.getMechanism());
+    SmartDashboard.putData("Feeder", this.m_feederMotorMechanism.getMechanism()); // Display the feeder mechanism on the SmartDashboard
   }
 
   /** {@inheritDoc} */
