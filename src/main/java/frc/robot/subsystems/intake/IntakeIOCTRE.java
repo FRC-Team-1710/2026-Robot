@@ -80,16 +80,20 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.0625;
     m_motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0625;
 
+    m_motorConfig.CurrentLimits.StatorCurrentLimit = 80;
+    m_motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    m_motorConfig.CurrentLimits.SupplyCurrentLimit = 50; // 55
+    m_motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
     m_intakeMotor.getConfigurator().apply(m_motorConfig);
     m_intakeMotorFollower.getConfigurator().apply(m_motorConfig);
 
-    // set slot 0 gains //TODO:
     Slot0Configs m_slot0Configs = m_motorConfig.Slot0;
     m_slot0Configs.kG = 0.4;
-    m_slot0Configs.kS = 0;
-    m_slot0Configs.kV = 6.625;
+    m_slot0Configs.kS = 0.05;
+    m_slot0Configs.kV = 6.25;
     m_slot0Configs.kA = 0;
-    m_slot0Configs.kP = 0.2;
+    m_slot0Configs.kP = 0.75;
     m_slot0Configs.kI = 0;
     m_slot0Configs.kD = 0;
     m_slot0Configs.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
@@ -100,6 +104,8 @@ public class IntakeIOCTRE implements IntakeIO {
     m_motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     m_motorConfig.CurrentLimits.StatorCurrentLimit = 45;
     m_motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    m_motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
+    m_motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     m_deploymentMotor.getConfigurator().apply(m_motorConfig);
 

@@ -23,10 +23,8 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.Indexer.IndexStates;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
-import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
-import frc.robot.utils.CustomFieldCentric.RequestStates;
 import frc.robot.utils.MathUtils;
 import frc.robot.utils.shooterMath.ShooterMath4;
 
@@ -39,7 +37,6 @@ public class Superstructure {
   @NotLogged private Shooter m_shooter;
   @NotLogged private Indexer m_indexer;
   @NotLogged private Feeder m_feeder;
-  @NotLogged private Leds m_leds;
 
   @Logged(importance = Importance.CRITICAL)
   private WantedStates m_wantedState = WantedStates.Default;
@@ -56,7 +53,7 @@ public class Superstructure {
   @Logged(importance = Importance.CRITICAL)
   private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
 
-  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.5);
+  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.01);
 
   @NotLogged private final Debouncer m_debouncerDrive = new Debouncer(0.5);
 
@@ -81,8 +78,7 @@ public class Superstructure {
       Intake m_intake,
       Shooter m_shooter,
       Indexer m_indexer,
-      Feeder m_feeder,
-      Leds leds) {
+      Feeder m_feeder) {
     this.m_driver = driver;
     this.m_mech = mech;
     this.m_drivetrain = m_drivetrain;
@@ -90,7 +86,6 @@ public class Superstructure {
     this.m_shooter = m_shooter;
     this.m_indexer = m_indexer;
     this.m_feeder = m_feeder;
-    this.m_leds = leds;
   }
 
   /** Runs periodic logic for state transitions and subsystem coordination. */
@@ -264,21 +259,21 @@ public class Superstructure {
 
   private void idle() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
-        && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
-      m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
-    } else {
-      m_shooter.setState(
-          m_shooterAddableState == ShooterAddableStates.Idle
-              ? SHOOTER_STATE.IDLE
-              : SHOOTER_STATE.SHOOT);
-    }
+    // if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
+    //     && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
+    //   m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
+    // } else {
+    m_shooter.setState(
+        m_shooterAddableState == ShooterAddableStates.Idle
+            ? SHOOTER_STATE.IDLE
+            : SHOOTER_STATE.SHOOT);
+    // }
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
-    if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
-      m_intake.setState(IntakeStates.Half);
-    }
-    m_wasAtTarget = false;
+    // if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
+    //   m_intake.setState(IntakeStates.Half);
+    // }
+    m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void score() {
@@ -372,7 +367,7 @@ public class Superstructure {
     m_feeder.setState(FEEDER_STATE.STOP);
 
     m_didIntake = true;
-    m_wasAtTarget = false;
+    m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void scoreWhileIntaking() {
@@ -423,7 +418,7 @@ public class Superstructure {
             : SHOOTER_STATE.SHOOT);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
-    m_wasAtTarget = false;
+    m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void idleAuto() {
@@ -460,7 +455,7 @@ public class Superstructure {
   }
 
   private void intakeAuto() {
-    m_intake.setState(IntakeStates.Intaking);
+    m_intake.setState(IntakeStates.IntakingAuto);
     m_shooter.setState(SHOOTER_STATE.IDLE);
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
@@ -560,6 +555,22 @@ public class Superstructure {
                         MathUtils.opposite(FieldConstants.kHubCornerNeutralZone2)))
                 .getAngle()
             : Rotation2d.k180deg);
+  }
+
+  public boolean isStateTryingToShoot() {
+    return switch (m_currentState) {
+      case Shoot,
+              ShootWithIntakeUp,
+              ShootWhileIntaking,
+              Score,
+              ScoreWithIntakeUp,
+              ScoreWhileIntaking,
+              ScoreAuto,
+              ScoreWithIntakeUpAuto,
+              ScoreWhileIntakingAuto ->
+          true;
+      default -> false;
+    };
   }
 
   /** The wanted states of superstructure */

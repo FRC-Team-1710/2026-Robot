@@ -18,10 +18,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.autonomous.AutosChooser;
-import frc.robot.constants.Alliance;
 import frc.robot.constants.DrivetrainAccelerationLimits;
 import frc.robot.constants.DrivetrainAutomationConstants;
-import frc.robot.constants.MatchState;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.Subsystems;
@@ -49,9 +47,6 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOCTRE;
 import frc.robot.subsystems.intake.IntakeIOSIM;
 import frc.robot.subsystems.leds.Leds;
-import frc.robot.subsystems.leds.LedsIO;
-import frc.robot.subsystems.leds.LedsIOArduino;
-import frc.robot.subsystems.leds.LedsIOSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.subsystems.shooter.ShooterIO;
@@ -67,7 +62,7 @@ import java.util.Arrays;
 @Logged
 public class RobotContainer {
   private final CommandXboxController m_driver = new CommandXboxController(0);
-  private final CommandXboxController m_mech = new CommandXboxController(1);
+  private final CommandXboxController m_notDriver = new CommandXboxController(1);
 
   public FuelSim fuelSim;
 
@@ -92,8 +87,7 @@ public class RobotContainer {
   @Logged(importance = Importance.CRITICAL)
   private final Feeder m_feeder;
 
-  @Logged(importance = Importance.CRITICAL)
-  private final Leds m_leds;
+  @NotLogged private final Leds m_leds; // Everything is logged through Robot.telemetry().log()
 
   // Should add logging soon
   @NotLogged private final Vision[] m_cameras;
@@ -117,7 +111,6 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIOCTRE(), consumer);
         m_feeder = new Feeder(new FeederIOCTRE(), consumer);
         m_indexer = new Indexer(new IndexerIOCTRE(), consumer);
-        m_leds = new Leds(new LedsIOArduino(), m_shooter);
 
         m_cameras =
             // Create a stream of Vision objects from the camera configs
@@ -140,7 +133,6 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIOSIM(), consumer);
         m_feeder = new Feeder(new FeederIOSIM(), consumer);
         m_indexer = new Indexer(new IndexerIOSIM(), consumer);
-        m_leds = new Leds(new LedsIOSim(), m_shooter);
         m_cameras = new Vision[0];
         break;
 
@@ -150,14 +142,15 @@ public class RobotContainer {
         m_shooter = new Shooter(new ShooterIO() {}, consumer);
         m_feeder = new Feeder(new FeederIO() {}, consumer);
         m_indexer = new Indexer(new IndexerIO() {}, consumer);
-        m_leds = new Leds(new LedsIO() {}, m_shooter);
         m_cameras = new Vision[0];
         break;
     }
 
     m_superstructure =
         new Superstructure(
-            m_driver, m_mech, drivetrain, m_intake, m_shooter, m_indexer, m_feeder, m_leds);
+            m_driver, m_notDriver, drivetrain, m_intake, m_shooter, m_indexer, m_feeder);
+
+    m_leds = new Leds(m_superstructure);
 
     // Fuel Simulation
     if (Mode.currentMode == CurrentMode.SIMULATION) {
@@ -204,29 +197,33 @@ public class RobotContainer {
     configureBindings();
   }
 
+  public void setTeleCurrentLimits() {
+    drivetrain.setTeleCurrentLimits();
+  }
+
   /** Adds testing-specific button bindings for subsystem control. */
   public void addTestingBindings() {
-    m_driver
-        .a()
+    m_notDriver
+        .leftTrigger()
         .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Intaking)))
         .onFalse(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Down)));
 
-    m_driver
-        .b()
+    m_notDriver
+        .a()
         .onTrue(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Indexing)))
         .onFalse(Commands.runOnce(() -> m_indexer.setStateTesting(IndexStates.Idle)));
 
-    m_driver
-        .x()
+    m_notDriver
+        .b()
         .onTrue(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.FEEDING)))
         .onFalse(Commands.runOnce(() -> m_feeder.setStateTesting(FEEDER_STATE.STOP)));
 
-    m_driver
-        .y()
+    m_notDriver
+        .x()
         .onTrue(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.CORNER)))
         .onFalse(Commands.runOnce(() -> m_shooter.setStateTesting(SHOOTER_STATE.IDLE)));
 
-    m_driver
+    m_notDriver
         .rightTrigger()
         .onTrue(
             Commands.runOnce(
@@ -247,7 +244,9 @@ public class RobotContainer {
                   }
                 }));
 
-    m_driver.povRight().onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
+    m_notDriver
+        .povRight()
+        .onTrue(Commands.runOnce(() -> m_intake.setStateTesting(IntakeStates.Up)));
   }
 
   /**
@@ -420,20 +419,20 @@ public class RobotContainer {
         .rightBumper()
         .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.Idle));
 
-    m_mech
-        .rightBumper()
-        .onTrue(
-            Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
-                .ignoringDisable(true));
+    // m_mech
+    //     .rightBumper()
+    //     .onTrue(
+    //         Commands.runOnce(() -> MatchState.setAutoWinner(Alliance.redAlliance))
+    //             .ignoringDisable(true));
 
-    m_mech
-        .leftBumper()
-        .onTrue(
-            Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
-                .ignoringDisable(true));
+    // m_mech
+    //     .leftBumper()
+    //     .onTrue(
+    //         Commands.runOnce(() -> MatchState.setAutoWinner(!Alliance.redAlliance))
+    //             .ignoringDisable(true));
 
-    new Trigger(drivetrain::inAllianceZone)
-        .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
+    // new Trigger(drivetrain::inAllianceZone)
+    //     .onTrue(m_superstructure.setShooterAddableStateCommand(ShooterAddableStates.SpinUp));
 
     new Trigger(DriverStation::isTeleopEnabled)
         .onTrue(
@@ -500,8 +499,8 @@ public class RobotContainer {
         new SubsystemInfo(
             Subsystems.Leds,
             m_leds::periodic,
-            Milliseconds.of(20),
-            Milliseconds.of((20.0 / Subsystems.values().length) * 8)));
+            Milliseconds.of(60),
+            Milliseconds.of((20.0 / Subsystems.values().length) * 7 + ((60.0 / 4) * 4))));
     return map.toArray(new SubsystemInfo[0]);
   }
 

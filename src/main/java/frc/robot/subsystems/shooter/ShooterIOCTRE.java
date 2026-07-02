@@ -6,7 +6,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -28,7 +28,7 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  @NotLogged private final MotionMagicVelocityVoltage m_velocityRequest;
+  @NotLogged private final MotionMagicVelocityTorqueCurrentFOC m_velocityRequest;
   @NotLogged private final MotionMagicVoltage m_hoodPositionRequest;
 
   // Four flywheel motors: left master, left follower, right follower, right follower
@@ -52,6 +52,8 @@ public class ShooterIOCTRE implements ShooterIO {
   @NotLogged private final BaseStatusSignal[] m_hoodSignals;
 
   @NotLogged private final BaseStatusSignal[] m_flywheelSignals;
+
+  @NotLogged private final BaseStatusSignal m_flywheelSetpointVelocitySignal;
 
   /** Constructs the CTRE-backed shooter IO implementation. */
   public ShooterIOCTRE() {
@@ -80,10 +82,7 @@ public class ShooterIOCTRE implements ShooterIO {
     flywheelConfig.Slot0.kS = ShooterConstants.kFlyS;
     flywheelConfig.Slot0.kV = ShooterConstants.kFlyV;
     flywheelConfig.Slot0.kA = ShooterConstants.kFlyA;
-
-    flywheelConfig.Slot1.kS = ShooterConstants.kFlyS;
-    flywheelConfig.Slot1.kV = ShooterConstants.kFlyV;
-    flywheelConfig.Slot1.kP = ShooterConstants.kFlyP;
+    flywheelConfig.Slot0.kP = ShooterConstants.kFlyP;
     // Only use kP when at setpoint so it can be tuned more aggressively
 
     flywheelConfig.MotionMagic.MotionMagicAcceleration =
@@ -115,6 +114,9 @@ public class ShooterIOCTRE implements ShooterIO {
         new Follower(CanIdConstants.Shooter.SHOOTER_LEFT_MOTOR, MotorAlignmentValue.Opposed)
             .withUpdateFreqHz(200));
 
+    m_flywheelSetpointVelocitySignal = m_flywheels[0].getClosedLoopReferenceSlope();
+    m_flywheelSetpointVelocitySignal.setUpdateFrequency(50);
+
     // Hood Settings
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
@@ -137,7 +139,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
     TalonFXUtil.applyConfigWithRetries(this.m_hoodMotor, hoodConfig, 5);
 
-    this.m_velocityRequest = new MotionMagicVelocityVoltage(0).withSlot(0);
+    this.m_velocityRequest = new MotionMagicVelocityTorqueCurrentFOC(0).withSlot(0);
     this.m_hoodPositionRequest = new MotionMagicVoltage(0).withEnableFOC(true).withSlot(0);
 
     // Configure status signals for each motor
@@ -152,7 +154,8 @@ public class ShooterIOCTRE implements ShooterIO {
 
     // Configure leader update frequency to optimize follower performance
     // https://www.chiefdelphi.com/t/ctre-follower-does-the-same-volts-or-the-same-control-request/513725/3?u=carterc13
-    m_flywheels[0].getMotorVoltage().setUpdateFrequency(200);
+    // m_flywheels[0].getMotorVoltage().setUpdateFrequency(200);
+    m_flywheels[0].getTorqueCurrent().setUpdateFrequency(200);
 
     for (TalonFX fx : m_flywheels) {
       fx.optimizeBusUtilization();
@@ -166,6 +169,7 @@ public class ShooterIOCTRE implements ShooterIO {
   public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_flywheelSignals);
     BaseStatusSignal.refreshAll(m_hoodSignals);
+    BaseStatusSignal.refreshAll(m_flywheelSetpointVelocitySignal);
   }
 
   /** {@inheritDoc} */
@@ -177,13 +181,16 @@ public class ShooterIOCTRE implements ShooterIO {
       return;
     }
 
-    m_flywheels[0].setControl(
-        this.m_velocityRequest
-            .withVelocity(pVelocity)
-            .withSlot(
-                getVelocity().isNear(pVelocity, ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE)
-                    ? 1
-                    : 0));
+    m_flywheels[0].setControl(this.m_velocityRequest.withVelocity(pVelocity));
+    // m_flywheels[1].setControl(this.m_velocityRequest.withVelocity(pVelocity));
+    // m_flywheels[2].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
+    // m_flywheels[3].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
+  }
+
+  /** Returns the closed loop reference slope == 0 */
+  @Override
+  public boolean getSetpointReferenceVelocityIsZero() {
+    return Math.abs(m_flywheelSetpointVelocitySignal.getValueAsDouble()) <= 2.5;
   }
 
   /** {@inheritDoc} */
