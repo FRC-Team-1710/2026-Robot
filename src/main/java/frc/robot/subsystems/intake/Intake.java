@@ -17,6 +17,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
@@ -285,14 +286,22 @@ public class Intake {
   }
 
   public enum IntakeStates {
-    Up(Milliseconds.of(60), Rotations.of(0.29), 0, 1.75, 1.5),
-    UpAndIntake(Milliseconds.of(60), Rotations.of(0.29), 0.7, 1.75, 1.5),
-    Half(Milliseconds.of(60), Rotations.of(0.15), 0.7, 1.75, 1.5),
-    Down(Milliseconds.of(60), Degrees.of(0), 0, 1.75, 1.5),
-    Jostle(Milliseconds.of(20), Rotations.of(0.05), Rotations.of(0.125), 0.7, 1.75, 1.5),
-    Jammed(Milliseconds.of(20), Degrees.of(0), -0.3, 1.75, 1.5),
-    Intaking(Milliseconds.of(20), Degrees.of(0), 0.7, 1.75, 1.5),
-    IntakingAuto(Milliseconds.of(20), Degrees.of(0), 0.7, 1.75, 1.5);
+    Up(Milliseconds.of(IntakeConstants.kFrequentInterval), Rotations.of(0.29), 0, 1.75, 1.5),
+    UpAndIntake(
+        Milliseconds.of(IntakeConstants.kFrequentInterval), Rotations.of(0.29), 0.7, 1.75, 1.5),
+    Half(Milliseconds.of(IntakeConstants.kFrequentInterval), Rotations.of(0.15), 0.7, 1.75, 1.5),
+    Down(Milliseconds.of(IntakeConstants.kFrequentInterval), Degrees.of(0), 0, 1.75, 1.5),
+    Jostle(
+        Milliseconds.of(IntakeConstants.kInfrequentInterval),
+        Rotations.of(0.05),
+        Rotations.of(0.125),
+        0.7,
+        1.75,
+        1.5),
+    Jammed(Milliseconds.of(IntakeConstants.kInfrequentInterval), Degrees.of(0), -0.3, 1.75, 1.5),
+    Intaking(Milliseconds.of(IntakeConstants.kInfrequentInterval), Degrees.of(0), 0.7, 1.75, 1.5),
+    IntakingAuto(
+        Milliseconds.of(IntakeConstants.kInfrequentInterval), Degrees.of(0), 0.7, 1.75, 1.5);
 
     private final Time m_subsystemPeriodicFrequency;
     final Angle setpoint;

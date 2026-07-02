@@ -11,4 +11,9 @@ import edu.wpi.first.units.measure.Angle;
 public class IntakeConstants {
   public static final Angle minDeploymentDegrees = Degrees.of(-45);
   public static final Angle maxDeploymentDegrees = Degrees.of(90);
+
+  public static final int kInfrequentInterval =
+      20; // the number of loops between infrequent updates (like jam detection)
+  public static final int kFrequentInterval =
+      60; // the number of loops between frequent updates (like deployment control)
 }
