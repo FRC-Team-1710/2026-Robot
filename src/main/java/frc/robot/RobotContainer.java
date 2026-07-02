@@ -563,7 +563,9 @@ public class RobotContainer {
               measurement.pose().getRotation().minus(anchor.pose().getRotation()).getDegrees());
 
       if (translationError <= VisionConstants.MAX_FUSION_TRANSLATION_ERROR_METERS
-          && rotationError <= VisionConstants.MAX_FUSION_ROTATION_ERROR_DEGREES) {
+          && rotationError <= VisionConstants.MAX_FUSION_ROTATION_ERROR_DEGREES
+          && Math.abs(measurement.timestampSeconds() - anchor.timestampSeconds())
+              <= VisionConstants.MAX_FUSION_TIME_ERROR_SECONDS) {
         compatibleWithAnchor.add(measurement);
       }
     }

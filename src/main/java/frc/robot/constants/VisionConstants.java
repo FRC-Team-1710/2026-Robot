@@ -53,6 +53,9 @@ public class VisionConstants {
   /** Maximum rotation gap allowed when fusing measurements together. */
   public static final double MAX_FUSION_ROTATION_ERROR_DEGREES = 60.0;
 
+  /** Maximum timestamp gap allowed when fusing measurements together. */
+  public static final double MAX_FUSION_TIME_ERROR_SECONDS = 0.05;
+
   public static record PoseCameraConfig(String name, Transform3d robotToCamera, boolean front) {}
 
   /**
