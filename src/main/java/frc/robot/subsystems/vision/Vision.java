@@ -2,7 +2,6 @@ package frc.robot.subsystems.vision;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -10,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -27,11 +25,19 @@ import org.photonvision.targeting.*;
  */
 public class Vision implements Subsystem {
 
+  public static record VisionMeasurement(
+      String cameraName,
+      Pose2d pose,
+      double timestampSeconds,
+      int tagCount,
+      double avgTagDistance,
+      double ambiguity,
+      double xyStdDev,
+      double thetaStdDev) {}
+
   private final PhotonCamera m_camera;
 
   private final PhotonPoseEstimator m_poseEstimator;
-
-  private final CommandSwerveDrivetrain m_drivetrain;
 
   // === Vision state calculated each cycle ===
   // These values are updated from PhotonVision and optionally replayed in simulation.
@@ -45,6 +51,12 @@ public class Vision implements Subsystem {
   private double m_avgTagDistance = 0.0;
 
   private double m_ambiguity = 0.0;
+
+  private double m_xyStdDev = 0.0;
+
+  private double m_thetaStdDev = 0.0;
+
+  private Optional<VisionMeasurement> m_pendingMeasurement = Optional.empty();
 
   private final String m_logPath;
 
@@ -60,10 +72,8 @@ public class Vision implements Subsystem {
    * @param robotToCamera Transform from robot center to camera (meters, radians)
    * @param drivetrain Reference to drivetrain for pose fusion
    */
-  public Vision(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
+  public Vision(String cameraName, Transform3d robotToCamera) {
     m_logPath = cameraName + "/";
-
-    this.m_drivetrain = drivetrain;
 
     m_camera = new PhotonCamera(cameraName);
 
@@ -119,6 +129,7 @@ public class Vision implements Subsystem {
    * <p>If no valid pose is found, vision state is reset.
    */
   private void fetchInputs() {
+    m_pendingMeasurement = Optional.empty();
 
     PhotonPipelineResult result = m_camera.getLatestResult();
     // Filtering based on the rejected tags
@@ -149,10 +160,16 @@ public class Vision implements Subsystem {
     }
 
     EstimatedRobotPose visionEstimate = estimate.get();
+    Pose2d visionPose = visionEstimate.estimatedPose.toPose2d();
+
+    if (isFrameRejected(visionPose, visionEstimate.timestampSeconds)) {
+      reset();
+      return;
+    }
 
     Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
 
-    m_robotPose = visionEstimate.estimatedPose.toPose2d();
+    m_robotPose = visionPose;
     m_robotPoseTimestamp = visionEstimate.timestampSeconds;
     m_tagCount = result.getTargets().size();
 
@@ -166,6 +183,7 @@ public class Vision implements Subsystem {
   }
 
   private void processInputs() {
+    m_pendingMeasurement = Optional.empty();
 
     if (m_tagCount == 0 || m_robotPoseTimestamp == 0.0 || m_robotPose == Pose2d.kZero) {
       return;
@@ -189,14 +207,54 @@ public class Vision implements Subsystem {
     double distanceScale = Math.pow(m_avgTagDistance, 2);
 
     xyStdDev *= distanceScale;
-    // Inject measurement into drivetrain pose estimator.
-    // Std deviations control how much the estimator trusts vision vs odometry.
+
+    m_xyStdDev =
+        Math.max(
+            VisionConstants.MIN_XY_STD_DEV, Math.min(xyStdDev, VisionConstants.MAX_XY_STD_DEV));
+    m_thetaStdDev = VisionConstants.BASE_THETA_STD_DEV / Math.max(1, m_tagCount);
+    m_thetaStdDev =
+        Math.max(
+            VisionConstants.MIN_THETA_STD_DEV,
+            Math.min(m_thetaStdDev, VisionConstants.MAX_THETA_STD_DEV));
+
+    Robot.telemetry().log(m_logPath + "XYStdDev", m_xyStdDev);
+    Robot.telemetry().log(m_logPath + "ThetaStdDev", m_thetaStdDev);
 
     Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
-    Robot.telemetry().log(m_logPath + "XYStdDev", xyStdDev);
+    m_pendingMeasurement =
+        Optional.of(
+            new VisionMeasurement(
+                cameraName,
+                m_robotPose,
+                m_robotPoseTimestamp,
+                m_tagCount,
+                m_avgTagDistance,
+                m_ambiguity,
+                m_xyStdDev,
+                m_thetaStdDev));
+  }
 
-    m_drivetrain.addVisionMeasurement(
-        m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
+  private boolean isFrameRejected(Pose2d visionPose, double timestampSeconds) {
+    double ageSeconds = Utils.getCurrentTimeSeconds() - timestampSeconds;
+    if (ageSeconds > VisionConstants.MAX_FRAME_AGE_SECONDS) {
+      Robot.telemetry().log(m_logPath + "FrameRejected/AgeSeconds", ageSeconds);
+      return true;
+    }
+
+    double fieldLength = FieldConstants.kFieldLength.in(edu.wpi.first.units.Units.Meters);
+    double fieldWidth = FieldConstants.kFieldWidth.in(edu.wpi.first.units.Units.Meters);
+    double x = visionPose.getX();
+    double y = visionPose.getY();
+    boolean outOfBounds =
+        x < -VisionConstants.FIELD_MARGIN_METERS
+            || x > fieldLength + VisionConstants.FIELD_MARGIN_METERS
+            || y < -VisionConstants.FIELD_MARGIN_METERS
+            || y > fieldWidth + VisionConstants.FIELD_MARGIN_METERS;
+    if (outOfBounds) {
+      Robot.telemetry().log(m_logPath + "FrameRejected/OutOfBounds", visionPose, Pose2d.struct);
+    }
+
+    return outOfBounds;
   }
 
   /**
@@ -209,6 +267,9 @@ public class Vision implements Subsystem {
     m_tagCount = 0;
     m_avgTagDistance = 0.0;
     m_ambiguity = 0.0;
+    m_xyStdDev = 0.0;
+    m_thetaStdDev = 0.0;
+    m_pendingMeasurement = Optional.empty();
   }
 
   /** Returns the estimated robot pose. */
@@ -234,6 +295,21 @@ public class Vision implements Subsystem {
   /** Returns the pose ambiguity of the best target. */
   public double getAmbiguity() {
     return m_ambiguity;
+  }
+
+  /** Returns the current X/Y standard deviation chosen for the latest accepted vision pose. */
+  public double getXyStdDev() {
+    return m_xyStdDev;
+  }
+
+  /** Returns the current theta standard deviation chosen for the latest accepted vision pose. */
+  public double getThetaStdDev() {
+    return m_thetaStdDev;
+  }
+
+  /** Returns the latest accepted vision measurement for this camera, if any. */
+  public Optional<VisionMeasurement> getPendingMeasurement() {
+    return m_pendingMeasurement;
   }
 
   public boolean isConnected() {

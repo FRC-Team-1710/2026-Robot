@@ -9,7 +9,10 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -119,9 +122,7 @@ public class RobotContainer {
                 .map(
                     config ->
                         new Vision(
-                            config.name(),
-                            config.robotToCamera(),
-                            drivetrain)) // TODO: Fix this stuff :p
+                            config.name(), config.robotToCamera())) // TODO: Fix this stuff :p
                 // Collect the stream back into an array of Vision subsystems
                 .toArray(Vision[]::new);
 
@@ -505,8 +506,134 @@ public class RobotContainer {
   }
 
   private void cycleVision() {
+    ArrayList<Vision.VisionMeasurement> measurements = new ArrayList<>();
+
     for (Vision vision : m_cameras) {
       vision.periodic();
+
+      vision.getPendingMeasurement().ifPresent(measurements::add);
     }
+
+    if (measurements.isEmpty()) {
+      return;
+    }
+
+    Pose2d drivetrainPose = drivetrain.getPose();
+    ArrayList<Vision.VisionMeasurement> inFamily = new ArrayList<>();
+
+    for (Vision.VisionMeasurement measurement : measurements) {
+      double translationError =
+          drivetrainPose.getTranslation().getDistance(measurement.pose().getTranslation());
+      double rotationError =
+          Math.abs(
+              drivetrainPose.getRotation().minus(measurement.pose().getRotation()).getDegrees());
+
+      double maxTranslationError =
+          1.0 + (measurement.tagCount() * 0.35) + measurement.avgTagDistance();
+      double maxRotationError = measurement.tagCount() == 1 ? 45.0 : 90.0;
+
+      if (translationError <= maxTranslationError && rotationError <= maxRotationError) {
+        inFamily.add(measurement);
+      }
+    }
+
+    if (inFamily.isEmpty()) {
+      return;
+    }
+
+    Vision.VisionMeasurement anchor = inFamily.get(0);
+    double anchorScore = scoreVisionMeasurement(anchor);
+
+    for (int i = 1; i < inFamily.size(); i++) {
+      Vision.VisionMeasurement candidate = inFamily.get(i);
+      double candidateScore = scoreVisionMeasurement(candidate);
+      if (candidateScore > anchorScore) {
+        anchor = candidate;
+        anchorScore = candidateScore;
+      }
+    }
+
+    ArrayList<Vision.VisionMeasurement> compatibleWithAnchor = new ArrayList<>();
+
+    for (Vision.VisionMeasurement measurement : inFamily) {
+      double translationError =
+          measurement.pose().getTranslation().getDistance(anchor.pose().getTranslation());
+      double rotationError =
+          Math.abs(
+              measurement.pose().getRotation().minus(anchor.pose().getRotation()).getDegrees());
+
+      if (translationError <= VisionConstants.MAX_FUSION_TRANSLATION_ERROR_METERS
+          && rotationError <= VisionConstants.MAX_FUSION_ROTATION_ERROR_DEGREES) {
+        compatibleWithAnchor.add(measurement);
+      }
+    }
+
+    Vision.VisionMeasurement selectedMeasurement;
+
+    if (compatibleWithAnchor.size() == 1) {
+      selectedMeasurement = anchor;
+    } else {
+      double totalWeight = 0.0;
+      double x = 0.0;
+      double y = 0.0;
+      double cos = 0.0;
+      double sin = 0.0;
+      double timestamp = 0.0;
+      double xyStdDev = 0.0;
+      double thetaStdDev = 0.0;
+      int tagCount = 0;
+      double avgTagDistance = 0.0;
+      double ambiguity = 0.0;
+
+      for (Vision.VisionMeasurement measurement : compatibleWithAnchor) {
+        double weight = Math.max(0.1, scoreVisionMeasurement(measurement));
+        totalWeight += weight;
+        x += measurement.pose().getX() * weight;
+        y += measurement.pose().getY() * weight;
+        cos += Math.cos(measurement.pose().getRotation().getRadians()) * weight;
+        sin += Math.sin(measurement.pose().getRotation().getRadians()) * weight;
+        timestamp += measurement.timestampSeconds() * weight;
+        xyStdDev += measurement.xyStdDev() * weight;
+        thetaStdDev += measurement.thetaStdDev() * weight;
+        tagCount += measurement.tagCount();
+        avgTagDistance += measurement.avgTagDistance() * weight;
+        ambiguity += measurement.ambiguity() * weight;
+      }
+
+      if (totalWeight <= 0.0) {
+        selectedMeasurement = anchor;
+      } else {
+        Translation2d translation = new Translation2d(x / totalWeight, y / totalWeight);
+        Rotation2d rotation = new Rotation2d(cos / totalWeight, sin / totalWeight);
+
+        selectedMeasurement =
+            new Vision.VisionMeasurement(
+                anchor.cameraName(),
+                new Pose2d(translation, rotation),
+                timestamp / totalWeight,
+                tagCount,
+                avgTagDistance / totalWeight,
+                ambiguity / totalWeight,
+                Math.max(VisionConstants.MIN_XY_STD_DEV, xyStdDev / totalWeight),
+                Math.max(VisionConstants.MIN_THETA_STD_DEV, thetaStdDev / totalWeight));
+      }
+    }
+
+    Robot.telemetry().log("Vision/SelectedPose", selectedMeasurement.pose(), Pose2d.struct);
+    Robot.telemetry().log("Vision/SelectedTagCount", selectedMeasurement.tagCount());
+    drivetrain.addVisionMeasurement(
+        selectedMeasurement.pose(),
+        selectedMeasurement.timestampSeconds(),
+        VecBuilder.fill(
+            selectedMeasurement.xyStdDev(),
+            selectedMeasurement.xyStdDev(),
+            selectedMeasurement.thetaStdDev()));
+  }
+
+  private double scoreVisionMeasurement(Vision.VisionMeasurement measurement) {
+    return measurement.tagCount() * 10.0
+        - measurement.ambiguity() * 8.0
+        - measurement.avgTagDistance() * 2.0
+        - measurement.xyStdDev();
   }
 }

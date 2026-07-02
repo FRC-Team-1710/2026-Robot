@@ -41,6 +41,18 @@ public class VisionConstants {
   /** Least we'll ever trust rotation measurements (radians) - not confident */
   public static final double MAX_THETA_STD_DEV = 1.0;
 
+  /** Reject vision frames older than this many seconds. */
+  public static final double MAX_FRAME_AGE_SECONDS = 0.35;
+
+  /** Accept poses slightly outside the field before treating them as invalid. */
+  public static final double FIELD_MARGIN_METERS = 0.5;
+
+  /** Maximum translation gap allowed when fusing measurements together. */
+  public static final double MAX_FUSION_TRANSLATION_ERROR_METERS = 1.25;
+
+  /** Maximum rotation gap allowed when fusing measurements together. */
+  public static final double MAX_FUSION_ROTATION_ERROR_DEGREES = 60.0;
+
   public static record PoseCameraConfig(String name, Transform3d robotToCamera, boolean front) {}
 
   /**
