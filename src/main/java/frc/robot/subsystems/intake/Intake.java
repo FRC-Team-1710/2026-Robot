@@ -118,6 +118,7 @@ public class Intake {
       // Set the rollers with jam logic
       switch (m_currentState) {
         case Intaking:
+        case IntakingAuto:
           // IMPORTANT, keep every if statement separate!
           if (m_minimumJamTime.calculate(true)) {
             if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
