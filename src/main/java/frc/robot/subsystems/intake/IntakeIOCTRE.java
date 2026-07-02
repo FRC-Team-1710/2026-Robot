@@ -25,6 +25,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import frc.robot.constants.CanIdConstants;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.utils.TalonFXUtil;
@@ -150,7 +151,8 @@ public class IntakeIOCTRE implements IntakeIO {
    */
   public void setAngle(Angle angle, double velocity, double acceleration) {
     m_angleSetpoint = angle;
-    if (m_deploymentMotor.getPosition(false).getValue().in(Rotations) < 0.0875
+    if (m_deploymentMotor.getPosition(false).getValue().in(Rotations)
+            < IntakeConstants.kLowerThreshold
         && angle.isEquivalent(IntakeStates.Down.setpoint)) {
       m_deploymentMotor.stopMotor();
     } else {
