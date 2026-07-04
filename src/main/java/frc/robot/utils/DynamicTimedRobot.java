@@ -14,7 +14,6 @@ import edu.wpi.first.hal.NotifierJNI;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.Robot;
 import frc.robot.constants.Subsystems;
 import java.util.HashMap;
 import java.util.PriorityQueue;
@@ -175,10 +174,10 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
   private void runPeriodic(Callback callback) {
     if (callback.subsystem == Subsystems.Robot) {
-      Robot.telemetry()
-          .log("Periodics/Total", RobotController.getFPGATime() - m_previousStartOfPeriodic);
+      org.littletonrobotics.junction.Logger.recordOutput(
+          "Periodics/Total", RobotController.getFPGATime() - m_previousStartOfPeriodic);
       m_previousStartOfPeriodic = RobotController.getFPGATime();
-      Robot.telemetry().log("Periodics/TotalCode", m_totalCodeTime);
+      org.littletonrobotics.junction.Logger.recordOutput("Periodics/TotalCode", m_totalCodeTime);
       m_totalCodeTime = 0;
     }
 
@@ -188,10 +187,9 @@ public class DynamicTimedRobot extends IterativeRobotBase {
 
     m_totalCodeTime += RobotController.getFPGATime() - tempTime;
 
-    Robot.telemetry()
-        .log(
-            "Periodics/" + callback.subsystem.toString() + "/Periodic",
-            RobotController.getFPGATime() - tempTime);
+    org.littletonrobotics.junction.Logger.recordOutput(
+        "Periodics/" + callback.subsystem.toString() + "/Periodic",
+        RobotController.getFPGATime() - tempTime);
 
     callback.expirationTime +=
         callback.period

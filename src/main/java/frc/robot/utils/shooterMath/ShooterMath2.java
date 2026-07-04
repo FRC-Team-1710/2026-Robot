@@ -4,8 +4,7 @@
 // import static edu.wpi.first.units.Units.RadiansPerSecond;
 // import static edu.wpi.first.units.Units.Seconds;
 
-// import edu.wpi.first.epilogue.Epilogue;
-// import edu.wpi.first.epilogue.Logged.Importance;
+// Epilogue removed
 // import edu.wpi.first.math.geometry.Pose2d;
 // import edu.wpi.first.math.geometry.Pose3d;
 // import edu.wpi.first.math.geometry.Rotation2d;

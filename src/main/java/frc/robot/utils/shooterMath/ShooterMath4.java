@@ -4,8 +4,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Epilogue;
-import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -14,9 +12,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
+import org.littletonrobotics.junction.Logger;
 
 // Same as ShooterMath3 but built around the drum shooter redesign and is completely different
 public final class ShooterMath4 {
@@ -116,21 +114,18 @@ public final class ShooterMath4 {
     calculateComplexFromDirectionAndSpeed(robotPose);
     calculateSimpleFromDirectionAndSpeed(robotPose);
 
-    if (Epilogue.shouldLog(Importance.INFO)) {
-      Robot.telemetry()
-          .log("ShotSolution/Scoring/Heading", currentSolution.robotHeading, Rotation2d.struct);
-      Robot.telemetry().log("ShotSolution/Scoring/Angle", currentSolution.hoodAngle);
-      Robot.telemetry().log("ShotSolution/Scoring/Omega", currentSolution.flywheelOmega);
+    Logger.recordOutput("ShotSolution/Scoring/Heading", currentSolution.robotHeading);
+    Logger.recordOutput("ShotSolution/Scoring/Angle", currentSolution.hoodAngle);
+    Logger.recordOutput("ShotSolution/Scoring/Omega", currentSolution.flywheelOmega);
 
-      Robot.telemetry().log("ShotSolution/Passing/Angle", currentPassingSolution.hoodAngle);
-      Robot.telemetry().log("ShotSolution/Passing/Omega", currentPassingSolution.flywheelOmega);
-    }
+    Logger.recordOutput("ShotSolution/Passing/Angle", currentPassingSolution.hoodAngle);
+    Logger.recordOutput("ShotSolution/Passing/Omega", currentPassingSolution.flywheelOmega);
   }
 
   private static void calculateComplexFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = robotPose.getTranslation().getDistance(m_targetCenter);
 
-    Robot.telemetry().log("SHOTDIST", dist);
+    Logger.recordOutput("SHOTDIST", dist);
 
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentSolution =
@@ -150,7 +145,7 @@ public final class ShooterMath4 {
   private static void calculateSimpleFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = Math.abs(robotPose.getX() - m_targetCenter.getX()) + Units.inchesToMeters(12);
 
-    Robot.telemetry().log("PASSDIST", dist);
+    Logger.recordOutput("PASSDIST", dist);
 
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentPassingSolution =

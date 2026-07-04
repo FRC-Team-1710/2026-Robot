@@ -6,9 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,8 +56,8 @@ import frc.robot.utils.FuelSim;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@Logged
 public class RobotContainer {
+  // Epilogue annotations removed; using AdvantageKit Logger.recordOutput instead
   private final CommandXboxController m_driver = new CommandXboxController(0);
   private final CommandXboxController m_notDriver = new CommandXboxController(1);
 
@@ -68,31 +65,24 @@ public class RobotContainer {
 
   private final AutosChooser m_autoChooser;
 
-  @Logged(importance = Importance.INFO)
   private boolean m_hasntAcceptedVisionRotation = true;
 
-  @Logged(importance = Importance.CRITICAL)
   public final CommandSwerveDrivetrain drivetrain;
 
   /* Create subsystems (uses simulated versions when running in simulation) */
-  @Logged(importance = Importance.CRITICAL)
   private final Intake m_intake;
 
-  @Logged(importance = Importance.CRITICAL)
   private final Shooter m_shooter;
 
-  @Logged(importance = Importance.CRITICAL)
   private final Indexer m_indexer;
 
-  @Logged(importance = Importance.CRITICAL)
   private final Feeder m_feeder;
 
-  @NotLogged private final Leds m_leds; // Everything is logged through Robot.telemetry().log()
+  private final Leds m_leds; // Everything is logged through Logger
 
   // Should add logging soon
-  @NotLogged private final Vision[] m_cameras;
+  private final Vision[] m_cameras;
 
-  @Logged(importance = Importance.CRITICAL)
   private final Superstructure m_superstructure;
 
   /**
@@ -445,7 +435,6 @@ public class RobotContainer {
   }
 
   /** Returns the autonomous command to run during autonomous period. */
-  @NotLogged
   public Command getAutonomousCommand() {
     return m_autoChooser.selectAuto();
   }

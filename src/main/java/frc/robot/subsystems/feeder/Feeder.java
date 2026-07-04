@@ -3,24 +3,22 @@ package frc.robot.subsystems.feeder;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import org.littletonrobotics.junction.Logger;
 
-@Logged
+// This class is made for the feeder subsystem which is a motor that moves fuel from the hopper into the shooter
+
 public class Feeder {
-  @Logged(importance = Importance.CRITICAL)
+  // Epilogue annotations removed; using Logger.recordOutput explicitly
   private FEEDER_STATE m_currentState;
 
-  @Logged(importance = Importance.CRITICAL)
-  private final FeederIO m_io;
+  private final FeederIO m_io; //this is the IO implementation for the feeder which is used to set the motor output and update the subsystem
 
-  @NotLogged private boolean m_testing = false;
+  private boolean m_testing = false; //changes wether the subsystem is in testing mode or not, which alloes for different states to be used for testing
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private final TimesConsumer m_timesConsumer; 
 
   /**
    * Constructs a new Feeder.
@@ -31,14 +29,18 @@ public class Feeder {
   public Feeder(FeederIO io, TimesConsumer consumer) {
     this.m_io = io;
     this.m_timesConsumer = consumer;
-    this.m_currentState = FEEDER_STATE.STOP;
+    this.m_currentState = FEEDER_STATE.STOP; // Default state is to be stopped.
+    Logger.recordOutput("Feeder/State", m_currentState);
   }
 
-  /** Runs periodic feeder logic based on the current state. */
+  /** Runs periodic feeder logic based on the current state.
+   * Updates the feeder's behavior according to its current state.
+   */
   public void periodic() {
     double output = this.m_currentState.m_velocity;
-
-    switch (this.m_currentState) {
+  
+    //This is currently not necessary since there is only one state that uses the velocity, but it is left in to preserve the FSM (finite state machine) structure if more states are added in the future that use different outputs.
+    switch (this.m_currentState) { 
       case FEEDING:
         // Single-motor feeder: preserve FSM structure while applying a single feed output.
         output = this.m_currentState.m_velocity;
@@ -50,9 +52,14 @@ public class Feeder {
 
     this.m_io.setFeeder(output);
 
-    this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
+    this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds)); //Update the IO's current frequency in seconds, which is used for dynamic scheduling of the subsystem's periodic method.
+    Logger.recordOutput("Feeder/State", m_currentState);
+    Logger.recordOutput("Feeder/Output", output);
   }
 
+  /**
+   * Enum representing the different states of the feeder.
+   */
   public enum FEEDER_STATE {
     STOP(Milliseconds.of(60), 0),
     FEEDING(Milliseconds.of(20), 0.75);
@@ -60,6 +67,12 @@ public class Feeder {
     private final Time m_subsystemPeriodicFrequency;
     private final double m_velocity;
 
+   /* Constructs a new FEEDER_STATE.
+     *
+     * @param pSubsystemPeriodicFrequency the frequency at which the subsystem should run in this state
+     * @param pVelocity the velocity to set the feeder motor to in this state
+     * 
+     */
     FEEDER_STATE(Time pSubsystemPeriodicFrequency, double pVelocity) {
       this.m_subsystemPeriodicFrequency = pSubsystemPeriodicFrequency;
       this.m_velocity = pVelocity;
@@ -87,6 +100,7 @@ public class Feeder {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     this.m_currentState = state;
+    Logger.recordOutput("Feeder/State", state);
   }
 
   /**
@@ -102,6 +116,7 @@ public class Feeder {
       m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
     }
     this.m_currentState = state;
+    Logger.recordOutput("Feeder/State", state);
   }
 
   /**
@@ -113,8 +128,10 @@ public class Feeder {
     this.m_testing = testing;
   }
 
-  /** Returns the current feeder state. */
-  @NotLogged
+  /** 
+  * Returns the current feeder state.
+  * This method allows other parts of the code to access the current state of the feeder
+  */
   public FEEDER_STATE getState() {
     return this.m_currentState;
   }

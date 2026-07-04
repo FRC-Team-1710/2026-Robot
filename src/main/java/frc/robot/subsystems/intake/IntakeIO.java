@@ -7,8 +7,6 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -20,7 +18,6 @@ import edu.wpi.first.units.measure.Current;
  * motors, as well as to read back sensor values. Typical implementations are {@code IntakeIOCTRE}
  * (real hardware) and {@code IntakeIOSIM} (simulation).
  */
-@Logged
 public interface IntakeIO {
   /**
    * Command the deployment/arm to the requested angle setpoint.
@@ -56,7 +53,6 @@ public interface IntakeIO {
   /**
    * @return the current draw of the intake roller motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default Current getRollerCurrent() {
     return Amps.of(0);
   }
@@ -64,7 +60,6 @@ public interface IntakeIO {
   /**
    * @return the current draw of the intake follower motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default Current getFollowerCurrent() {
     return Amps.of(0);
   }
@@ -72,7 +67,6 @@ public interface IntakeIO {
   /**
    * @return the angular velocity of the intake roller
    */
-  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getRollerVelocity() {
     return RotationsPerSecond.of(0);
   }
@@ -80,7 +74,6 @@ public interface IntakeIO {
   /**
    * @return the angular velocity of the intake follower motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getFollowerVelocity() {
     return RotationsPerSecond.of(0);
   }
@@ -88,7 +81,6 @@ public interface IntakeIO {
   /**
    * @return the current draw of the deployment (arm) motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default Current getDeploymentCurrent() {
     return Amps.of(0);
   }

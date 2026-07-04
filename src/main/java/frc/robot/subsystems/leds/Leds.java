@@ -5,10 +5,10 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
 import frc.robot.subsystems.Superstructure;
+import org.littletonrobotics.junction.Logger;
 
 // Arduino's code | https://github.com/AlexIsCool321/1710-2026-Robot-Leds
 
@@ -88,7 +88,7 @@ public class Leds {
     this.inputBooleans[7] = DriverStation.isDisabled();
 
     for (int i = 0; i < inputBooleans.length; i++) {
-      Robot.telemetry().log("LEDBooleans/" + i, inputBooleans[i]);
+      Logger.recordOutput("LEDBooleans/" + i, inputBooleans[i]);
     }
   }
 
@@ -117,7 +117,7 @@ public class Leds {
   private void sendData(int value) { // Sending data (duh)
     byte[] data = new byte[1]; // Create a byte array of length 1
     byte[] rx = new byte[1];
-    Robot.telemetry().log("LEDBooleans/CommandValue", value);
+    Logger.recordOutput("LEDBooleans/CommandValue", value);
     data[0] =
         (byte) (value & 0xFF); // Store value as byte in the array, and mask to ensure unsigned byte
     spi.transaction(data, rx, 1); // Write the byte array to the SPI port

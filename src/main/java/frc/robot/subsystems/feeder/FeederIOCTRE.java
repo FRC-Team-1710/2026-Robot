@@ -6,23 +6,25 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
-@Logged
-public class FeederIOCTRE implements FeederIO {
+/**
+ * FeederIO implementation for CTRE TalonFX motor controllers.
+ * This class provides the necessary methods to control the feeder motor using a TalonFX.
+ */
 
-  @Logged(importance = Importance.CRITICAL)
+public class FeederIOCTRE implements FeederIO {
   private final TalonFX m_feederMotor;
 
-  @NotLogged private final BaseStatusSignal[] m_feederSignals;
+  private final BaseStatusSignal[] m_feederSignals;
 
-  @NotLogged private final VoltageOut m_feederVoltageOutput = new VoltageOut(0).withEnableFOC(true);
+  private final VoltageOut m_feederVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
+
+    // Initialize the TalonFX motor controller for the feeder.
+
     this.m_feederMotor = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -43,12 +45,12 @@ public class FeederIOCTRE implements FeederIO {
   }
 
   /** {@inheritDoc} */
-  public void update(double dtSeconds) {
+  public void update(double dtSeconds) { // Update the feeder's status signals.
     BaseStatusSignal.refreshAll(m_feederSignals);
   }
 
   /** {@inheritDoc} */
-  public void setFeeder(double percent) {
+  public void setFeeder(double percent) { //sets the feeder motor output to a percentage of the maximum voltage (12V) based on the input percent value.
     this.m_feederMotor.setControl(m_feederVoltageOutput.withOutput(12 * percent));
   }
 }
