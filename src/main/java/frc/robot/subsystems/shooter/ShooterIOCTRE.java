@@ -13,9 +13,6 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -25,35 +22,23 @@ import frc.robot.utils.FuelSim;
 import frc.robot.utils.TalonFXUtil;
 
 /** CTRE hardware implementation of shooter IO. */
-@Logged
 public class ShooterIOCTRE implements ShooterIO {
 
-  @NotLogged private final MotionMagicVelocityTorqueCurrentFOC m_velocityRequest;
-  @NotLogged private final MotionMagicVoltage m_hoodPositionRequest;
+  private final MotionMagicVelocityTorqueCurrentFOC m_velocityRequest;
+  private final MotionMagicVoltage m_hoodPositionRequest;
 
   // Four flywheel motors: left master, left follower, right follower, right follower
-  @NotLogged private final TalonFX[] m_flywheels;
+  private final TalonFX[] m_flywheels;
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_leftFlywheelLeader;
-
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_leftFlywheelFollower;
-
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_rightFlywheelFollower1;
-
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_rightFlywheelFollower2;
-
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_hoodMotor;
 
-  @NotLogged private final BaseStatusSignal[] m_hoodSignals;
-
-  @NotLogged private final BaseStatusSignal[] m_flywheelSignals;
-
-  @NotLogged private final BaseStatusSignal m_flywheelSetpointVelocitySignal;
+  private final BaseStatusSignal[] m_hoodSignals;
+  private final BaseStatusSignal[] m_flywheelSignals;
+  private final BaseStatusSignal m_flywheelSetpointVelocitySignal;
 
   /** Constructs the CTRE-backed shooter IO implementation. */
   public ShooterIOCTRE() {
@@ -153,8 +138,6 @@ public class ShooterIOCTRE implements ShooterIO {
     }
 
     // Configure leader update frequency to optimize follower performance
-    // https://www.chiefdelphi.com/t/ctre-follower-does-the-same-volts-or-the-same-control-request/513725/3?u=carterc13
-    // m_flywheels[0].getMotorVoltage().setUpdateFrequency(200);
     m_flywheels[0].getTorqueCurrent().setUpdateFrequency(200);
 
     for (TalonFX fx : m_flywheels) {
@@ -172,6 +155,18 @@ public class ShooterIOCTRE implements ShooterIO {
     BaseStatusSignal.refreshAll(m_flywheelSetpointVelocitySignal);
   }
 
+  @Override
+  public void updateInputs(ShooterInputs inputs) {
+    var avg = 0.0;
+    for (TalonFX fx : m_flywheels) {
+      avg += fx.getVelocity(false).getValue().abs(RotationsPerSecond);
+    }
+    inputs.flywheelVelocity = avg / m_flywheels.length;
+    inputs.hoodPosition = m_hoodMotor.getPosition(false).getValue().in(Degrees);
+    inputs.setpointReferenceVelocityIsZero =
+        Math.abs(m_flywheelSetpointVelocitySignal.getValueAsDouble()) <= 2.5;
+  }
+
   /** {@inheritDoc} */
   @Override
   public void setTargetVelocity(AngularVelocity pVelocity) {
@@ -182,9 +177,6 @@ public class ShooterIOCTRE implements ShooterIO {
     }
 
     m_flywheels[0].setControl(this.m_velocityRequest.withVelocity(pVelocity));
-    // m_flywheels[1].setControl(this.m_velocityRequest.withVelocity(pVelocity));
-    // m_flywheels[2].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
-    // m_flywheels[3].setControl(this.m_velocityRequest.withVelocity(pVelocity.times(-1)));
   }
 
   /** Returns the closed loop reference slope == 0 */
@@ -194,7 +186,6 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  @NotLogged
   @Override
   public AngularVelocity getVelocity() {
     var avg = 0.0;
@@ -205,7 +196,6 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  @NotLogged
   @Override
   public void setHoodTarget(Angle pAngle) {
     this.m_hoodMotor.setControl(
@@ -216,7 +206,6 @@ public class ShooterIOCTRE implements ShooterIO {
   }
 
   /** {@inheritDoc} */
-  @NotLogged
   @Override
   public Angle getHoodPosition() {
     return this.m_hoodMotor.getPosition(false).getValue();

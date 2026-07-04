@@ -4,28 +4,26 @@
 
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
-@Logged
 /** Creates a new IndexerIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
-  @Logged(importance = Logged.Importance.CRITICAL)
   private final TalonFX m_indexerMotor;
 
-  @NotLogged TalonFXConfiguration motorConfig;
+  TalonFXConfiguration motorConfig;
 
-  @NotLogged private final BaseStatusSignal[] m_indexerSignals;
+  private final BaseStatusSignal[] m_indexerSignals;
 
-  @NotLogged
   private final VoltageOut m_indexerVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public IndexerIOCTRE() {
@@ -46,6 +44,11 @@ public class IndexerIOCTRE implements IndexerIO {
 
   public void update() {
     BaseStatusSignal.refreshAll(m_indexerSignals);
+  }
+
+  public void updateInputs(IndexerInputs inputs) {
+    inputs.motorCurrent = m_indexerMotor.getStatorCurrent(false).getValue().in(Amps);
+    inputs.motorVelocity = m_indexerMotor.getVelocity(false).getValue().in(RotationsPerSecond);
   }
 
   public void setIndexMotor(double speed) {

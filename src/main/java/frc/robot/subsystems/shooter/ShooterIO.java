@@ -7,13 +7,26 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.utils.FuelSim;
+import org.littletonrobotics.junction.AutoLog;
 
-@Logged
 public interface ShooterIO {
+  @AutoLog
+  public static class ShooterInputs {
+    public double flywheelVelocity = 0.0;
+    public double hoodPosition = 0.0;
+    public boolean setpointReferenceVelocityIsZero = false;
+  }
+
+  /**
+   * Updates the set of logged inputs for the shooter subsystem.
+   *
+   * @param inputs the inputs to update
+   */
+  public default void updateInputs(ShooterInputs inputs) {}
+
   /**
    * Updates cached inputs and simulation state.
    *

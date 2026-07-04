@@ -1,13 +1,13 @@
 package frc.robot.subsystems.vision;
 
-import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.Robot;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -27,6 +27,15 @@ import org.photonvision.targeting.*;
  */
 public class Vision implements Subsystem {
 
+  @AutoLog
+  public static class VisionInputs {
+    public Pose2d robotPose = new Pose2d();
+    public double robotPoseTimestamp = 0.0;
+    public int tagCount = 0;
+    public double avgTagDistance = 0.0;
+    public double ambiguity = 0.0;
+  }
+
   private final PhotonCamera m_camera;
 
   private final PhotonPoseEstimator m_poseEstimator;
@@ -34,26 +43,15 @@ public class Vision implements Subsystem {
   private final CommandSwerveDrivetrain m_drivetrain;
 
   // === Vision state calculated each cycle ===
-  // These values are updated from PhotonVision and optionally replayed in simulation.
-
   private Pose2d m_robotPose = new Pose2d();
-
   private double m_robotPoseTimestamp = 0.0;
-
   private int m_tagCount = 0;
-
   private double m_avgTagDistance = 0.0;
-
   private double m_ambiguity = 0.0;
 
   private final String m_logPath;
 
-  private final HootAutoReplay m_autoReplay;
-
   private final String cameraName;
-
-  // private final Set<Integer> rejectTagIds =
-  //     Set.of(1, 6, 17, 22); // Example tag IDs to reject (e.g., tags on the field perimeter)
 
   /**
    * @param cameraName Name of the PhotonVision camera (must match NT name exactly)
@@ -71,30 +69,6 @@ public class Vision implements Subsystem {
         new PhotonPoseEstimator(
             FieldConstants.kAprilTags, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
 
-    m_autoReplay =
-        new HootAutoReplay()
-            .withStruct(
-                "PhotonVision/" + cameraName + "/RobotPose",
-                Pose2d.struct,
-                () -> m_robotPose,
-                val -> m_robotPose = val.value)
-            .withDouble(
-                "PhotonVision/" + cameraName + "/RobotPoseTimestamp",
-                () -> m_robotPoseTimestamp,
-                val -> m_robotPoseTimestamp = val.value)
-            .withInteger(
-                "PhotonVision/" + cameraName + "/TagCount",
-                () -> m_tagCount,
-                val -> m_tagCount = val.value.intValue())
-            .withDouble(
-                "PhotonVision/" + cameraName + "/AvgTagDistance",
-                () -> m_avgTagDistance,
-                val -> m_avgTagDistance = val.value)
-            .withDouble(
-                "PhotonVision/" + cameraName + "/Ambiguity",
-                () -> m_ambiguity,
-                val -> m_ambiguity = val.value)
-            .withTimestampReplay();
     SmartDashboard.putBoolean(cameraName + "/rejectWhenDisabled", false);
     this.cameraName = cameraName;
   }
@@ -108,28 +82,16 @@ public class Vision implements Subsystem {
       fetchInputs();
     }
 
-    m_autoReplay.update();
     processInputs();
   }
 
   /**
    * Pulls latest AprilTag detection results and converts them into a field-relative Pose2d
    * estimate.
-   *
-   * <p>If no valid pose is found, vision state is reset.
    */
   private void fetchInputs() {
 
     PhotonPipelineResult result = m_camera.getLatestResult();
-    // Filtering based on the rejected tags
-    // PhotonPipelineResult filteredResult =
-    //     new PhotonPipelineResult(
-    //         result.metadata,
-    //         result.getTargets().stream()
-    //             .filter(t -> !rejectTagIds.contains(t.getFiducialId()))
-    //             .toList(),
-    //         result.getMultiTagResult().isPresent() ? result.getMultiTagResult() :
-    // Optional.empty());
     if (!result.hasTargets()) {
       reset();
       return;
@@ -150,7 +112,7 @@ public class Vision implements Subsystem {
 
     EstimatedRobotPose visionEstimate = estimate.get();
 
-    Robot.telemetry().log(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
+    Logger.recordOutput(m_logPath + "RawPose", visionEstimate.estimatedPose, Pose3d.struct);
 
     m_robotPose = visionEstimate.estimatedPose.toPose2d();
     m_robotPoseTimestamp = visionEstimate.timestampSeconds;
@@ -171,37 +133,28 @@ public class Vision implements Subsystem {
       return;
     }
     // Reject single-tag solutions with high ambiguity.
-    // Multi-tag solutions are inherently more stable.
     if (m_tagCount == 1 && m_ambiguity > VisionConstants.MAX_TAG_AMBIGUITY) {
       return;
     }
     // Dynamically scale measurement
-    // More tags = more trust
-    // Closer = more trust
-    // Larger std dev = less influence in pose estimator.
     double xyStdDev = VisionConstants.BASE_XY_STD_DEV / m_tagCount;
 
     if (m_tagCount == 1 && !DriverStation.isAutonomous()) {
-      xyStdDev *= 1.5; // Single tag is less reliable, so start with higher std dev
+      xyStdDev *= 1.5;
     }
-    // Squared distance scaling penalizes far-away tag estimates heavily,
-    // since pose error grows nonlinearly with distance.
     double distanceScale = Math.pow(m_avgTagDistance, 2);
 
     xyStdDev *= distanceScale;
-    // Inject measurement into drivetrain pose estimator.
-    // Std deviations control how much the estimator trusts vision vs odometry.
 
-    Robot.telemetry().log(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
-    Robot.telemetry().log(m_logPath + "XYStdDev", xyStdDev);
+    Logger.recordOutput(m_logPath + "AcceptedPose", m_robotPose, Pose2d.struct);
+    Logger.recordOutput(m_logPath + "XYStdDev", xyStdDev);
 
     m_drivetrain.addVisionMeasurement(
         m_robotPose, m_robotPoseTimestamp, VecBuilder.fill(xyStdDev, xyStdDev, 100000.0));
   }
 
   /**
-   * Clears current vision state when no valid estimate is available. Prevents stale measurements
-   * from being reused.
+   * Clears current vision state when no valid estimate is available.
    */
   private void reset() {
     m_robotPose = new Pose2d();

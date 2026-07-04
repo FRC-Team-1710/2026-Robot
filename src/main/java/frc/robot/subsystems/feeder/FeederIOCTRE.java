@@ -1,26 +1,24 @@
 package frc.robot.subsystems.feeder;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.utils.TalonFXUtil;
 
-@Logged
 public class FeederIOCTRE implements FeederIO {
 
-  @Logged(importance = Importance.CRITICAL)
   private final TalonFX m_feederMotor;
 
-  @NotLogged private final BaseStatusSignal[] m_feederSignals;
+  private final BaseStatusSignal[] m_feederSignals;
 
-  @NotLogged private final VoltageOut m_feederVoltageOutput = new VoltageOut(0).withEnableFOC(true);
+  private final VoltageOut m_feederVoltageOutput = new VoltageOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
     this.m_feederMotor = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
@@ -45,6 +43,11 @@ public class FeederIOCTRE implements FeederIO {
   /** {@inheritDoc} */
   public void update(double dtSeconds) {
     BaseStatusSignal.refreshAll(m_feederSignals);
+  }
+
+  public void updateInputs(FeederInputs inputs) {
+    inputs.motorVelocity = m_feederMotor.getVelocity(false).getValue().in(RotationsPerSecond);
+    inputs.motorCurrent = m_feederMotor.getStatorCurrent(false).getValue().in(Amps);
   }
 
   /** {@inheritDoc} */

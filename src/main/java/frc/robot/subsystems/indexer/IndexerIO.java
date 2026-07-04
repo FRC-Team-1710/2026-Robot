@@ -7,12 +7,24 @@ package frc.robot.subsystems.indexer;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import org.littletonrobotics.junction.AutoLog;
 
-@Logged
 public interface IndexerIO {
+  @AutoLog
+  public static class IndexerInputs {
+    public double motorCurrent = 0.0;
+    public double motorVelocity = 0.0;
+  }
+
+  /**
+   * Updates the set of logged inputs for the indexer subsystem.
+   *
+   * @param inputs the inputs to update
+   */
+  public default void updateInputs(IndexerInputs inputs) {}
+
   public default void setIndexMotor(double speed) {}
 
   public default Current getIndexMotorCurrent() {

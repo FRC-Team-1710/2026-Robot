@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import org.littletonrobotics.junction.Logger;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.lib.BLine.FollowPath;
@@ -136,15 +137,15 @@ public class AutosChooser {
 
     FollowPath.setPoseLoggingConsumer(
         (data) ->
-            Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond(), Pose2d.struct));
+            Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond(), Pose2d.struct));
     FollowPath.setTranslationListLoggingConsumer(
         (data) ->
-            Robot.telemetry()
-                .log("Auto/" + data.getFirst(), data.getSecond(), Translation2d.struct));
+            Logger.recordOutput(
+                "Auto/" + data.getFirst(), data.getSecond(), Translation2d.struct));
     FollowPath.setBooleanLoggingConsumer(
-        (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
+        (data) -> Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond()));
     FollowPath.setDoubleLoggingConsumer(
-        (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
+        (data) -> Logger.recordOutput("Auto/" + data.getFirst(), data.getSecond()));
   }
 
   private Command getShootCommand(

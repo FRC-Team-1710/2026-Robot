@@ -7,11 +7,10 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import org.littletonrobotics.junction.AutoLog;
 
 /**
  * Hardware abstraction interface for the Intake subsystem.
@@ -20,8 +19,23 @@ import edu.wpi.first.units.measure.Current;
  * motors, as well as to read back sensor values. Typical implementations are {@code IntakeIOCTRE}
  * (real hardware) and {@code IntakeIOSIM} (simulation).
  */
-@Logged
 public interface IntakeIO {
+  @AutoLog
+  public static class IntakeInputs {
+    public double rollerCurrent = 0.0;
+    public double followerCurrent = 0.0;
+    public double rollerVelocity = 0.0;
+    public double followerVelocity = 0.0;
+    public double deploymentCurrent = 0.0;
+  }
+
+  /**
+   * Updates the set of logged inputs for the intake subsystem.
+   *
+   * @param inputs the inputs to update
+   */
+  public default void updateInputs(IntakeInputs inputs) {}
+
   /**
    * Command the deployment/arm to the requested angle setpoint.
    *
@@ -40,10 +54,6 @@ public interface IntakeIO {
    * Sets the intake motor parameters.
    *
    * @param speed The speed of the intake roller motor
-   * @param deploymentVelocity The desired maximum deployment velocity, in units of rotations per
-   *     second.
-   * @param deploymentAcceleration The desired maximum deployment acceleration, in units of
-   *     rotations per second squared.
    */
   public default void setIntakeMotor(double speed) {}
 
@@ -56,7 +66,6 @@ public interface IntakeIO {
   /**
    * @return the current draw of the intake roller motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default Current getRollerCurrent() {
     return Amps.of(0);
   }
@@ -64,7 +73,6 @@ public interface IntakeIO {
   /**
    * @return the current draw of the intake follower motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default Current getFollowerCurrent() {
     return Amps.of(0);
   }
@@ -72,7 +80,6 @@ public interface IntakeIO {
   /**
    * @return the angular velocity of the intake roller
    */
-  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getRollerVelocity() {
     return RotationsPerSecond.of(0);
   }
@@ -80,7 +87,6 @@ public interface IntakeIO {
   /**
    * @return the angular velocity of the intake follower motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default AngularVelocity getFollowerVelocity() {
     return RotationsPerSecond.of(0);
   }
@@ -88,7 +94,6 @@ public interface IntakeIO {
   /**
    * @return the current draw of the deployment (arm) motor
    */
-  @Logged(importance = Importance.DEBUG)
   public default Current getDeploymentCurrent() {
     return Amps.of(0);
   }

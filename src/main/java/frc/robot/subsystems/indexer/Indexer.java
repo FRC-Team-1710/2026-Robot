@@ -9,39 +9,34 @@ import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import org.littletonrobotics.junction.Logger;
 
-@Logged
 public class Indexer {
-  @Logged(importance = Logged.Importance.CRITICAL)
   private final IndexerIO m_io;
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private final IndexerIO.IndexerInputsAutoLogged m_inputs =
+      new IndexerIO.IndexerInputsAutoLogged();
 
-  @Logged(importance = Logged.Importance.CRITICAL)
+  private final TimesConsumer m_timesConsumer;
+
   private IndexStates m_currentState = IndexStates.Idle;
 
-  @NotLogged private boolean m_testing = false;
+  private boolean m_testing = false;
 
-  @NotLogged
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamMinimumTime.in(Seconds));
 
-  @NotLogged
   private final Debouncer m_minimumJamTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamDetectionDisabledTime.in(Seconds));
 
-  @NotLogged
   private final Debouncer m_jamUndoTime =
       new Debouncer(JamDetectionConstants.Indexer.kJamUndoTime.in(Seconds));
 
-  @Logged(importance = Logged.Importance.INFO)
   private boolean m_wasJammed = false;
 
   /**
@@ -59,6 +54,8 @@ public class Indexer {
   public void periodic() {
     // This method will be called once per scheduler run
     m_io.update();
+    m_io.updateInputs(m_inputs);
+    Logger.processInputs("Indexer", m_inputs);
     m_io.setIndexMotor(m_currentState.m_speed);
     switch (m_currentState) {
       case Indexing:
@@ -96,7 +93,6 @@ public class Indexer {
   }
 
   /** Returns whether the indexer motor is jammed. */
-  @Logged(importance = Logged.Importance.INFO)
   public boolean isJammed() {
     return m_io.getIndexMotorCurrent().in(Amps)
             >= JamDetectionConstants.Indexer.kJamCurrent.in(Amps)

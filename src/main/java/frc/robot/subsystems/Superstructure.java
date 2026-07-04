@@ -3,9 +3,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -13,6 +10,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import org.littletonrobotics.junction.Logger;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
@@ -28,36 +26,29 @@ import frc.robot.subsystems.shooter.Shooter.SHOOTER_STATE;
 import frc.robot.utils.MathUtils;
 import frc.robot.utils.shooterMath.ShooterMath4;
 
-@Logged
 public class Superstructure {
-  @NotLogged private CommandXboxController m_driver;
-  @NotLogged private CommandXboxController m_mech;
-  @NotLogged private CommandSwerveDrivetrain m_drivetrain;
-  @NotLogged private Intake m_intake;
-  @NotLogged private Shooter m_shooter;
-  @NotLogged private Indexer m_indexer;
-  @NotLogged private Feeder m_feeder;
+  private CommandXboxController m_driver;
+  private CommandXboxController m_mech;
+  private CommandSwerveDrivetrain m_drivetrain;
+  private Intake m_intake;
+  private Shooter m_shooter;
+  private Indexer m_indexer;
+  private Feeder m_feeder;
 
-  @Logged(importance = Importance.CRITICAL)
   private WantedStates m_wantedState = WantedStates.Default;
 
-  @Logged(importance = Importance.CRITICAL)
   private CurrentStates m_currentState = CurrentStates.Idle;
 
-  @Logged(importance = Importance.INFO)
   private boolean m_didIntake = false;
 
-  @Logged(importance = Importance.CRITICAL)
   private IntakeAddableStates m_intakeAddableState = IntakeAddableStates.Intaking;
 
-  @Logged(importance = Importance.CRITICAL)
   private ShooterAddableStates m_shooterAddableState = ShooterAddableStates.Idle;
 
-  @NotLogged private final Debouncer m_debouncer = new Debouncer(0.01);
+  private final Debouncer m_debouncer = new Debouncer(0.01);
 
-  @NotLogged private final Debouncer m_debouncerDrive = new Debouncer(0.5);
+  private final Debouncer m_debouncerDrive = new Debouncer(0.5);
 
-  @Logged(importance = Importance.CRITICAL)
   private boolean m_wasAtTarget = false;
 
   /**
@@ -95,23 +86,25 @@ public class Superstructure {
 
     applyRumble();
 
-    Robot.telemetry().log("redAlliance", Alliance.redAlliance);
-
-    Robot.telemetry()
-        .log(
-            "MatchState/TimeTillActive",
-            Math.round(MatchState.timeTillActive().in(Seconds) * 10.0) / 10.0);
-    Robot.telemetry()
-        .log(
-            "MatchState/TimeTillInactive",
-            Math.round(MatchState.timeTillInactive().in(Seconds) * 10.0) / 10.0);
-    Robot.telemetry()
-        .log(
-            "MatchState/AutonomousWinnerIsRed",
-            MatchState.autonomousWinnerIsRed.isPresent()
-                ? String.valueOf(MatchState.autonomousWinnerIsRed.get())
-                : "No data");
-    Robot.telemetry().log("MatchState/IsActive", MatchState.isActive());
+    Logger.recordOutput("Superstructure/WantedState", m_wantedState.name());
+    Logger.recordOutput("Superstructure/CurrentState", m_currentState.name());
+    Logger.recordOutput("Superstructure/DidIntake", m_didIntake);
+    Logger.recordOutput("Superstructure/IntakeAddableState", m_intakeAddableState.name());
+    Logger.recordOutput("Superstructure/ShooterAddableState", m_shooterAddableState.name());
+    Logger.recordOutput("Superstructure/WasAtTarget", m_wasAtTarget);
+    Logger.recordOutput("Superstructure/redAlliance", Alliance.redAlliance);
+    Logger.recordOutput(
+        "MatchState/TimeTillActive",
+        Math.round(MatchState.timeTillActive().in(Seconds) * 10.0) / 10.0);
+    Logger.recordOutput(
+        "MatchState/TimeTillInactive",
+        Math.round(MatchState.timeTillInactive().in(Seconds) * 10.0) / 10.0);
+    Logger.recordOutput(
+        "MatchState/AutonomousWinnerIsRed",
+        MatchState.autonomousWinnerIsRed.isPresent()
+            ? String.valueOf(MatchState.autonomousWinnerIsRed.get())
+            : "No data");
+    Logger.recordOutput("MatchState/IsActive", MatchState.isActive());
   }
 
   /** Returns whether the current state uses the m_intake. */
@@ -153,7 +146,6 @@ public class Superstructure {
    *
    * @return the new current state
    */
-  @NotLogged
   private CurrentStates handleStateTransitions() {
     return switch (m_wantedState) {
       case Default -> CurrentStates.Idle;
@@ -259,30 +251,18 @@ public class Superstructure {
 
   private void idle() {
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.DRIVER_CONTROLLED);
-    // if (m_drivetrain.fieldCentric.currentDriveState == RequestStates.BUMP_ASSIST
-    //     && m_drivetrain.fieldCentric.isGoingToAllianceZone()) {
-    //   m_shooter.setState(SHOOTER_STATE.SHOOT); // Get ready before getting there
-    // } else {
     m_shooter.setState(
         m_shooterAddableState == ShooterAddableStates.Idle
             ? SHOOTER_STATE.IDLE
             : SHOOTER_STATE.SHOOT);
-    // }
     m_indexer.setState(IndexStates.Idle);
     m_feeder.setState(FEEDER_STATE.STOP);
-    // if (m_drivetrain.fieldCentric.shouldRaiseIntake()) {
-    //   m_intake.setState(IntakeStates.Half);
-    // }
     m_wasAtTarget = m_debouncer.calculate(false);
   }
 
   private void score() {
-    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    // } else {
-    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
-    // }
 
     if (!m_wasAtTarget) {
       m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
@@ -297,12 +277,8 @@ public class Superstructure {
   }
 
   private void scoreWithIntakeUp() {
-    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    // } else {
-    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
-    // }
 
     if (!m_wasAtTarget) {
       m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
@@ -317,12 +293,8 @@ public class Superstructure {
   }
 
   private void shoot() {
-    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    // } else {
-    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
-    // }
 
     if (!m_wasAtTarget) {
       m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
@@ -337,12 +309,8 @@ public class Superstructure {
   }
 
   private void shootWithIntakeUp() {
-    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    // } else {
-    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
-    // }
 
     if (!m_wasAtTarget) {
       m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
@@ -371,12 +339,8 @@ public class Superstructure {
   }
 
   private void scoreWhileIntaking() {
-    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForScore());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    // } else {
-    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
-    // }
 
     if (!m_wasAtTarget) {
       m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
@@ -391,12 +355,8 @@ public class Superstructure {
   }
 
   private void shootWhileIntaking() {
-    // if (!driveAtTarget() || !DrivetrainAutomationConstants.BumpDetection.shouldAlignBump()) {
     m_drivetrain.setRotationTarget(getRotationForShoot());
     m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.ROTATION_LOCK);
-    // } else {
-    //   m_drivetrain.setState(CommandSwerveDrivetrain.DriveStates.X_LOCK);
-    // }
 
     if (!m_wasAtTarget) {
       m_wasAtTarget = m_debouncer.calculate(flywheelAtTargetWithWait());
@@ -490,7 +450,6 @@ public class Superstructure {
     m_feeder.setState(FEEDER_STATE.FEEDING);
   }
 
-  @NotLogged
   /**
    * @return whether the superstructure is currently in a shooting (not scoring) state
    */
@@ -500,7 +459,6 @@ public class Superstructure {
         || m_currentState == CurrentStates.ShootWithIntakeUp;
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public boolean driveAtTarget() {
     return m_debouncerDrive.calculate(
         Math.abs(
@@ -511,24 +469,19 @@ public class Superstructure {
             <= 10);
   }
 
-  @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTarget() {
     return m_shooter.isAtTargetVelocity() && m_shooter.isHoodAtTargetAngle() && driveAtTarget();
   }
 
   /** Returns whether the m_shooter is at its target with wait. */
-  @Logged(importance = Importance.CRITICAL)
   public boolean flywheelAtTargetWithWait() {
     return flywheelAtTarget();
-    // && MatchState.canShoot(ShooterMath4.currentSolution.tof().in(Seconds));
   }
 
-  @NotLogged
   public Rotation2d getRotationForScore() {
     return ShooterMath4.currentSolution.robotHeading().plus(Rotation2d.k180deg);
   }
 
-  @NotLogged
   public Rotation2d getRotationForShoot() {
     return !Alliance.redAlliance
         ? (m_drivetrain.getPose().getY() <= FieldConstants.kHubCornerNeutralZone1.getY()
@@ -668,7 +621,6 @@ public class Superstructure {
   }
 
   /** Returns the current state of the superstructure. */
-  @NotLogged
   public CurrentStates getCurrentState() {
     return m_currentState;
   }

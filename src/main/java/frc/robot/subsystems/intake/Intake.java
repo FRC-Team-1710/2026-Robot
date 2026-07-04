@@ -11,9 +11,6 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
@@ -21,6 +18,7 @@ import frc.robot.constants.JamDetectionConstants;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
 import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * The Intake subsystem coordinates the intake mechanism: roller control and deployment (arm)
@@ -39,55 +37,46 @@ import java.util.function.BooleanSupplier;
  * simulation). All public-facing behaviors are expressed through {@link #setState(IntakeStates)}
  * and the periodic update loop.
  */
-@Logged
 public class Intake {
   /** IO implementation used to read sensors and command motors (hardware or simulation). */
-  @Logged(importance = Importance.CRITICAL)
   private final IntakeIO m_io;
 
+  private final IntakeIO.IntakeInputsAutoLogged m_inputs =
+      new IntakeIO.IntakeInputsAutoLogged();
+
   /** Boolean representing if the intake was up during jostling. */
-  @Logged(importance = Importance.CRITICAL)
   private boolean m_wasUp = false;
 
-  @NotLogged private boolean m_testing = false;
+  private boolean m_testing = false;
 
   /** Callback used to request changes to the subsystem periodic frequency. */
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private final TimesConsumer m_timesConsumer;
 
-  @Logged(importance = Importance.INFO)
   private IntakeStates m_currentState;
 
-  @NotLogged
   private final Debouncer m_jamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamMinimumTime.in(Seconds));
 
-  @NotLogged
   private final Debouncer m_minimumJamTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamDetectionDisabledTime.in(Seconds));
 
-  @NotLogged
   private final Debouncer m_jamUndoTime =
       new Debouncer(JamDetectionConstants.IntakeRollers.kJamUndoTime.in(Seconds));
 
-  @Logged(importance = Importance.INFO)
   private boolean m_wasJammed = false;
 
-  @NotLogged
   private final Debouncer m_stuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckMinimumTime.in(Seconds));
 
-  @NotLogged
   private final Debouncer m_minimumStuckTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckDetectionDisabledTime.in(Seconds));
 
-  @NotLogged
   private final Debouncer m_stuckUndoTime =
       new Debouncer(JamDetectionConstants.DeploymentMotor.kStuckUndoTime.in(Seconds));
 
-  @Logged(importance = Importance.INFO)
   private boolean m_wasStuck = false;
 
-  @NotLogged private final BooleanSupplier m_bumpSupplier;
+  private final BooleanSupplier m_bumpSupplier;
 
   /**
    * Constructs an Intake subsystem.
@@ -111,6 +100,8 @@ public class Intake {
   public void periodic() {
     // This method will be called once per scheduler run
     m_io.update();
+    m_io.updateInputs(m_inputs);
+    Logger.processInputs("Intake", m_inputs);
     if (m_bumpSupplier.getAsBoolean()) {
       m_io.setIntakeMotor(-1);
     } else {
@@ -221,7 +212,6 @@ public class Intake {
    *
    * @return true if a roller jam is detected
    */
-  @Logged(importance = Importance.CRITICAL)
   public boolean isJammed() {
     return m_io.getRollerCurrent().in(Amps)
             >= JamDetectionConstants.IntakeRollers.kJamCurrent.in(Amps)
@@ -234,7 +224,6 @@ public class Intake {
    *
    * @return true if the deployment motor is considered stuck
    */
-  @Logged(importance = Importance.CRITICAL)
   public boolean isStuck() {
     return m_io.getDeploymentCurrent().in(Amps)
         >= JamDetectionConstants.DeploymentMotor.kStuckCurrent.in(Amps);

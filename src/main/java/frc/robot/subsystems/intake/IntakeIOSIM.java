@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -19,7 +18,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
+import org.littletonrobotics.junction.Logger;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.utils.MechanismUtil;
 import frc.robot.utils.MechanismUtil.IntakeVisualSim;
@@ -31,7 +30,6 @@ import frc.robot.utils.MechanismUtil.IntakeVisualSim;
  * visual/telemetry simulation for the rollers. Values are exposed to SmartDashboard for easy
  * tweaking while simulating.
  */
-@Logged
 public class IntakeIOSIM implements IntakeIO {
   private final DCMotor m_gearbox;
 
@@ -41,6 +39,11 @@ public class IntakeIOSIM implements IntakeIO {
 
   private final ProfiledPIDController m_PID =
       new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
+
+  // Sim state
+  private double m_rollerCurrent = 0.0;
+  private double m_rollerVelocity = 0.0;
+  private double m_deploymentCurrent = 0.0;
 
   /** Creates a new IntakeIOSIM. */
   public IntakeIOSIM() {
@@ -91,7 +94,15 @@ public class IntakeIOSIM implements IntakeIO {
    */
   public void setIntakeMotor(double speed) {
     m_intakeVisualSim.updateRoller(speed); // updates roller visuals
-    Robot.telemetry().log("RollerSpeed", speed);
+    Logger.recordOutput("RollerSpeed", speed);
+  }
+
+  public void updateInputs(IntakeInputs inputs) {
+    inputs.rollerCurrent = SmartDashboard.getNumber("Intake/JamTest/Current", 0);
+    inputs.followerCurrent = 0.0;
+    inputs.rollerVelocity = SmartDashboard.getNumber("Intake/JamTest/Velocity", 0);
+    inputs.followerVelocity = 0.0;
+    inputs.deploymentCurrent = SmartDashboard.getNumber("Intake/StuckTest/DeploymentCurrent", 0);
   }
 
   /**

@@ -5,9 +5,6 @@ import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -21,28 +18,25 @@ import frc.robot.utils.FuelSim;
 import frc.robot.utils.shooterMath.ShooterMath4;
 
 /** Shooter subsystem state machine, control targets, and beam-break based fuel accounting. */
-@Logged
 public class Shooter {
-  @Logged(importance = Importance.CRITICAL)
   private SHOOTER_STATE m_currentState;
 
-  @Logged(importance = Importance.CRITICAL)
   private final ShooterIO m_io;
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private final ShooterIO.ShooterInputsAutoLogged m_inputs =
+      new ShooterIO.ShooterInputsAutoLogged();
 
-  @Logged(importance = Importance.CRITICAL)
+  private final TimesConsumer m_timesConsumer;
+
   private AngularVelocity m_targetVelocity;
 
-  @Logged(importance = Importance.CRITICAL)
   private Angle m_hoodTarget;
 
-  @NotLogged private boolean m_testing = false;
+  private boolean m_testing = false;
 
-  @Logged(importance = Importance.INFO)
   private boolean m_shouldOverride;
 
-  @NotLogged private final Timer m_timer = new Timer();
+  private final Timer m_timer = new Timer();
 
   /**
    * Constructs a new Shooter.
@@ -82,27 +76,24 @@ public class Shooter {
     this.m_io.setHoodTarget(this.m_hoodTarget);
 
     this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
+
+    this.m_io.updateInputs(m_inputs);
+    org.littletonrobotics.junction.Logger.processInputs("Shooter", m_inputs);
   }
 
   /** Returns whether the flywheel is at its target velocity. */
-  @Logged(importance = Importance.CRITICAL)
   public boolean isAtTargetVelocity() {
     if (m_timer.get() >= 0.1) {
       return Mode.currentMode == CurrentMode.REAL
-          ? m_io.getSetpointReferenceVelocityIsZero()
-          // ? (this.m_targetVelocity.isNear(
-          //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
+          ? m_inputs.setpointReferenceVelocityIsZero
           : true;
     }
     return Mode.currentMode == CurrentMode.REAL
         ? false
-        // ? (this.m_targetVelocity.isNear(
-        //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
         : true;
   }
 
   /** Returns whether the hood is at its target angle. */
-  @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
         ? (this.m_hoodTarget.isNear(
@@ -111,25 +102,21 @@ public class Shooter {
   }
 
   /** Returns the target hood angle. */
-  @NotLogged
   public Angle getHoodTarget() {
     return this.m_hoodTarget;
   }
 
   /** Returns the hood position. */
-  @NotLogged
   public Angle getHoodPosition() {
     return this.m_io.getHoodPosition();
   }
 
   /** Returns the target velocity. */
-  @NotLogged
   public AngularVelocity getTargetVelocity() {
     return this.m_targetVelocity;
   }
 
   /** Returns the flywheel velocity. */
-  @NotLogged
   public AngularVelocity getVelocity() {
     return this.m_io.getVelocity();
   }
@@ -221,7 +208,6 @@ public class Shooter {
   }
 
   /** Returns the current shooter state. */
-  @NotLogged
   public SHOOTER_STATE getState() {
     return this.m_currentState;
   }

@@ -3,24 +3,22 @@ package frc.robot.subsystems.feeder;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
-import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.Subsystems;
 import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import org.littletonrobotics.junction.Logger;
 
-@Logged
 public class Feeder {
-  @Logged(importance = Importance.CRITICAL)
   private FEEDER_STATE m_currentState;
 
-  @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
-  @NotLogged private boolean m_testing = false;
+  private final FeederIO.FeederInputsAutoLogged m_inputs =
+      new FeederIO.FeederInputsAutoLogged();
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private boolean m_testing = false;
+
+  private final TimesConsumer m_timesConsumer;
 
   /**
    * Constructs a new Feeder.
@@ -51,6 +49,9 @@ public class Feeder {
     this.m_io.setFeeder(output);
 
     this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
+
+    this.m_io.updateInputs(m_inputs);
+    Logger.processInputs("Feeder", m_inputs);
   }
 
   public enum FEEDER_STATE {
@@ -114,7 +115,6 @@ public class Feeder {
   }
 
   /** Returns the current feeder state. */
-  @NotLogged
   public FEEDER_STATE getState() {
     return this.m_currentState;
   }

@@ -4,8 +4,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Epilogue;
-import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -14,7 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
+import org.littletonrobotics.junction.Logger;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.FieldConstants;
 
@@ -33,7 +31,6 @@ public final class ShooterMath4 {
   private static final InterpolatingDoubleTreeMap m_anglePassMap = new InterpolatingDoubleTreeMap();
 
   static {
-    // addToMaps(0, 35.5, 13.0);
     addToMaps(1.51, 47.0, 14.0);
     addToMaps(1.65, 47.5, 14.0);
     addToMaps(2.01, 50.0, 18.0);
@@ -42,7 +39,6 @@ public final class ShooterMath4 {
     addToMaps(3.50, 59.75, 23.0);
     addToMaps(4.00, 63.25, 24.5);
     addToMaps(4.51, 68.0, 26.0);
-    // addToMaps(100, 46.75, 13.0);
 
     addToPassMaps(0.0, 45.0, 40.0);
     addToPassMaps(1.51, 45.0, 40.0);
@@ -69,36 +65,19 @@ public final class ShooterMath4 {
     m_anglePassMap.put(distanceMeters, hoodAngleDegrees);
   }
 
-  /**
-   * Complete solution for a single shooter.
-   *
-   * @param robotHeading Robot heading to command for the shot.
-   * @param hoodAngle Mechanical hood angle to command.
-   * @param flywheelOmega Flywheel ω to command.
-   */
   public record ShooterSolution(
       Rotation2d robotHeading, Angle hoodAngle, AngularVelocity flywheelOmega) {}
 
-  /**
-   * Complete solution for a single shooter.
-   *
-   * @param hoodAngle Mechanical hood angle to command.
-   * @param flywheelOmega Flywheel ω to command.
-   */
   public record SimpleSolution(Angle hoodAngle, AngularVelocity flywheelOmega) {}
 
-  /** Center of the hub */
   private static Translation2d m_targetCenter = new Translation2d();
 
-  /** The current solution for the shooter system. */
   public static ShooterSolution currentSolution =
       new ShooterSolution(Rotation2d.kZero, Degrees.of(0), RadiansPerSecond.of(0));
 
-  /** The current passing solution for the shooter system. */
   public static SimpleSolution currentPassingSolution =
       new SimpleSolution(Degrees.of(0), RadiansPerSecond.of(0));
 
-  /** The current robot pose for the dual shooter system. */
   // Public so sim can access it
   public static Pose2d currentPose = new Pose2d();
 
@@ -116,21 +95,17 @@ public final class ShooterMath4 {
     calculateComplexFromDirectionAndSpeed(robotPose);
     calculateSimpleFromDirectionAndSpeed(robotPose);
 
-    if (Epilogue.shouldLog(Importance.INFO)) {
-      Robot.telemetry()
-          .log("ShotSolution/Scoring/Heading", currentSolution.robotHeading, Rotation2d.struct);
-      Robot.telemetry().log("ShotSolution/Scoring/Angle", currentSolution.hoodAngle);
-      Robot.telemetry().log("ShotSolution/Scoring/Omega", currentSolution.flywheelOmega);
-
-      Robot.telemetry().log("ShotSolution/Passing/Angle", currentPassingSolution.hoodAngle);
-      Robot.telemetry().log("ShotSolution/Passing/Omega", currentPassingSolution.flywheelOmega);
-    }
+    Logger.recordOutput("ShotSolution/Scoring/Heading", currentSolution.robotHeading, Rotation2d.struct);
+    Logger.recordOutput("ShotSolution/Scoring/Angle", currentSolution.hoodAngle.in(Degrees));
+    Logger.recordOutput("ShotSolution/Scoring/Omega", currentSolution.flywheelOmega.in(RotationsPerSecond));
+    Logger.recordOutput("ShotSolution/Passing/Angle", currentPassingSolution.hoodAngle.in(Degrees));
+    Logger.recordOutput("ShotSolution/Passing/Omega", currentPassingSolution.flywheelOmega.in(RotationsPerSecond));
   }
 
   private static void calculateComplexFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = robotPose.getTranslation().getDistance(m_targetCenter);
 
-    Robot.telemetry().log("SHOTDIST", dist);
+    Logger.recordOutput("SHOTDIST", dist);
 
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentSolution =
@@ -150,7 +125,7 @@ public final class ShooterMath4 {
   private static void calculateSimpleFromDirectionAndSpeed(Pose2d robotPose) {
     var dist = Math.abs(robotPose.getX() - m_targetCenter.getX()) + Units.inchesToMeters(12);
 
-    Robot.telemetry().log("PASSDIST", dist);
+    Logger.recordOutput("PASSDIST", dist);
 
     if (SmartDashboard.getBoolean("tuning/tuningShooter", false)) {
       currentPassingSolution =

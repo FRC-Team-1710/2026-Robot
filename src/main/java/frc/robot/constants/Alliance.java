@@ -2,8 +2,8 @@ package frc.robot.constants;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Robot;
 import java.util.Optional;
+import org.littletonrobotics.junction.Logger;
 
 public class Alliance {
   public static boolean redAlliance = false;
@@ -16,6 +16,6 @@ public class Alliance {
       DataLogManager.log("ERROR: Alliance not found. Defaulting to Blue");
       redAlliance = false;
     }
-    Robot.telemetry().log("Alliance/RedAlliance", redAlliance);
+    Logger.recordOutput("Alliance/RedAlliance", redAlliance);
   }
 }
