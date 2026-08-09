@@ -1,54 +1,28 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.indexer;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.CanIdConstants;
+import frc.robot.constants.SubsystemConstants.IndexerConstants;
 import frc.robot.utils.TalonFXUtil;
 
-@Logged
-/** Creates a new IndexerIOCTRE. */
 public class IndexerIOCTRE implements IndexerIO {
-  @Logged(importance = Logged.Importance.CRITICAL)
+
   private final TalonFX m_indexerMotor;
 
-  @NotLogged TalonFXConfiguration motorConfig;
-
-  @NotLogged private final BaseStatusSignal[] m_indexerSignals;
-
-  @NotLogged
-  private final VoltageOut m_indexerVoltageOutput = new VoltageOut(0).withEnableFOC(true);
+  private final VoltageOut m_voltageOut = new VoltageOut(0).withEnableFOC(true);
 
   public IndexerIOCTRE() {
-    this.m_indexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
+    m_indexerMotor = new TalonFX(CanIdConstants.Indexer.INDEXER_MOTOR);
 
-    motorConfig = new TalonFXConfiguration();
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-
-    m_indexerMotor.getConfigurator().apply(motorConfig);
-
-    m_indexerSignals = TalonFXUtil.getBasicStatusSignals(m_indexerMotor);
-
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_indexerSignals);
-
-    m_indexerMotor.optimizeBusUtilization();
+    TalonFXUtil.applyConfig(IndexerConstants.Software.Config.kConfig, m_indexerMotor);
+    TalonFXUtil.optimizeForBasicStatusSignals(m_indexerMotor);
   }
 
-  public void update() {
-    BaseStatusSignal.refreshAll(m_indexerSignals);
-  }
-
-  public void setIndexMotor(double speed) {
-    m_indexerMotor.setControl(m_indexerVoltageOutput.withOutput(speed * 12));
+  /** {@inheritDoc} */
+  @Override
+  public void setVoltage(Voltage voltage) {
+    m_indexerMotor.setControl(m_voltageOut.withOutput(voltage));
   }
 }

@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "editor_config": {
+    "gui": {
+      "robot": {
+        "length_meters": 0.7112,
+        "width_meters": 1.01
+      },
+      "protrusions": {
+        "enabled": true,
+        "distance_meters": 0.19,
+        "side": "front",
+        "default_state": "shown",
+        "show_on_event_keys": [],
+        "hide_on_event_keys": []
+      },
+      "field": {
+        "selected_field_id": "frc2026-rebuilt",
+        "custom_fields": []
+      }
+    },
+    "kinematic_constraints": {
+      "default_auto_velocity_velocity_safety_factor": 0.9,
+      "default_auto_velocity_acceleration_safety_factor": 0.8,
+      "default_auto_velocity_merge_tolerance_meters_per_sec": 0.3
+    }
+  },
+  "active_path_file_name": "myYummies.json",
+  "active_path_group_id": "group-9008bc98-ac04-424a-aae1-15da604bd583",
+  "path_groups": [
+    {
+      "group_id": "group-9008bc98-ac04-424a-aae1-15da604bd583",
+      "display_name": "IRI 1st with wall tap",
+      "path_file_names": [
+        "supaYummies.json",
+        "miniYummies.json",
+        "myYummies.json"
+      ]
+    },
+    {
+      "group_id": "group-e7e22625-2d8c-4e69-8a1e-82ebc1cad748",
+      "display_name": "IRI 1st no wall tap",
+      "path_file_names": [
+        "supaYummiesNoWall.json",
+        "miniYummiesNoWall.json",
+        "myYummiesNoWall.json"
+      ]
+    },
+    {
+      "group_id": "group-58511d35-3b14-43be-a318-637dffe373b1",
+      "display_name": "IRI 2nd-3rd",
+      "path_file_names": [
+        "main2nd.json",
+        "main3rd.json"
+      ]
+    }
+  ],
+  "paths": {
+    "Loopdaloop.json": {
+      "display_name": "Loopdaloop",
+      "editor_metadata": null
+    },
+    "config.json": {
+      "display_name": "config",
+      "editor_metadata": null
+    },
+    "myYummies.json": {
+      "display_name": "myYummies",
+      "editor_metadata": null
+    },
+    "insideracer.json": {
+      "display_name": "insideracer",
+      "editor_metadata": null
+    },
+    "supaYummies.json": {
+      "display_name": "supaYummies",
+      "editor_metadata": null
+    },
+    "outsideracer.json": {
+      "display_name": "outsideracer",
+      "editor_metadata": null
+    },
+    "superspeedsDepot.json": {
+      "display_name": "superspeedsDepot",
+      "editor_metadata": null
+    },
+    "zone3cycleleft.json": {
+      "display_name": "zone3cycleleft",
+      "editor_metadata": null
+    },
+    "zone3cycleright.json": {
+      "display_name": "zone3cycleright",
+      "editor_metadata": null
+    },
+    "zone3cyclestraight.json": {
+      "display_name": "zone3cyclestraight",
+      "editor_metadata": null
+    },
+    "hubline.json": {
+      "display_name": "hubline",
+      "editor_metadata": null
+    },
+    "trenchSweepBlue.json": {
+      "display_name": "trenchSweepBlue",
+      "editor_metadata": null
+    },
+    "doublesweeperisms.json": {
+      "display_name": "doublesweeperisms",
+      "editor_metadata": null
+    },
+    "trenchSweep.json": {
+      "display_name": "trenchSweep",
+      "editor_metadata": null
+    },
+    "ballsgalore.json": {
+      "display_name": "ballsgalore",
+      "editor_metadata": null
+    },
+    "zone3climb.json": {
+      "display_name": "zone3climb",
+      "editor_metadata": null
+    },
+    "secondOptimizums.json": {
+      "display_name": "secondOptimizums",
+      "editor_metadata": null
+    },
+    "outpost.json": {
+      "display_name": "outpost",
+      "editor_metadata": null
+    },
+    "lineintake.json": {
+      "display_name": "lineintake",
+      "editor_metadata": null
+    },
+    "superangleddepot.json": {
+      "display_name": "superangleddepot",
+      "editor_metadata": null
+    },
+    "depot.json": {
+      "display_name": "depot",
+      "editor_metadata": null
+    },
+    "test.json": {
+      "display_name": "test",
+      "editor_metadata": null
+    },
+    "tuningpath.json": {
+      "display_name": "tuningPath",
+      "editor_metadata": null
+    },
+    "sweep.json": {
+      "display_name": "sweep",
+      "editor_metadata": null
+    },
+    "supaYummiesNoWall.json": {
+      "display_name": "supaYummiesNoWall",
+      "editor_metadata": null
+    },
+    "zone2shoot.json": {
+      "display_name": "zone2shoot",
+      "editor_metadata": null
+    },
+    "zone1cycleright.json": {
+      "display_name": "zone1cycleright",
+      "editor_metadata": null
+    },
+    "main2nd.json": {
+      "display_name": "main2nd",
+      "editor_metadata": null
+    },
+    "superfardepot.json": {
+      "display_name": "superfardepot",
+      "editor_metadata": null
+    },
+    "zone1climber.json": {
+      "display_name": "zone1climber",
+      "editor_metadata": null
+    },
+    "overbump.json": {
+      "display_name": "overbump",
+      "editor_metadata": null
+    },
+    "iguessbro.json": {
+      "display_name": "iGuessBro",
+      "editor_metadata": null
+    },
+    "AngledDepot.json": {
+      "display_name": "AngledDepot",
+      "editor_metadata": null
+    },
+    "zone2.json": {
+      "display_name": "zone2",
+      "editor_metadata": null
+    },
+    "main3rd.json": {
+      "display_name": "main3rd",
+      "editor_metadata": null
+    },
+    "doubleracer.json": {
+      "display_name": "doubleracer",
+      "editor_metadata": null
+    },
+    "miniYummiesNoWall.json": {
+      "display_name": "miniYummiesNoWall",
+      "editor_metadata": null
+    },
+    "zone1climb.json": {
+      "display_name": "zone1climb",
+      "editor_metadata": null
+    },
+    "zone1cycleleft.json": {
+      "display_name": "zone1cycleleft",
+      "editor_metadata": null
+    },
+    "zone1cyclestraight.json": {
+      "display_name": "zone1cyclestraight",
+      "editor_metadata": null
+    },
+    "NeutralMiddle.json": {
+      "display_name": "NeutralMiddle",
+      "editor_metadata": null
+    },
+    "miniYummies.json": {
+      "display_name": "miniYummies",
+      "editor_metadata": null
+    },
+    "myYummiesNoWall.json": {
+      "display_name": "myYummiesNoWall",
+      "editor_metadata": null
+    }
+  },
+  "field_assets": {}
+}

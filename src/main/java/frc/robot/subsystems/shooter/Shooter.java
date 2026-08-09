@@ -1,214 +1,133 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
-import frc.robot.constants.ShooterConstants;
-import frc.robot.constants.Subsystems;
-import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import frc.robot.constants.SubsystemConstants.ShooterConstants;
 import frc.robot.utils.FuelSim;
-import frc.robot.utils.shooterMath.ShooterMath4;
+import frc.robot.utils.shooterMath.ShooterMath;
 
-/** Shooter subsystem state machine, control targets, and beam-break based fuel accounting. */
 @Logged
 public class Shooter {
-  @Logged(importance = Importance.CRITICAL)
-  private SHOOTER_STATE m_currentState;
 
   @Logged(importance = Importance.CRITICAL)
-  private final ShooterIO m_io;
+  private ShooterStates m_currentState = ShooterStates.IdleScore;
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  @NotLogged private ShooterStates m_prevState = null;
 
-  @Logged(importance = Importance.CRITICAL)
-  private AngularVelocity m_targetVelocity;
+  @NotLogged private final ShooterIO m_io;
 
-  @Logged(importance = Importance.CRITICAL)
-  private Angle m_hoodTarget;
+  @NotLogged private AngularVelocity m_targetVelocity = RotationsPerSecond.of(0);
+
+  @NotLogged private Angle m_hoodTarget = Degrees.of(0);
 
   @NotLogged private boolean m_testing = false;
 
-  @Logged(importance = Importance.INFO)
-  private boolean m_shouldOverride;
-
-  @NotLogged private final Timer m_timer = new Timer();
+  @NotLogged private boolean m_shouldOverride = false;
 
   /**
    * Constructs a new Shooter.
    *
    * @param io the shooter IO implementation
-   * @param consumer the times consumer for dynamic scheduling
    */
-  public Shooter(ShooterIO io, TimesConsumer consumer) {
-    this.m_io = io;
-    this.m_timesConsumer = consumer;
-    this.m_currentState = SHOOTER_STATE.STOP;
-
-    this.m_targetVelocity = RotationsPerSecond.of(0);
-    this.m_hoodTarget = Degrees.of(0);
-
-    this.m_shouldOverride = false;
+  public Shooter(ShooterIO io) {
+    m_io = io;
   }
 
   /** Runs periodic shooter logic including target tracking and fuel counting. */
-  public void periodic() {
-    switch (this.m_currentState) {
-      case SHOOT:
-        this.m_targetVelocity = ShooterMath4.currentSolution.flywheelOmega();
-        this.m_hoodTarget = ShooterMath4.currentSolution.hoodAngle();
+  private void runMotors() {
+    if (m_currentState != m_prevState) {
+      if (m_prevState == null || m_prevState.highCurrent != m_currentState.highCurrent) {
+        m_io.dynamicCurrentLimit(
+            m_currentState.highCurrent
+                ? ShooterConstants.Flywheel.Software.CurrentLimits.kHighSupply
+                : ShooterConstants.Flywheel.Software.CurrentLimits.kLowSupply,
+            m_currentState.highCurrent
+                ? ShooterConstants.Flywheel.Software.CurrentLimits.kHighStator
+                : ShooterConstants.Flywheel.Software.CurrentLimits.kLowStator);
+      }
+      m_prevState = m_currentState;
+    }
+
+    switch (m_currentState) {
+      case Score:
+        m_hoodTarget = ShooterMath.currentSolution.hoodAngle();
         break;
-      case PASS:
-        this.m_targetVelocity = ShooterMath4.currentPassingSolution.flywheelOmega();
-        this.m_hoodTarget = ShooterMath4.currentPassingSolution.hoodAngle();
+      case Pass:
+        m_hoodTarget = ShooterMath.currentPassingSolution.hoodAngle();
         break;
       default:
-        this.m_targetVelocity = this.m_currentState.m_velocity;
-        this.m_hoodTarget = this.m_currentState.m_hoodAngle;
+        m_hoodTarget = m_currentState.hoodAngle;
         break;
     }
 
-    this.m_io.setTargetVelocity(this.m_targetVelocity);
-    this.m_io.setHoodTarget(this.m_hoodTarget);
-
-    this.m_io.update(this.m_currentState.m_subsystemPeriodicFrequency.in(Seconds));
-  }
-
-  /** Returns whether the flywheel is at its target velocity. */
-  @Logged(importance = Importance.CRITICAL)
-  public boolean isAtTargetVelocity() {
-    if (m_timer.get() >= 0.1) {
-      return Mode.currentMode == CurrentMode.REAL
-          ? m_io.getSetpointReferenceVelocityIsZero()
-          // ? (this.m_targetVelocity.isNear(
-          //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
-          : true;
+    switch (m_currentState) {
+      case Score, IdleScore:
+        m_targetVelocity = ShooterMath.currentSolution.flywheelOmega();
+        break;
+      case Pass, IdlePass:
+        m_targetVelocity = ShooterMath.currentPassingSolution.flywheelOmega();
+        break;
+      default:
+        m_targetVelocity = m_currentState.velocity;
+        break;
     }
-    return Mode.currentMode == CurrentMode.REAL
-        ? false
-        // ? (this.m_targetVelocity.isNear(
-        //     this.getVelocity(), ShooterConstants.FLYWHEEL_TARGET_ERROR_RANGE))
-        : true;
+
+    m_io.setHoodTarget(m_hoodTarget);
+    m_io.setTargetVelocity(m_targetVelocity);
   }
 
   /** Returns whether the hood is at its target angle. */
   @Logged(importance = Importance.CRITICAL)
   public boolean isHoodAtTargetAngle() {
     return Mode.currentMode == CurrentMode.REAL
-        ? (this.m_hoodTarget.isNear(
-            this.getHoodPosition(), ShooterConstants.HOOD_TARGET_ERROR_RANGE))
+        ? m_hoodTarget.isNear(
+            m_io.getHoodPosition(), ShooterConstants.Hood.Software.kMaxHoodTargetError)
         : true;
-  }
-
-  /** Returns the target hood angle. */
-  @NotLogged
-  public Angle getHoodTarget() {
-    return this.m_hoodTarget;
-  }
-
-  /** Returns the hood position. */
-  @NotLogged
-  public Angle getHoodPosition() {
-    return this.m_io.getHoodPosition();
-  }
-
-  /** Returns the target velocity. */
-  @NotLogged
-  public AngularVelocity getTargetVelocity() {
-    return this.m_targetVelocity;
-  }
-
-  /** Returns the flywheel velocity. */
-  @NotLogged
-  public AngularVelocity getVelocity() {
-    return this.m_io.getVelocity();
-  }
-
-  public enum SHOOTER_STATE {
-    STOP(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    IDLE(Milliseconds.of(60), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    SHOOT(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    PASS(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    TEST(
-        Milliseconds.of(20),
-        RotationsPerSecond.of(40),
-        Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
-    TEST_FAST(
-        Milliseconds.of(20),
-        RotationsPerSecond.of(85),
-        Degrees.of((ShooterConstants.HOOD_MAX + ShooterConstants.HOOD_MIN) / 2)),
-    TRENCH(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    CORNER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN)),
-    TOWER(Milliseconds.of(20), RotationsPerSecond.of(0), Degrees.of(ShooterConstants.HOOD_MIN));
-
-    private final Time m_subsystemPeriodicFrequency;
-    private final AngularVelocity m_velocity;
-    private final Angle m_hoodAngle;
-
-    SHOOTER_STATE(Time subsystemPeriodicFrequency, AngularVelocity velocity, Angle hoodAngle) {
-      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.m_velocity = velocity;
-      this.m_hoodAngle = hoodAngle;
-    }
   }
 
   /**
    * Sets the current shooter state.
    *
-   * @param pState the shooter state to set
+   * @param state the shooter state to set
    */
-  public void setState(SHOOTER_STATE pState) {
-    if (this.m_testing) return;
-    if (this.m_shouldOverride) return;
-    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
-        pState.m_subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
-    }
-    if (this.m_currentState != pState) {
-      m_timer.restart();
-    }
-
-    this.m_currentState = pState;
+  public void setState(ShooterStates state) {
+    if (m_testing) return;
+    if (m_shouldOverride) return; // known shot locations
+    m_currentState = state;
+    runMotors();
   }
 
   /**
    * Sets the current shooter state for testing mode only.
    *
-   * @param pState the shooter state to set
+   * @param state the shooter state to set
    */
-  public void setStateTesting(SHOOTER_STATE pState) {
-    if (!this.m_testing) return;
-    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
-        pState.m_subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
-    }
-    this.m_currentState = pState;
+  public void setStateTesting(ShooterStates state) {
+    if (!m_testing) return;
+    m_currentState = state;
+    runMotors();
   }
 
   /**
    * Overrides the shooter state.
    *
-   * @param pShouldOverride true to enable override
-   * @param pState the shooter state to override with
+   * @param shouldOverride true to enable override
+   * @param state the shooter state to override with
    */
-  public void override(boolean pShouldOverride, SHOOTER_STATE pState) {
-    if (this.m_testing) return;
-    this.m_shouldOverride = pShouldOverride;
-    if (!this.m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
-        pState.m_subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Shooter, pState.m_subsystemPeriodicFrequency);
-    }
-    this.m_currentState = pState;
+  public void override(boolean shouldOverride, ShooterStates state) {
+    if (m_testing) return;
+    m_shouldOverride = shouldOverride;
+    m_currentState = state;
+    runMotors();
   }
 
   /**
@@ -217,13 +136,13 @@ public class Shooter {
    * @param testing true to enable testing mode
    */
   public void setTesting(boolean testing) {
-    this.m_testing = testing;
+    m_testing = testing;
   }
 
   /** Returns the current shooter state. */
   @NotLogged
-  public SHOOTER_STATE getState() {
-    return this.m_currentState;
+  public ShooterStates getState() {
+    return m_currentState;
   }
 
   /**
@@ -232,6 +151,68 @@ public class Shooter {
    * @param fuelSim the fuel simulation instance
    */
   public void setFuelSim(FuelSim fuelSim) {
-    this.m_io.setFuelSim(fuelSim);
+    m_io.setFuelSim(fuelSim);
+  }
+
+  public enum ShooterStates {
+    Stop(), // Used for testing only, not a real state
+    AutoPreset(ShooterConstants.kAutoPresetDistance), // Preset for auto. Know distance from hub
+    IdleScore(ShooterConstants.Hood.Hardware.kHoodMin),
+    IdlePass(ShooterConstants.Hood.Hardware.kHoodMin),
+    Score(true),
+    Pass(true),
+    Test(
+        true,
+        ShooterConstants.Hood.Hardware.kHoodMin
+            .plus(ShooterConstants.Hood.Hardware.kHoodMax)
+            .div(2.0),
+        ShooterConstants.Flywheel.Software.kTestSlowVelocity),
+    TestFast(
+        true,
+        ShooterConstants.Hood.Hardware.kHoodMin
+            .plus(ShooterConstants.Hood.Hardware.kHoodMax)
+            .div(2.0),
+        ShooterConstants.Flywheel.Software.kTestFastVelocity),
+    Trench(true, ShooterConstants.kTrenchPresetDistance),
+    Tower(true, ShooterConstants.kTowerPresetDistance),
+    TowerLeft(true, ShooterConstants.kTowerLeftPresetDistance),
+    TowerRight(true, ShooterConstants.kTowerRightPresetDistance);
+
+    public final boolean highCurrent;
+    public final Angle hoodAngle;
+    public final AngularVelocity velocity;
+
+    ShooterStates() {
+      this(false, ShooterConstants.Hood.Hardware.kHoodMin, RotationsPerSecond.of(0));
+    }
+
+    ShooterStates(boolean highCurrent) {
+      this(highCurrent, ShooterConstants.Hood.Hardware.kHoodMin, RotationsPerSecond.of(0));
+    }
+
+    ShooterStates(Distance distance) {
+      this(false, distance);
+    }
+
+    ShooterStates(boolean highCurrent, Distance distance) {
+      this( // yes, we calculate it twice. deal with it
+          highCurrent,
+          ShooterMath.getScoreSolutionForDistance(distance).hoodAngle(),
+          ShooterMath.getScoreSolutionForDistance(distance).flywheelOmega());
+    }
+
+    ShooterStates(Angle hoodAngle) {
+      this(false, hoodAngle, RotationsPerSecond.of(0));
+    }
+
+    ShooterStates(Angle hoodAngle, AngularVelocity velocity) {
+      this(false, hoodAngle, velocity);
+    }
+
+    ShooterStates(boolean highCurrent, Angle hoodAngle, AngularVelocity velocity) {
+      this.highCurrent = highCurrent;
+      this.hoodAngle = hoodAngle;
+      this.velocity = velocity;
+    }
   }
 }

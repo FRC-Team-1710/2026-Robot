@@ -1,107 +1,33 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.units.measure.Time;
-import frc.robot.constants.JamDetectionConstants;
-import frc.robot.constants.Subsystems;
-import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Robot;
+import frc.robot.constants.SubsystemConstants.IndexerConstants;
 
-@Logged
 public class Indexer {
-  @Logged(importance = Logged.Importance.CRITICAL)
+
   private final IndexerIO m_io;
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  private IndexerStates m_currentState = IndexerStates.Idle;
 
-  @Logged(importance = Logged.Importance.CRITICAL)
-  private IndexStates m_currentState = IndexStates.Idle;
+  private boolean m_testing = false;
 
-  @NotLogged private boolean m_testing = false;
-
-  @NotLogged
-  private final Debouncer m_jamTime =
-      new Debouncer(JamDetectionConstants.Indexer.kJamMinimumTime.in(Seconds));
-
-  @NotLogged
-  private final Debouncer m_minimumJamTime =
-      new Debouncer(JamDetectionConstants.Indexer.kJamDetectionDisabledTime.in(Seconds));
-
-  @NotLogged
-  private final Debouncer m_jamUndoTime =
-      new Debouncer(JamDetectionConstants.Indexer.kJamUndoTime.in(Seconds));
-
-  @Logged(importance = Logged.Importance.INFO)
-  private boolean m_wasJammed = false;
+  private boolean m_brownoutMode = false;
 
   /**
    * Creates a new Indexer.
    *
    * @param io the indexer IO implementation
-   * @param consumer the times consumer for dynamic scheduling
    */
-  public Indexer(IndexerIO io, TimesConsumer consumer) {
-    this.m_io = io;
-    this.m_timesConsumer = consumer;
+  public Indexer(IndexerIO io) {
+    m_io = io;
   }
 
-  /** Runs periodic indexer logic including jam detection. */
-  public void periodic() {
-    // This method will be called once per scheduler run
-    m_io.update();
-    m_io.setIndexMotor(m_currentState.m_speed);
-    switch (m_currentState) {
-      case Indexing:
-        // IMPORTANT, keep every if statement different!
-        if (m_minimumJamTime.calculate(true)) {
-          if (m_jamTime.calculate(isJammed()) || m_wasJammed) {
-            m_wasJammed = true;
-            if (m_jamUndoTime.calculate(true)) {
-              m_jamTime.calculate(false);
-              m_jamUndoTime.calculate(false);
-              m_wasJammed = false;
-              m_io.setIndexMotor(m_currentState.m_speed);
-            } else {
-              m_io.setIndexMotor(IndexStates.Jammed.m_speed);
-            }
-          } else {
-            m_jamUndoTime.calculate(false);
-            m_io.setIndexMotor(m_currentState.m_speed);
-          }
-        } else {
-          m_jamTime.calculate(false);
-          m_jamUndoTime.calculate(false);
-          m_wasJammed = false;
-          m_io.setIndexMotor(m_currentState.m_speed);
-        }
-        break;
-      default:
-        m_jamTime.calculate(false);
-        m_minimumJamTime.calculate(false);
-        m_jamUndoTime.calculate(false);
-        m_wasJammed = false;
-        m_io.setIndexMotor(m_currentState.m_speed);
-        break;
-    }
-  }
-
-  /** Returns whether the indexer motor is jammed. */
-  @Logged(importance = Logged.Importance.INFO)
-  public boolean isJammed() {
-    return m_io.getIndexMotorCurrent().in(Amps)
-            >= JamDetectionConstants.Indexer.kJamCurrent.in(Amps)
-        && m_io.getIndexMotorVelocity().in(RotationsPerSecond)
-            <= JamDetectionConstants.Indexer.kJamSpeedThreshold.in(RotationsPerSecond);
+  public void toggleBrownout() {
+    m_brownoutMode = !m_brownoutMode;
+    Robot.telemetry().log("Brownout/Indexer", m_brownoutMode);
   }
 
   /**
@@ -109,13 +35,10 @@ public class Indexer {
    *
    * @param state the indexer state to set
    */
-  public void setState(IndexStates state) {
+  public void setState(IndexerStates state) {
     if (m_testing) return;
-    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
-        state.m_subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Indexer, state.m_subsystemPeriodicFrequency);
-    }
     m_currentState = state;
+    m_io.setVoltage(m_brownoutMode ? m_currentState.brownoutVoltage : m_currentState.voltage);
   }
 
   /**
@@ -123,13 +46,10 @@ public class Indexer {
    *
    * @param state the indexer state to set
    */
-  public void setStateTesting(IndexStates state) {
+  public void setStateTesting(IndexerStates state) {
     if (!m_testing) return;
-    if (!m_currentState.m_subsystemPeriodicFrequency.isEquivalent(
-        state.m_subsystemPeriodicFrequency)) {
-      m_timesConsumer.accept(Subsystems.Indexer, state.m_subsystemPeriodicFrequency);
-    }
     m_currentState = state;
+    m_io.setVoltage(m_currentState.voltage);
   }
 
   /**
@@ -141,17 +61,20 @@ public class Indexer {
     m_testing = testing;
   }
 
-  public enum IndexStates {
-    Indexing(Milliseconds.of(20), 0.5),
-    Idle(Milliseconds.of(60), 0),
-    Jammed(Milliseconds.of(20), -0.25);
+  public enum IndexerStates {
+    Idle(),
+    Run(IndexerConstants.Software.kRunVoltage, IndexerConstants.Software.kBrownoutRunVoltage);
 
-    private final Time m_subsystemPeriodicFrequency;
-    private final double m_speed;
+    public final Voltage voltage;
+    public final Voltage brownoutVoltage;
 
-    IndexStates(Time subsystemPeriodicFrequency, double speed) {
-      this.m_subsystemPeriodicFrequency = subsystemPeriodicFrequency;
-      this.m_speed = speed;
+    IndexerStates() {
+      this(Volts.of(0), Volts.of(0));
+    }
+
+    IndexerStates(Voltage voltage, Voltage brownoutVoltage) {
+      this.voltage = voltage;
+      this.brownoutVoltage = brownoutVoltage;
     }
   }
 }

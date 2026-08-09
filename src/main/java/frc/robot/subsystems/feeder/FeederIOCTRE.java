@@ -1,54 +1,29 @@
 package frc.robot.subsystems.feeder;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.CanIdConstants;
+import frc.robot.constants.SubsystemConstants.FeederConstants;
 import frc.robot.utils.TalonFXUtil;
 
-@Logged
 public class FeederIOCTRE implements FeederIO {
 
-  @Logged(importance = Importance.CRITICAL)
-  private final TalonFX m_feederMotor;
+  @NotLogged private final TalonFX m_feederMotor;
 
-  @NotLogged private final BaseStatusSignal[] m_feederSignals;
-
-  @NotLogged private final VoltageOut m_feederVoltageOutput = new VoltageOut(0).withEnableFOC(true);
+  @NotLogged private final VoltageOut m_voltageOut = new VoltageOut(0).withEnableFOC(true);
 
   public FeederIOCTRE() {
-    this.m_feederMotor = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
+    m_feederMotor = new TalonFX(CanIdConstants.Feeder.FEEDER_MOTOR);
 
-    TalonFXConfiguration config = new TalonFXConfiguration();
-
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    // Requirement: Counterclockwise is forward/feeding direction.
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    config.CurrentLimits.StatorCurrentLimit = 160;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-
-    TalonFXUtil.applyConfigWithRetries(this.m_feederMotor, config, 2);
-
-    m_feederSignals = TalonFXUtil.getBasicStatusSignals(m_feederMotor);
-
-    BaseStatusSignal.setUpdateFrequencyForAll(50, m_feederSignals);
-
-    m_feederMotor.optimizeBusUtilization();
+    TalonFXUtil.applyConfig(FeederConstants.Software.Config.kConfig, m_feederMotor);
+    TalonFXUtil.optimizeForBasicStatusSignals(m_feederMotor);
   }
 
   /** {@inheritDoc} */
-  public void update(double dtSeconds) {
-    BaseStatusSignal.refreshAll(m_feederSignals);
-  }
-
-  /** {@inheritDoc} */
-  public void setFeeder(double percent) {
-    this.m_feederMotor.setControl(m_feederVoltageOutput.withOutput(12 * percent));
+  @Override
+  public void setVoltage(Voltage voltage) {
+    m_feederMotor.setControl(m_voltageOut.withOutput(voltage));
   }
 }

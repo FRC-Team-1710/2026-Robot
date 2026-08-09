@@ -1,51 +1,27 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.utils.FuelSim;
 
-@Logged
 public interface ShooterIO {
-  /**
-   * Updates cached inputs and simulation state.
-   *
-   * @param pDTSeconds loop delta time in seconds
-   */
-  public default void update(double pDTSeconds) {}
-
-  /** Stops all shooter outputs. */
-  public default void stop() {}
 
   /**
    * Sets the flywheel velocity target for the shooter.
    *
-   * @param pVelocity target flywheel angular velocity
+   * @param velocity target flywheel angular velocity
    */
-  public default void setTargetVelocity(AngularVelocity pVelocity) {}
-
-  /**
-   * Returns the current flywheel velocity measurement.
-   *
-   * @return current flywheel angular velocity
-   */
-  public default AngularVelocity getVelocity() {
-    return RotationsPerSecond.of(0);
-  }
+  public default void setTargetVelocity(AngularVelocity velocity) {}
 
   /**
    * Sets the hood target angle.
    *
-   * @param pAngle target hood angle
+   * @param angle target hood angle
    */
-  public default void setHoodTarget(Angle pAngle) {}
+  public default void setHoodTarget(Angle angle) {}
 
   /**
    * Returns the current hood angle measurement.
@@ -56,10 +32,10 @@ public interface ShooterIO {
     return Degrees.of(0);
   }
 
-  /** Returns the closed loop reference slope == 0 */
-  public default boolean getSetpointReferenceVelocityIsZero() {
-    return false;
-  }
+  /**
+   * Sets the stator and supply current limits on flywheel motors (only if needed (hopefully not))
+   */
+  public default void dynamicCurrentLimit(Current supply, Current stator) {}
 
   /**
    * Injects the fuel simulator reference for simulation-backed IO implementations.

@@ -4,11 +4,12 @@
 
 package frc.robot.autonomous;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,123 +17,73 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Robot;
 import frc.robot.constants.Alliance;
+import frc.robot.constants.FieldConstants;
 import frc.robot.lib.BLine.FollowPath;
 import frc.robot.lib.BLine.Path;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.CommandSwerveDrivetrain.DriveStates;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.IntakeAddableStates;
-import frc.robot.subsystems.Superstructure.ShooterAddableStates;
 import frc.robot.subsystems.Superstructure.WantedStates;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeStates;
-import frc.robot.subsystems.shooter.Shooter;
-import java.util.HashMap;
 
 /** Add your docs here. */
 public class AutosChooser {
-  private static HashMap<Auto, Command> autoCommands;
-  private static SendableChooser<Auto> autoChooser;
+  private final SendableChooser<Auto> m_autoChooser;
 
-  public static FollowPath.Builder pathBuilder;
+  private final FollowPath.Builder m_pathBuilder;
 
-  private static boolean hasResetRotation = false;
+  private final Timer m_timer = new Timer();
 
-  private boolean m_depot;
+  private Auto m_currentAuto = Auto.LeftCut;
+  private Auto m_previousAuto = null;
 
-  Timer timer = new Timer();
+  private Command m_currentCommand = Commands.none();
 
-  private final Debouncer m_debouncer = new Debouncer(0.75);
+  private final Superstructure m_superstructure;
+  private final CommandSwerveDrivetrain m_drivetrain;
+
+  private boolean m_autoEnabled = false;
 
   /**
    * Creates a new AutosChooser that configures autonomous paths and related event triggers.
    *
    * @param superstructure the superstructure subsystem used to manage high-level robot states
    * @param drivetrain the swerve drivetrain subsystem used for autonomous path following
-   * @param shooter the shooter subsystem used during autonomous shooting routines
    */
-  public AutosChooser(
-      Superstructure superstructure,
-      CommandSwerveDrivetrain drivetrain,
-      Shooter shooter,
-      Intake intake) {
-    pathBuilder =
+  public AutosChooser(Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
+    m_superstructure = superstructure;
+    m_drivetrain = drivetrain;
+
+    m_pathBuilder =
         new FollowPath.Builder(
-                drivetrain, // The drive subsystem to require
-                drivetrain::getPose, // Supplier for current robot pose
-                drivetrain::getRobotSpeeds, // Supplier for current speeds
+                drivetrain,
+                drivetrain::getPose,
+                drivetrain::getRobotSpeeds,
                 (speeds) ->
                     drivetrain.applyRequest(
                         drivetrain
-                            .fieldCentricBLine
+                            .m_robotCentricBLine
                             .withVelocityX(speeds.vxMetersPerSecond)
                             .withVelocityY(speeds.vyMetersPerSecond)
-                            .withRotationalRate(
-                                speeds.omegaRadiansPerSecond)), // Consumer to drive the robot
-                new PIDController(4.0, 0.0, 0.0), // Translation PID
-                new PIDController(6.0, 0.0, 0.25), // Rotation PID
-                new PIDController(5.0, 0.0, 0.0) // Cross-track PID
+                            .withRotationalRate(speeds.omegaRadiansPerSecond)),
+                new PIDController(3.0, 0.0, 0.0), // Translation
+                new PIDController(4.0, 0.0, 0.0), // Rotation
+                new PIDController(4.0, 0.0, 0.0) // Cross-track
                 )
             .withShouldFlip(
-                () -> Alliance.redAlliance); // Automatically filps path based on alliance
+                () -> Alliance.redAlliance) // Automatically flips path based on alliance
+            .withShouldMirror(this::shouldMirror); // Automatically mirrors path based on alliance
 
-    m_depot = false;
-
-    autoCommands = new HashMap<>(); // contains a list of all commands that'll happen during auto
-    autoCommands.put(Auto.NONE, Commands.none());
-
-    autoChooser = new SendableChooser<>();
-    autoChooser.setDefaultOption("None", Auto.NONE);
-
-    var paths = autoPathing(m_depot, superstructure, drivetrain);
-
-    // addPath(Auto.ZONE1, paths.get("ZONE1"));
-    // addPath(Auto.ZONE3, paths.get("ZONE3"));
-    // addPath(Auto.RIGHT_INSIDE, paths.get("RIGHT_INSIDE"));
-    // addPath(Auto.LEFT_INSIDE, paths.get("LEFT_INSIDE"));
-    // addPath(Auto.RIGHT_INSIDE_PART_2, paths.get("RIGHT_INSIDE_PART_2"));
-    // addPath(Auto.LEFT_INSIDE_PART_2, paths.get("LEFT_INSIDE_PART_2"));
-    // addPath(Auto.RIGHT_OUTSIDE_PART_2, paths.get("RIGHT_OUTSIDE_PART_2"));
-    // addPath(Auto.LEFT_OUTSIDE_PART_2, paths.get("LEFT_OUTSIDE_PART_2"));
-    addPath(Auto.OPTIMIZUM, paths.get("OPTIMIZUM"));
-    addPath(Auto.OPTIMIZUM_BUT_IT_IS_DIFFERENT, paths.get("OPTIMIZUM_BUT_IT_IS_DIFFERENT"));
-    addPath(Auto.DEPOT, paths.get("DEPOT"));
-    addPath(Auto.DEPOTEXTRAANGLED, paths.get("DEPOTEXTRAANGLED"));
-    addPath(Auto.DEPOTEXTRASPEEDS, paths.get("DEPOTEXTRASPEEDS"));
-    addPath(Auto.DEPOTEXTRAFAR, paths.get("DEPOTEXTRAFAR"));
-    // addPath(Auto.DOUBLESWEEPER, paths.get("DOUBLERACER"));
-    // addPath(Auto.MIDDLETHENDEPOT, paths.get("MIDDLETHENDEPOT"));
-
-    SmartDashboard.putString("Auto/CustomInput", "");
-    SmartDashboard.putData("Auto/AutoChooser", autoChooser);
-
-    for (WantedStates state : WantedStates.values()) {
-      if (state.name().contains("Auto")) {
-        FollowPath.registerEventTrigger(state.name(), () -> superstructure.setWantedState(state));
-      }
+    m_autoChooser = new SendableChooser<>();
+    for (Auto auto : Auto.values()) {
+      m_autoChooser.addOption(auto.name(), auto);
     }
 
-    FollowPath.registerEventTrigger(
-        "RemoveOverride",
-        () -> {
-          drivetrain.setAutonomousRequestOverride(false);
-        });
+    SmartDashboard.putData("Auto/AutoChooser", m_autoChooser);
 
     FollowPath.registerEventTrigger(
-        "RaiseIntake",
-        () -> {
-          intake.setState(IntakeStates.Half);
-        });
+        "IntakeAuto", () -> superstructure.setWantedState(WantedStates.IntakeAuto));
 
-    FollowPath.registerEventTrigger(
-        "HoldPosition",
-        () -> {
-          drivetrain.setAutonomousRequestOverride(true);
-          drivetrain.applyPriorityRequestAuto(new SwerveRequest.SwerveDriveBrake());
-        });
-
-    FollowPath.registerEventTrigger(
-        "SpinUp", () -> superstructure.setShooterAddableState(ShooterAddableStates.SpinUp));
+    m_autoChooser.onChange(this::consumeAutoChooserChange);
 
     FollowPath.setPoseLoggingConsumer(
         (data) ->
@@ -147,181 +98,168 @@ public class AutosChooser {
         (data) -> Robot.telemetry().log("Auto/" + data.getFirst(), data.getSecond()));
   }
 
+  private boolean shouldMirror() {
+    return m_currentAuto.shouldMirror();
+  }
+
+  private void consumeAutoChooserChange(Auto auto) {
+    if (auto != null) {
+      m_currentAuto = auto;
+    }
+  }
+
+  private void buildAuto() {
+    switch (m_currentAuto) {
+      case Test:
+        m_currentCommand = m_pathBuilder.build(m_currentAuto.startingPath).ignoringDisable(true);
+        return;
+      case igbro:
+        m_currentCommand =
+            m_pathBuilder
+                .build(m_currentAuto.startingPath)
+                .andThen(Commands.waitSeconds(5))
+                .andThen(getShootCommand(m_superstructure, m_drivetrain))
+                .finallyDo(
+                    () -> {
+                      m_superstructure.setWantedState(WantedStates.Default);
+                    })
+                .ignoringDisable(true);
+        return;
+      default:
+        m_currentCommand =
+            m_pathBuilder
+                .build(m_currentAuto.startingPath)
+                .andThen(getShootCommand(m_superstructure, m_drivetrain))
+                .andThen(m_pathBuilder.build(new Path("main2nd")))
+                .andThen(getShootCommand(m_superstructure, m_drivetrain))
+                .andThen(m_pathBuilder.build(new Path("main3rd")))
+                .finallyDo(
+                    () -> {
+                      m_superstructure.setWantedState(WantedStates.Default);
+                    })
+                .ignoringDisable(true);
+        return;
+    }
+  }
+
+  @SuppressWarnings("removal")
+  public void periodic() {
+    if (m_autoEnabled && !m_currentCommand.isScheduled()) {
+      return;
+    }
+    if (m_currentCommand.isScheduled()
+        && DriverStation.isEnabled()
+        && !DriverStation.isAutonomous()) {
+      m_currentCommand.cancel();
+      m_autoEnabled = true;
+      return;
+    }
+    if (m_currentAuto != m_previousAuto) {
+      m_previousAuto = m_currentAuto;
+      if (m_currentCommand.isScheduled()) {
+        m_currentCommand.cancel();
+      }
+      buildAuto();
+      m_drivetrain.resetPose(
+          (m_currentAuto.shouldMirror != Alliance.redAlliance)
+              ? new Pose2d(
+                  new Translation2d(
+                      Alliance.redAlliance
+                          ? FieldConstants.kFieldLength.in(Meters)
+                              - m_currentAuto.startingPath.getStartPose().getX()
+                          : m_currentAuto.startingPath.getStartPose().getX(),
+                      FieldConstants.kFieldWidth.in(Meters)
+                          - m_currentAuto.startingPath.getStartPose().getY()),
+                  m_currentAuto.startingPath.getStartPose().getRotation().unaryMinus())
+              : new Pose2d(
+                  new Translation2d(
+                      Alliance.redAlliance
+                          ? FieldConstants.kFieldLength.in(Meters)
+                              - m_currentAuto.startingPath.getStartPose().getX()
+                          : m_currentAuto.startingPath.getStartPose().getX(),
+                      m_currentAuto.startingPath.getStartPose().getY()),
+                  m_currentAuto.startingPath.getStartPose().getRotation()));
+      m_currentCommand.schedule();
+    }
+
+    if (DriverStation.isAutonomousEnabled()) {
+      m_autoEnabled = true;
+    }
+
+    if (DriverStation.isDisabled() && m_autoEnabled && m_currentCommand.isScheduled()) {
+      m_currentCommand.cancel();
+    }
+
+    Robot.telemetry().log("Auto/CurrentAuto", m_currentAuto.name());
+    Robot.telemetry().log("Auto/CurrentCommandIsScheduled", m_currentCommand.isScheduled());
+  }
+
   private Command getShootCommand(
       Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
     return Commands.runOnce(
             () -> {
-              timer.stop();
-              timer.reset();
-              hasResetRotation = false;
-              m_debouncer.calculate(false);
+              m_timer.stop();
+              m_timer.reset();
+              drivetrain.setAutonomousRequestOverride(true);
+              superstructure.setWantedState(WantedStates.ScoreAuto);
             })
         .andThen(
             Commands.run(
                 () -> {
-                  drivetrain.setAutonomousRequestOverride(true);
                   drivetrain.applyPriorityRequestAuto(
                       drivetrain
-                          .fieldCentric
-                          .withDriveState(DriveStates.ROTATION_LOCK)
-                          .withTargetRotation(superstructure.getRotationForScore())
-                          .withVelocityX(0) // ensure previous controls aren't affecting auto
-                          .withVelocityY(0)
-                          .withRotationalRate(0));
-                  superstructure.setWantedState(WantedStates.ShootAuto);
-                  if (!hasResetRotation && superstructure.driveAtTarget()) {
-                    drivetrain.setShouldAcceptNextVisionMeasurementRotation(true);
-                    hasResetRotation = true;
+                          .m_fieldCentricFacingAngle
+                          .withTargetDirection(superstructure.getRotationForScore())
+                          .withVelocityX(0)
+                          .withVelocityY(0));
+                  if (superstructure.readyToShoot()) {
+                    m_timer.start(); // Flywheel should be at target but drivetrain might not be
                   }
-                  if (m_debouncer.calculate(superstructure.flywheelAtTarget())) {
-                    timer.start(); // Only count actual shooting time
-                  }
-                  if (timer.get() >= 1.5) {
+                  if (m_timer.get() >= 0.75) {
                     superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                   } else {
                     superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
                   }
                 }))
-        .until(() -> timer.get() > 3.125 - 0.25)
+        .until(() -> m_timer.get() > 2.5)
         .finallyDo(
             () -> {
+              drivetrain.setAutonomousRequestOverride(false);
               superstructure.setWantedState(WantedStates.DefaultAuto);
               superstructure.setIntakeAddableState(IntakeAddableStates.Intaking);
-              drivetrain.setAutonomousRequestOverride(false);
-              superstructure.setShooterAddableState(ShooterAddableStates.Idle);
-              m_debouncer.calculate(false);
             });
   }
 
-  public static void addPath(Auto auto, Command command) {
-    autoCommands.put(auto, command);
-    autoChooser.addOption(auto.name(), auto);
-  }
-
-  public Command selectAuto() {
-    return autoCommands.get(autoChooser.getSelected());
-  }
-
-  public HashMap<String, Command> autoPathing(
-      boolean depotPath, Superstructure superstructure, CommandSwerveDrivetrain drivetrain) {
-    HashMap<String, Command> listOfPaths = new HashMap<>();
-    var optimizumFlip = new Path("optimizum");
-    optimizumFlip.mirror(); // mirrors the path across the y axis
-    var secondOptimizumsFlip = new Path("secondOptimizums");
-    secondOptimizumsFlip.mirror(); // mirrors the path across the y axis\
-    // var temp = new Path("outsideracer");
-    // var temp2 = new Path("Loopdaloop");
-    // var temp3 = new Path("insideracer");
-    // temp.mirror(); // mirrors the path across the y axis\
-    // temp2.mirror(); // mirrors the path across the y axis\
-    // temp3.mirror(); // mirrors the path across the y axis\
-    // listOfPaths.put(
-    //     "RIGHT_INSIDE",
-    //     Commands.sequence(pathBuilder.build(temp))); // flipped version of left_inside
-    // listOfPaths.put("LEFT_INSIDE", Commands.sequence(pathBuilder.build(new
-    // Path("outsideracer"))));
-    // listOfPaths.put(
-    //     "RIGHT_OUTSIDE_PART_2",
-    //     Commands.sequence(
-    //         pathBuilder.build(temp), pathBuilder.build(temp2))); // flipped version of
-    // left_inside
-    // listOfPaths.put(
-    //     "LEFT_OUTSIDE_PART_2",
-    //     Commands.sequence(
-    //         pathBuilder.build(new Path("outsideracer")),
-    //         pathBuilder.build(new Path("Loopdaloop"))));
-    // listOfPaths.put(
-    //     "RIGHT_INSIDE_PART_2",
-    //     Commands.sequence(
-    //         pathBuilder.build(temp3), pathBuilder.build(temp2))); // flipped version of
-    // left_inside
-    // listOfPaths.put(
-    //     "LEFT_INSIDE_PART_2",
-    //     Commands.sequence(
-    //         pathBuilder.build(new Path("insideracer")), pathBuilder.build(new
-    // Path("Loopdaloop"))));
-    listOfPaths.put(
-        "OPTIMIZUM",
-        Commands.sequence(
-            pathBuilder.build(new Path("optimizum")),
-            getShootCommand(superstructure, drivetrain),
-            pathBuilder.build(new Path("secondOptimizums")),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "OPTIMIZUM_BUT_IT_IS_DIFFERENT",
-        Commands.sequence(
-            pathBuilder.build(optimizumFlip),
-            getShootCommand(superstructure, drivetrain),
-            pathBuilder.build(secondOptimizumsFlip),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "DEPOT",
-        Commands.sequence(
-            pathBuilder.build(new Path("AngledDepot")),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "DEPOTEXTRAANGLED",
-        Commands.sequence(
-            pathBuilder.build(new Path("superangleddepot")),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "DEPOTEXTRASPEEDS",
-        Commands.sequence(
-            pathBuilder.build(new Path("superspeedsDepot")),
-            getShootCommand(superstructure, drivetrain)));
-    listOfPaths.put(
-        "DEPOTEXTRAFAR",
-        Commands.sequence(
-            pathBuilder.build(new Path("superfardepot")),
-            getShootCommand(superstructure, drivetrain)));
-    // listOfPaths.put(
-    //     "DOUBLESWEEPER",
-    //     Commands.sequence(
-    //         pathBuilder.build(new Path("optimizum")),
-    //         getShootCommand(superstructure, drivetrain),
-    //         pathBuilder.build(new Path("doublesweeperisms")),
-    //         getShootCommand(superstructure, drivetrain)));
-    // listOfPaths.put(
-    //     "MIDDLETHENDEPOT",
-    //     Commands.sequence(
-    //         pathBuilder.build(new Path("NeutralMiddle")),
-    //         getShootCommand(superstructure, drivetrain),
-    //         pathBuilder.build(new Path("depot")),
-    //         getShootCommand(superstructure, drivetrain)));
-
-    // listOfPaths.put(
-    //     "ZONE3",
-    //     Commands.sequence(
-    //         pathBuilder.build(new Path("zone3cycleright")),
-    //         pathBuilder.build(new Path("zone3cycleleft"))));
-    // listOfPaths.put("MIDDLE", Commands.sequence(pathBuilder.build(new Path("sweep"))));
-    // listOfPaths.put(
-    //     "ZONE1",
-    //     Commands.sequence(
-    //         pathBuilder.build(new Path("zone1cycleleft"))
-    //         // pathBuilder.build(new Path("zone1cycleright"))
-    //         ));
-    // listOfPaths.put("ZONE2", Commands.sequence(pathBuilder.build(new Path("zone2"))));
-    // the game
-    //  >:(  -Carter
-
-    return listOfPaths;
-  }
-
-  // if you make a new path then you need to add the name here
   public enum Auto {
-    NONE(),
-    // LEFT_INSIDE_PART_2(),
-    // RIGHT_INSIDE_PART_2(),
-    // LEFT_OUTSIDE_PART_2(),
-    // RIGHT_OUTSIDE_PART_2(),
-    OPTIMIZUM(),
-    DEPOT(),
-    OPTIMIZUM_BUT_IT_IS_DIFFERENT(),
-    DEPOTEXTRAANGLED(),
-    DEPOTEXTRASPEEDS(),
-    DEPOTEXTRAFAR()
-    // DOUBLESWEEPER(),
-    // MIDDLETHENDEPOT()
+    Test(new Path("tuningpath")),
+    LeftFar(new Path("supaYummies")),
+    LeftNear(new Path("miniYummies")),
+    LeftCut(new Path("myYummies")),
+    LeftFarNoTap(new Path("supaYummiesNoWall")),
+    LeftNearNoTap(new Path("miniYummiesNoWall")),
+    LeftCutNoTap(new Path("myYummiesNoWall")),
+    RightFar(true, new Path("supaYummies")),
+    RightNear(true, new Path("miniYummies")),
+    RightCut(true, new Path("myYummies")),
+    RightFarNoTap(true, new Path("supaYummiesNoWall")),
+    RightNearNoTap(true, new Path("miniYummiesNoWall")),
+    igbro(new Path("iguessbro")),
+    RightCutNoTap(true, new Path("myYummiesNoWall"));
+
+    public final boolean shouldMirror;
+    public final Path startingPath;
+
+    Auto(Path startingPath) {
+      this(false, startingPath);
+    }
+
+    Auto(boolean shouldMirror, Path startingPath) {
+      this.shouldMirror = shouldMirror;
+      this.startingPath = startingPath;
+    }
+
+    public boolean shouldMirror() {
+      return shouldMirror;
+    }
   }
 }

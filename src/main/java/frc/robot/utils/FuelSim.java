@@ -19,7 +19,6 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.constants.FuelSimConstants;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -107,7 +106,7 @@ public class FuelSim {
   };
 
   protected int m_currentFuelStorage = 8;
-  protected final int fuelCapacity = FuelSimConstants.kFUEL_CAPACITY;
+  protected final int fuelCapacity = 80;
 
   protected static class Fuel {
     protected Translation3d pos;

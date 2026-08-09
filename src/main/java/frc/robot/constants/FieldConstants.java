@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.constants.Mode.CurrentMode;
 import java.io.IOException;
-import java.util.HashMap;
 
 /** Field constants RELATIVE TO THE BLUE ALLIANCE (frc coordinate system) */
 public class FieldConstants {
@@ -22,6 +21,7 @@ public class FieldConstants {
   public static final Distance kBumpDepth = Inches.of(47);
   public static final Distance kBumpDistanceFromWall = Inches.of(62.37375);
   public static final Distance kBumpDistanceFromDS = Inches.of(182.11125);
+  public static final Distance kFarBumpDistanceFromDS = Inches.of(204.308808);
 
   public static final Distance kTrenchWidth = Inches.of(50.34375);
 
@@ -126,32 +126,24 @@ public class FieldConstants {
   public static final Translation2d kHubCornerNeutralZone2 =
       new Translation2d(kMaxHubDistanceFromDS, kFieldWidth.div(2).minus(kMaxHubWidth.div(2)));
 
-  // Add a new value and automatically adds it to the auto chooser
-  public static HashMap<String, Translation2d> AutoConstants() {
-    HashMap<String, Translation2d> points = new HashMap<>();
-    points.put(
-        "Bump REn, ",
-        new Translation2d(
-            kStartingLineDistance.minus(kBumpDepth.div(2)),
-            kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-    points.put(
-        "Bump REx, ",
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
-            kBumpWidth.div(2).plus(kBumpDistanceFromWall)));
-    points.put(
-        "Bump LEn, ",
-        new Translation2d(
-            kStartingLineDistance.minus(kBumpDepth.div(2)),
-            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
-    points.put(
-        "Bump LEx, ",
-        new Translation2d(
-            kStartingLineDistance.plus(kBumpDepth).plus(kRobotLength.div(2)),
-            kFieldWidth.minus(kBumpWidth.div(2).plus(kBumpDistanceFromWall))));
-
-    return points;
-  }
+  public static final Translation2d kBlueRightPassTarget =
+      new Translation2d(
+          Meters.of(1.5),
+          kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter).plus(Meters.of(0.5)));
+  public static final Translation2d kBlueLeftPassTarget =
+      new Translation2d(
+          Meters.of(1.5),
+          kFieldWidth.minus(
+              kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter).plus(Meters.of(0.5))));
+  public static final Translation2d kRedRightPassTarget =
+      new Translation2d(
+          kFieldLength.minus(Meters.of(1.5)),
+          kFieldWidth.minus(
+              kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter).plus(Meters.of(0.5))));
+  public static final Translation2d kRedLeftPassTarget =
+      new Translation2d(
+          kFieldLength.minus(Meters.of(1.5)),
+          kFieldWidth.div(2).minus(kBumpCenterYFromFieldCenter).plus(Meters.of(0.5)));
 
   public class Bump {
 
