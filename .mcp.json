@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "Python Log Tools": {
+      "command": "python",
+      "args": [
+        ".github/tools/log_tools.py"
+      ]
+    }
+  }
+}
