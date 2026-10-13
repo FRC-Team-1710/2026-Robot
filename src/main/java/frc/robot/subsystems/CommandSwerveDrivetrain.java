@@ -42,7 +42,7 @@ import frc.robot.Robot;
 import frc.robot.constants.Alliance;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMathCooked;
 import java.util.function.Supplier;
 
 @Logged
@@ -263,7 +263,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       m_hasAppliedOperatorPerspective = true;
     }
 
-    ShooterMath.calculate(getPose());
+    ShooterMathCooked.calculate(getPose());
   }
 
   private void runState() {
@@ -274,20 +274,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         case DriverControlled:
           setControl(
               m_fieldCentric
-                  .withVelocityX(m_currentVelocity.times(-scaledTranslationInputs.get(0, 0)))
-                  .withVelocityY(m_currentVelocity.times(-scaledTranslationInputs.get(1, 0)))
+                  .withVelocityX(
+                      m_currentVelocity.times(0.5).times(-scaledTranslationInputs.get(0, 0)))
+                  .withVelocityY(
+                      m_currentVelocity.times(0.5).times(-scaledTranslationInputs.get(1, 0)))
                   .withRotationalRate(
-                      TunerConstants.kMaxAngularRate.times(
-                          -rescaleRotation(m_inputController.getRightX()))));
+                      TunerConstants.kMaxAngularRate
+                          .times(0.5)
+                          .times(-rescaleRotation(m_inputController.getRightX()))));
           break;
         case RotationLock:
           setControl(
               m_fieldCentricFacingAngle
-                  .withVelocityX(m_currentVelocity.times(-scaledTranslationInputs.get(0, 0)))
-                  .withVelocityY(m_currentVelocity.times(-scaledTranslationInputs.get(1, 0)))
+                  .withVelocityX(
+                      m_currentVelocity.times(0.5).times(-scaledTranslationInputs.get(0, 0)))
+                  .withVelocityY(
+                      m_currentVelocity.times(0.5).times(-scaledTranslationInputs.get(1, 0)))
                   .withTargetRateFeedforward(
                       TunerConstants.kMaxAngularRate.times(
-                          -rescaleRotation(m_inputController.getRightX()))));
+                          -rescaleRotation(m_inputController.getRightX()) * 0.5)));
           break;
       }
     }

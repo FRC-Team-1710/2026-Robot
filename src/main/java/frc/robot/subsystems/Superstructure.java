@@ -28,7 +28,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeStates;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterStates;
-import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMathCooked;
 
 @Logged
 public class Superstructure {
@@ -109,7 +109,7 @@ public class Superstructure {
                 ? String.valueOf(MatchState.autonomousWinnerIsRed.get())
                 : "No data");
 
-    ShooterMath.setMorePow(m_wasAtTarget);
+    ShooterMathCooked.setMorePow(m_wasAtTarget);
   }
 
   /** Returns whether the current state uses the m_intake. */
@@ -386,12 +386,12 @@ public class Superstructure {
 
   @NotLogged
   public Rotation2d getRotationForScore() {
-    return ShooterMath.currentSolution.robotHeading();
+    return ShooterMathCooked.currentSolution.robotHeading();
   }
 
   @NotLogged
   public Rotation2d getRotationForPass() {
-    return ShooterMath.currentPassingSolution.robotHeading();
+    return ShooterMathCooked.currentPassingSolution.robotHeading();
   }
 
   @NotLogged

@@ -266,6 +266,8 @@ public class RobotContainer {
   private void configureBindings() {
     // General bindings
 
+    drivetrain.resetRotation(Rotation2d.kZero);
+
     m_driver
         .rightStick()
         .and(m_driver.leftStick())
@@ -292,7 +294,7 @@ public class RobotContainer {
                       if (m_superstructure.readyToShoot()) {
                         m_shootingTimer.start();
                       }
-                      if (m_shootingTimer.hasElapsed(1.0)) {
+                      if (m_shootingTimer.hasElapsed(999.0)) {
                         m_superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                       }
                     })

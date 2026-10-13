@@ -99,7 +99,7 @@ public class Intake {
 
   public enum IntakeStates {
     Up(
-        IntakeConstants.Deployment.Hardware.kStowAngle,
+        IntakeConstants.Deployment.Hardware.kDeployAngle, // kStowAngle,
         IntakeConstants.Deployment.Software.kDeployVelocity,
         IntakeConstants.Deployment.Software.kDeployAcceleration),
     Down(
@@ -107,13 +107,13 @@ public class Intake {
         IntakeConstants.Deployment.Software.kDeployVelocity,
         IntakeConstants.Deployment.Software.kDeployAcceleration),
     Intake(
-        IntakeConstants.Deployment.Hardware.kDeployAngle,
+        IntakeConstants.Deployment.Hardware.kDeployAngle, // kDeployAngle,
         IntakeConstants.Deployment.Software.kDeployVelocity,
         IntakeConstants.Deployment.Software.kDeployAcceleration,
         IntakeConstants.Rollers.Software.kRunVoltage,
         IntakeConstants.Rollers.Software.kBrownoutRunVoltage),
     UpAndIntake(
-        IntakeConstants.Deployment.Hardware.kStowAngle,
+        IntakeConstants.Deployment.Hardware.kDeployAngle, // kStowAngle,
         IntakeConstants.Deployment.Software.kShootingStowVelocity,
         IntakeConstants.Deployment.Software.kDeployAcceleration);
     // IntakeConstants.Rollers.Software.kRunVoltage,

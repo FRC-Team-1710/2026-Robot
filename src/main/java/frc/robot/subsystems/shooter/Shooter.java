@@ -13,7 +13,7 @@ import frc.robot.constants.Mode;
 import frc.robot.constants.Mode.CurrentMode;
 import frc.robot.constants.SubsystemConstants.ShooterConstants;
 import frc.robot.utils.FuelSim;
-import frc.robot.utils.shooterMath.ShooterMath;
+import frc.robot.utils.shooterMath.ShooterMathCooked;
 
 @Logged
 public class Shooter {
@@ -59,10 +59,10 @@ public class Shooter {
 
     switch (m_currentState) {
       case Score:
-        m_hoodTarget = ShooterMath.currentSolution.hoodAngle();
+        m_hoodTarget = ShooterMathCooked.currentSolution.hoodAngle();
         break;
       case Pass:
-        m_hoodTarget = ShooterMath.currentPassingSolution.hoodAngle();
+        m_hoodTarget = ShooterMathCooked.currentPassingSolution.hoodAngle();
         break;
       default:
         m_hoodTarget = m_currentState.hoodAngle;
@@ -71,10 +71,10 @@ public class Shooter {
 
     switch (m_currentState) {
       case Score, IdleScore:
-        m_targetVelocity = ShooterMath.currentSolution.flywheelOmega();
+        m_targetVelocity = ShooterMathCooked.currentSolution.flywheelOmega();
         break;
       case Pass, IdlePass:
-        m_targetVelocity = ShooterMath.currentPassingSolution.flywheelOmega();
+        m_targetVelocity = ShooterMathCooked.currentPassingSolution.flywheelOmega();
         break;
       default:
         m_targetVelocity = m_currentState.velocity;
@@ -195,10 +195,11 @@ public class Shooter {
     }
 
     ShooterStates(boolean highCurrent, Distance distance) {
-      this( // yes, we calculate it twice. deal with it
-          highCurrent,
-          ShooterMath.getScoreSolutionForDistance(distance).hoodAngle(),
-          ShooterMath.getScoreSolutionForDistance(distance).flywheelOmega());
+      // this( // yes, we calculate it twice. deal with it
+      //     highCurrent,
+      //     ShooterMathCooked.getScoreSolutionForDistance(distance).hoodAngle(),
+      //     ShooterMathCooked.getScoreSolutionForDistance(distance).flywheelOmega());
+      this(false, ShooterConstants.Hood.Hardware.kHoodMin, RotationsPerSecond.of(0));
     }
 
     ShooterStates(Angle hoodAngle) {

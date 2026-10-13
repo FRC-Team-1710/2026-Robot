@@ -91,7 +91,7 @@ public class SubsystemConstants {
       public class Hardware {}
 
       public class Software {
-        public static final Voltage kRunVoltage = Volts.of(10.0);
+        public static final Voltage kRunVoltage = Volts.of(6.0);
         public static final Voltage kBrownoutRunVoltage = Volts.of(6.0);
         public static final Voltage kReverseVoltage = Volts.of(-8.0);
 
