@@ -71,11 +71,13 @@ public class IntakeIOSIM implements IntakeIO {
    *
    * @param angle desired arm angle
    */
+
+  // Something was changed here...
   public void setAngle(Angle angle) {
     m_angleSetpoint = angle;
     if (m_angleSetpoint == null) return;
     m_armPhysicsSim.setInputVoltage(
-        m_PID.calculate(m_armPhysicsSim.getAngleRads(), m_angleSetpoint.in(Radians)));
+        -m_PID.calculate(m_armPhysicsSim.getAngleRads(), m_angleSetpoint.in(Radians)));
     m_armPhysicsSim.update(0.02);
     m_intakeVisualSim.updateArm(
         Units.radiansToDegrees(m_armPhysicsSim.getAngleRads()),

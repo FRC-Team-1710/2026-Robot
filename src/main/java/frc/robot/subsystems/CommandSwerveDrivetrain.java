@@ -304,6 +304,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Vector<N2> scaledTranslationInputs =
         rescaleTranslation(m_inputController.getLeftY(), m_inputController.getLeftX());
 
+    // Something is here...
+
+    if (Utils.isSimulation()) {
+      scaledTranslationInputs =
+          VecBuilder.fill(scaledTranslationInputs.get(0, 0), -scaledTranslationInputs.get(1, 0));
+    }
     if (!DriverStation.isAutonomous() && !m_sysid) {
       setControl(
           fieldCentric
@@ -339,12 +345,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private void startSimThread() {
     m_lastSimTime = Utils.getCurrentTimeSeconds();
 
+    // Something was changed here...
+
     /* Run simulation at a faster rate so PID gains behave more reasonably */
     m_simNotifier =
         new Notifier(
             () -> {
               final double currentTime = Utils.getCurrentTimeSeconds();
-              double deltaTime = currentTime - m_lastSimTime;
+              double deltaTime = 5;
               m_lastSimTime = currentTime;
 
               /* use the measured time delta, get battery voltage from WPILib */

@@ -68,9 +68,11 @@ public class ShooterIOSIM implements ShooterIO {
 
     if (m_fuelSim == null) return;
 
+    // Something was changed here....
+
     if (m_shooterDebouncer1.calculate(m_fuelSim.getCurrentFuelStorage() > 0)
         && m_fuelSim.shouldShoot.getAsBoolean()) {
-      if (m_fuelSim.shouldScore.getAsBoolean()) {
+      if (!m_fuelSim.shouldScore.getAsBoolean()) {
         m_fuelSim.spawnFuel(
             new Pose3d(
                     new Pose2d(

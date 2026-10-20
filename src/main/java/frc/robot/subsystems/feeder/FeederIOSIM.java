@@ -18,10 +18,11 @@ public class FeederIOSIM implements FeederIO {
     this.m_feederMotorMechanism = new WheelMechanism("Feeder", 0.05, 0.15, 0.35);
   }
 
+  // Something was edited here.....
   /** {@inheritDoc} */
   public void update(double dtSeconds) {
     this.m_feederMotorMechanism.update(
-        RPM.of(this.m_velocity * 6000).in(RadiansPerSecond), dtSeconds, false);
+        RPM.of(this.m_velocity * 10).in(RadiansPerSecond), dtSeconds, false);
     SmartDashboard.putData("Feeder", this.m_feederMotorMechanism.getMechanism());
   }
 
