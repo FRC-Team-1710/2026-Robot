@@ -8,7 +8,7 @@
     },
     {
       "type": "event_trigger",
-      "t_ratio": 0.05,
+      "t_ratio": 0.2386,
       "lib_key": "IntakeAuto"
     },
     {
@@ -69,7 +69,7 @@
   "constraints": {
     "max_velocity_meters_per_sec": [
       {
-        "value": 2.5,
+        "value": 2.0,
         "start_ordinal": 1,
         "end_ordinal": 3
       }

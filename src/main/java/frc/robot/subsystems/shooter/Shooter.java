@@ -23,7 +23,8 @@ public class Shooter {
 
   @NotLogged private ShooterStates m_prevState = null;
 
-  @NotLogged private final ShooterIO m_io;
+  @Logged(importance = Importance.CRITICAL)
+  private final ShooterIO m_io;
 
   @NotLogged private AngularVelocity m_targetVelocity = RotationsPerSecond.of(0);
 

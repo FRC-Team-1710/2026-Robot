@@ -138,9 +138,11 @@ public class Vision {
       // since pose error grows non-linearly with distance.
       m_xyStdDev *= Math.pow(m_avgTagDistance, 2);
     } else if (m_tagCount == 2) {
-      // ^1.5 distance scaling penalizes far-away tag estimates more heavily,
-      // since pose error grows non-linearly with distance.
-      m_xyStdDev *= Math.pow(m_avgTagDistance, 1.5);
+      if (!DriverStation.isAutonomous()) {
+        // ^1.5 distance scaling penalizes far-away tag estimates more heavily,
+        // since pose error grows non-linearly with distance.
+        m_xyStdDev *= Math.pow(m_avgTagDistance, 1.5);
+      }
     } else {
       // only trust rotation if we have many tags
       // when 3 tags are seen, not all tags are on the same plane so the estimate becomes more

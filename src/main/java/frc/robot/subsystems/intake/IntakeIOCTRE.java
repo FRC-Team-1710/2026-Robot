@@ -6,26 +6,35 @@ import static edu.wpi.first.units.Units.Volts;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.constants.CanIdConstants;
 import frc.robot.constants.SubsystemConstants.IntakeConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.utils.TalonFXUtil;
 
+@Logged
 public class IntakeIOCTRE implements IntakeIO {
 
+  @Logged(importance = Importance.CRITICAL, name = "rollerLeft")
   private final TalonFX m_rollerLeft;
+
+  @Logged(importance = Importance.CRITICAL, name = "rollerRight")
   private final TalonFX m_rollerRight;
+
+  @Logged(importance = Importance.CRITICAL, name = "deploymentMotor")
   private final TalonFX m_deploymentMotor;
 
+  @NotLogged
   private final DynamicMotionMagicVoltage m_mmVoltage =
       new DynamicMotionMagicVoltage(0, 0, 0).withEnableFOC(true);
 
-  private final VoltageOut m_voltage = new VoltageOut(0).withEnableFOC(true);
+  @NotLogged private final VoltageOut m_voltage = new VoltageOut(0).withEnableFOC(true);
 
-  private final VoltageOut m_voltageOut = new VoltageOut(0).withEnableFOC(true);
+  @NotLogged private final VoltageOut m_voltageOut = new VoltageOut(0).withEnableFOC(true);
 
   public IntakeIOCTRE() {
     m_rollerLeft = new TalonFX(CanIdConstants.Intake.ROLLER_LEFT);
@@ -48,8 +57,7 @@ public class IntakeIOCTRE implements IntakeIO {
     if (m_deploymentMotor.getPosition().getValue().in(Rotations)
             < IntakeConstants.Deployment.Software.kLowerThreshold.in(Rotations)
         && angle.isEquivalent(IntakeConstants.Deployment.Hardware.kDeployAngle)) {
-      m_deploymentMotor.setControl(
-          m_voltage.withOutput(Volts.of(DriverStation.isAutonomous() ? 0.0 : -0.25)));
+      m_deploymentMotor.setControl(m_voltage.withOutput(Volts.of(0.0)));
     } else {
       m_deploymentMotor.setControl(
           m_mmVoltage.withPosition(angle).withAcceleration(acceleration).withVelocity(velocity));

@@ -141,7 +141,7 @@ public final class ShooterMath {
 
   public static void setMorePow(boolean morePow) {
     if (morePow != m_morePow) {
-      m_add = morePow ? 2.0 : 0;
+      m_add = morePow ? 0.0 : 0.0; // -5
       calculate(currentPose);
       m_morePow = morePow;
     }

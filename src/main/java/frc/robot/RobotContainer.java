@@ -69,10 +69,10 @@ public class RobotContainer {
   @Logged(importance = Importance.CRITICAL)
   private final Shooter m_shooter;
 
-  @NotLogged // Nothing to log, all captured in the .hoot logs
+  @Logged(importance = Importance.CRITICAL)
   private final Indexer m_indexer;
 
-  @NotLogged // Nothing to log, all captured in the .hoot logs
+  @Logged(importance = Importance.CRITICAL)
   private final Feeder m_feeder;
 
   @NotLogged private final Leds m_leds; // Everything is logged through Robot.telemetry().log()
@@ -292,7 +292,7 @@ public class RobotContainer {
                       if (m_superstructure.readyToShoot()) {
                         m_shootingTimer.start();
                       }
-                      if (m_shootingTimer.hasElapsed(1.0)) {
+                      if (m_shootingTimer.hasElapsed(999.0)) { // 1
                         m_superstructure.setIntakeAddableState(IntakeAddableStates.IntakeUp);
                       }
                     })

@@ -2,19 +2,25 @@ package frc.robot.subsystems.feeder;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Robot;
 import frc.robot.constants.SubsystemConstants.FeederConstants;
 
+@Logged
 public class Feeder {
 
+  @Logged(importance = Importance.CRITICAL)
   private FeederStates m_currentState = FeederStates.Idle;
 
+  @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
-  private boolean m_testing = false;
+  @NotLogged private boolean m_testing = false;
 
-  private boolean m_brownoutMode = false;
+  @NotLogged private boolean m_brownoutMode = false;
 
   /**
    * Constructs a new Feeder.
@@ -62,6 +68,7 @@ public class Feeder {
   }
 
   /** Returns the current feeder state. */
+  @NotLogged
   public FeederStates getState() {
     return m_currentState;
   }

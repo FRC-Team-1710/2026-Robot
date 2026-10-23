@@ -14,7 +14,8 @@ import java.util.function.BooleanSupplier;
 @Logged
 public class Intake {
 
-  @NotLogged private final IntakeIO m_io;
+  @Logged(importance = Importance.CRITICAL)
+  private final IntakeIO m_io;
 
   @NotLogged private boolean m_testing = false;
 

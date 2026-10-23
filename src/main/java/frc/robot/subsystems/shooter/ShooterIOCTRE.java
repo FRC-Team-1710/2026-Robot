@@ -10,6 +10,8 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -24,16 +26,27 @@ import frc.robot.utils.TalonFXUtil;
 @Logged
 public class ShooterIOCTRE implements ShooterIO {
 
+  @NotLogged
   private final VelocityVoltage m_velocityVoltage =
       new VelocityVoltage(0).withSlot(0).withEnableFOC(true);
 
+  @NotLogged
   private final MotionMagicVoltage m_mmPosition =
       new MotionMagicVoltage(0).withEnableFOC(true).withSlot(0);
 
+  @Logged(importance = Importance.CRITICAL, name = "leftLeader")
   private final TalonFX m_leftLeader;
+
+  @Logged(importance = Importance.CRITICAL, name = "leftFollower")
   private final TalonFX m_leftFollower;
+
+  @Logged(importance = Importance.CRITICAL, name = "rightFollower")
   private final TalonFX m_rightFollower;
+
+  @Logged(importance = Importance.CRITICAL, name = "rightFollower2")
   private final TalonFX m_rightFollower2;
+
+  @Logged(importance = Importance.CRITICAL, name = "hoodMotor")
   private final TalonFX m_hoodMotor;
 
   public ShooterIOCTRE() {
@@ -106,6 +119,7 @@ public class ShooterIOCTRE implements ShooterIO {
 
   /** {@inheritDoc} */
   @Override
+  @NotLogged
   public Angle getHoodPosition() {
     return m_hoodMotor.getPosition().getValue();
   }

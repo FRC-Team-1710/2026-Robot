@@ -66,7 +66,7 @@ public class AutosChooser {
                             .withVelocityY(speeds.vyMetersPerSecond)
                             .withRotationalRate(speeds.omegaRadiansPerSecond)),
                 new PIDController(3.0, 0.0, 0.0), // Translation
-                new PIDController(4.0, 0.0, 0.0), // Rotation
+                new PIDController(5.0, 0.0, 0.0), // Rotation
                 new PIDController(4.0, 0.0, 0.0) // Cross-track
                 )
             .withShouldFlip(

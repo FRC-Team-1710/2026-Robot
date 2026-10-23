@@ -2,19 +2,22 @@ package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Importance;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Robot;
 import frc.robot.constants.SubsystemConstants.IndexerConstants;
 
+@Logged
 public class Indexer {
 
+  @Logged(importance = Importance.CRITICAL)
   private final IndexerIO m_io;
 
-  private IndexerStates m_currentState = IndexerStates.Idle;
-
-  private boolean m_testing = false;
-
-  private boolean m_brownoutMode = false;
+  @Logged private IndexerStates m_currentState = IndexerStates.Idle;
+  @NotLogged private boolean m_testing = false;
+  @NotLogged private boolean m_brownoutMode = false;
 
   /**
    * Creates a new Indexer.
