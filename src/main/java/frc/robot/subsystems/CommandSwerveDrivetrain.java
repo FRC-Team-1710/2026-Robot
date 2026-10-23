@@ -94,7 +94,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Logged(importance = Importance.CRITICAL)
   private boolean m_brownoutMode = false;
 
+  @NotLogged
   private LinearVelocity m_currentVelocity = TunerConstants.kSpeedAt12Volts;
+
+  @Logged(importance = Importance.CRITICAL)
+  private TalonFX talon1;
+
+  @Logged(importance = Importance.CRITICAL)
+  private TalonFX talon2;
+
+  @Logged(importance = Importance.CRITICAL)
+  private TalonFX talon3;
+
+  @Logged(importance = Importance.CRITICAL)
+  private TalonFX talon4;
 
   // SysId routines
 
@@ -185,6 +198,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     m_cachedState = getState();
     for (SwerveModule<TalonFX, TalonFX, CANcoder> module : getModules()) {
       module.getDriveMotor().getConfigurator().apply(TunerConstants.kNormalCurrentLimits, 0.0);
+      talon1 = getModules()[0].getDriveMotor();
+      talon2 = getModules()[1].getDriveMotor();
+      talon3 = getModules()[2].getDriveMotor();
+      talon4 = getModules()[3].getDriveMotor();
     }
   }
 
@@ -200,6 +217,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     m_cachedState = getState();
     for (SwerveModule<TalonFX, TalonFX, CANcoder> module : getModules()) {
       module.getDriveMotor().getConfigurator().apply(TunerConstants.kNormalCurrentLimits, 0.0);
+      talon1 = getModules()[0].getDriveMotor();
+      talon2 = getModules()[1].getDriveMotor();
+      talon3 = getModules()[2].getDriveMotor();
+      talon4 = getModules()[3].getDriveMotor();
     }
   }
 
@@ -222,6 +243,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     m_cachedState = getState();
     for (SwerveModule<TalonFX, TalonFX, CANcoder> module : getModules()) {
       module.getDriveMotor().getConfigurator().apply(TunerConstants.kNormalCurrentLimits, 0.0);
+      talon1 = getModules()[0].getDriveMotor();
+      talon2 = getModules()[1].getDriveMotor();
+      talon3 = getModules()[2].getDriveMotor();
+      talon4 = getModules()[3].getDriveMotor();
     }
   }
 

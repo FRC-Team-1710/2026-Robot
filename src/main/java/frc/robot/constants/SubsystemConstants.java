@@ -127,20 +127,24 @@ public class SubsystemConstants {
     public class Hardware {}
 
     public class Software {
-      public static final Voltage kRunVoltage = Volts.of(8.0);
+      public static final Voltage kRunVoltage = Volts.of(7.0);
       public static final Voltage kBrownoutRunVoltage = Volts.of(4.0);
 
       public class Config {
         public static final NeutralModeValue kNeutralMode = NeutralModeValue.Brake;
         public static final InvertedValue kInverted = InvertedValue.CounterClockwise_Positive;
 
-        public static final Current kStatorCurrentLimit = Amps.of(40.0);
-        public static final Current kSupplyCurrentLimit = Amps.of(35.0);
+          public static final Time kOpenLoopRampPeriod = Seconds.of(0.065);
+
+        public static final Current kStatorCurrentLimit = Amps.of(35.0);
+        public static final Current kSupplyCurrentLimit = Amps.of(30.0);
 
         public static final TalonFXConfiguration kConfig =
             new TalonFXConfiguration()
                 .withMotorOutput(
                     new MotorOutputConfigs().withNeutralMode(kNeutralMode).withInverted(kInverted))
+                  .withOpenLoopRamps(
+                      new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(kOpenLoopRampPeriod))
                 .withCurrentLimits(
                     new CurrentLimitsConfigs()
                         .withStatorCurrentLimit(kStatorCurrentLimit)
@@ -155,20 +159,24 @@ public class SubsystemConstants {
     public class Hardware {}
 
     public class Software {
-      public static final Voltage kRunVoltage = Volts.of(9.0);
+      public static final Voltage kRunVoltage = Volts.of(8.0);
       public static final Voltage kBrownoutRunVoltage = Volts.of(5.0);
 
       public class Config {
         public static final NeutralModeValue kNeutralMode = NeutralModeValue.Brake;
         public static final InvertedValue kInverted = InvertedValue.CounterClockwise_Positive;
 
-        public static final Current kStatorCurrentLimit = Amps.of(70.0);
+          public static final Time kOpenLoopRampPeriod = Seconds.of(0.065);
+
+        public static final Current kStatorCurrentLimit = Amps.of(60.0);
         public static final Current kSupplyCurrentLimit = Amps.of(60.0);
 
         public static final TalonFXConfiguration kConfig =
             new TalonFXConfiguration()
                 .withMotorOutput(
                     new MotorOutputConfigs().withNeutralMode(kNeutralMode).withInverted(kInverted))
+                  .withOpenLoopRamps(
+                      new OpenLoopRampsConfigs().withVoltageOpenLoopRampPeriod(kOpenLoopRampPeriod))
                 .withCurrentLimits(
                     new CurrentLimitsConfigs()
                         .withStatorCurrentLimit(kStatorCurrentLimit)
