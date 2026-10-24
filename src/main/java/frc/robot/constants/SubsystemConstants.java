@@ -91,9 +91,9 @@ public class SubsystemConstants {
       public class Hardware {}
 
       public class Software {
-        public static final Voltage kRunVoltage = Volts.of(8.0);
-        public static final Voltage kBrownoutRunVoltage = Volts.of(6.0);
-        public static final Voltage kReverseVoltage = Volts.of(-8.0);
+        public static final Voltage kRunVoltage = Volts.of(6.0);
+        public static final Voltage kBrownoutRunVoltage = Volts.of(4.0);
+        public static final Voltage kReverseVoltage = Volts.of(-6.0);
 
         public class Config {
           public static final NeutralModeValue kNeutralMode = NeutralModeValue.Coast;
@@ -101,8 +101,8 @@ public class SubsystemConstants {
 
           public static final Time kOpenLoopRampPeriod = Seconds.of(0.065);
 
-          public static final Current kStatorCurrentLimit = Amps.of(60.0);
-          public static final Current kSupplyCurrentLimit = Amps.of(45.0);
+          public static final Current kStatorCurrentLimit = Amps.of(65.0);
+          public static final Current kSupplyCurrentLimit = Amps.of(40.0);
 
           public static final TalonFXConfiguration kConfig =
               new TalonFXConfiguration()
@@ -127,7 +127,7 @@ public class SubsystemConstants {
     public class Hardware {}
 
     public class Software {
-      public static final Voltage kRunVoltage = Volts.of(7.0);
+      public static final Voltage kRunVoltage = Volts.of(6.0);
       public static final Voltage kBrownoutRunVoltage = Volts.of(4.0);
 
       public class Config {
@@ -137,7 +137,7 @@ public class SubsystemConstants {
           public static final Time kOpenLoopRampPeriod = Seconds.of(0.065);
 
         public static final Current kStatorCurrentLimit = Amps.of(35.0);
-        public static final Current kSupplyCurrentLimit = Amps.of(30.0);
+        public static final Current kSupplyCurrentLimit = Amps.of(20.0);
 
         public static final TalonFXConfiguration kConfig =
             new TalonFXConfiguration()
@@ -159,8 +159,9 @@ public class SubsystemConstants {
     public class Hardware {}
 
     public class Software {
-      public static final Voltage kRunVoltage = Volts.of(8.0);
-      public static final Voltage kBrownoutRunVoltage = Volts.of(5.0);
+      public static final Voltage kRunVoltage = Volts.of(6.0);
+      public static final Voltage kReverseVoltage = Volts.of(-3.0);
+      public static final Voltage kBrownoutRunVoltage = Volts.of(4.0);
 
       public class Config {
         public static final NeutralModeValue kNeutralMode = NeutralModeValue.Brake;
@@ -168,7 +169,7 @@ public class SubsystemConstants {
 
           public static final Time kOpenLoopRampPeriod = Seconds.of(0.065);
 
-        public static final Current kStatorCurrentLimit = Amps.of(60.0);
+        public static final Current kStatorCurrentLimit = Amps.of(70.0);
         public static final Current kSupplyCurrentLimit = Amps.of(40.0);
 
         public static final TalonFXConfiguration kConfig =
@@ -286,7 +287,7 @@ public class SubsystemConstants {
         }
 
         public class CurrentLimits {
-          public static final Current kHighStator = Amps.of(45.0);
+          public static final Current kHighStator = Amps.of(50.0);
           public static final Current kHighSupply = Amps.of(40.0);
 
           public static final Current kLowStator = Amps.of(7.0);

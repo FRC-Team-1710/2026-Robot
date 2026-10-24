@@ -2,6 +2,8 @@ package frc.robot.subsystems.feeder;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
@@ -15,6 +17,8 @@ public class Feeder {
   @Logged(importance = Importance.CRITICAL)
   private FeederStates m_currentState = FeederStates.Idle;
 
+  @NotLogged private final BooleanSupplier m_bumpSupplier;
+
   @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
@@ -26,9 +30,11 @@ public class Feeder {
    * Constructs a new Feeder.
    *
    * @param io the feeder IO implementation
+   * @param bumpSupplier the bump supplier
    */
-  public Feeder(FeederIO io) {
+  public Feeder(FeederIO io, BooleanSupplier bumpSupplier) {
     m_io = io;
+    m_bumpSupplier = bumpSupplier;
   }
 
   public void toggleBrownout() {
@@ -44,7 +50,7 @@ public class Feeder {
   public void setState(FeederStates state) {
     if (m_testing) return;
     m_currentState = state;
-    m_io.setVoltage(m_brownoutMode ? m_currentState.brownoutVoltage : m_currentState.voltage);
+    m_io.setVoltage(m_bumpSupplier.getAsBoolean() ? FeederConstants.Software.kReverseVoltage : (m_brownoutMode ? m_currentState.brownoutVoltage : m_currentState.voltage));
   }
 
   /**
@@ -55,7 +61,7 @@ public class Feeder {
   public void setStateTesting(FeederStates state) {
     if (!m_testing) return;
     m_currentState = state;
-    m_io.setVoltage(m_currentState.voltage);
+    m_io.setVoltage(m_bumpSupplier.getAsBoolean() ? FeederConstants.Software.kReverseVoltage : (m_currentState.voltage));
   }
 
   /**

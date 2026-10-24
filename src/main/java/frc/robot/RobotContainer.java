@@ -93,7 +93,7 @@ public class RobotContainer {
       case REAL:
         m_intake = new Intake(new IntakeIOCTRE(), () -> m_driver.leftBumper().getAsBoolean());
         m_shooter = new Shooter(new ShooterIOCTRE());
-        m_feeder = new Feeder(new FeederIOCTRE());
+        m_feeder = new Feeder(new FeederIOCTRE(), () -> m_driver.leftStick().getAsBoolean());
         m_indexer = new Indexer(new IndexerIOCTRE());
 
         m_cameras =
@@ -108,7 +108,7 @@ public class RobotContainer {
       case SIMULATION:
         m_intake = new Intake(new IntakeIOSIM(), () -> m_driver.leftBumper().getAsBoolean());
         m_shooter = new Shooter(new ShooterIOSIM());
-        m_feeder = new Feeder(new FeederIOSIM());
+        m_feeder = new Feeder(new FeederIOSIM(), () -> m_driver.leftStick().getAsBoolean());
         m_indexer = new Indexer(new IndexerIOSIM());
         // m_cameras = new Vision[0];
         m_cameras =
@@ -123,7 +123,7 @@ public class RobotContainer {
       default:
         m_intake = new Intake(new IntakeIO() {}, () -> m_driver.leftBumper().getAsBoolean());
         m_shooter = new Shooter(new ShooterIO() {});
-        m_feeder = new Feeder(new FeederIO() {});
+        m_feeder = new Feeder(new FeederIO() {}, () -> m_driver.leftStick().getAsBoolean());
         m_indexer = new Indexer(new IndexerIO() {});
         m_cameras = new Vision[0];
         break;
@@ -233,10 +233,12 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> {
                   m_shooter.setStateTesting(ShooterStates.Test);
-                  m_feeder.setStateTesting(FeederStates.Run);
-                  m_indexer.setStateTesting(IndexerStates.Run);
                   m_intake.setStateTesting(IntakeStates.Intake);
-                }))
+                })
+        .andThen(Commands.waitSeconds(0.5).andThen(Commands.runOnce(() -> {
+            m_feeder.setStateTesting(FeederStates.Run);
+            m_indexer.setStateTesting(IndexerStates.Run);
+        }))))
         .onFalse(
             Commands.runOnce(
                 () -> {
@@ -265,13 +267,6 @@ public class RobotContainer {
 
   private void configureBindings() {
     // General bindings
-
-    m_driver
-        .rightStick()
-        .and(m_driver.leftStick())
-        .onTrue(
-            Commands.runOnce(() -> drivetrain.setShouldAcceptNextVisionMeasurementRotation(true))
-                .ignoringDisable(true));
 
     m_driver
         .start()
