@@ -335,6 +335,10 @@ public class RobotContainer {
                   m_intake.toggleBrownout();
                 }));
 
+    m_driver.povUp().onTrue(Commands.runOnce(() -> m_intake.resetUp()).ignoringDisable(true));
+
+    m_driver.povDown().onTrue(Commands.runOnce(() -> m_intake.resetDown()).ignoringDisable(true));
+
     // Backup bindings
 
     m_driver

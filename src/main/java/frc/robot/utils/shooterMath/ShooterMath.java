@@ -35,8 +35,8 @@ public final class ShooterMath {
     addToMaps(1.51, 47.0, 14.0); // Tune every .25m
     addToMaps(1.65, 47.5, 14.0);
     addToMaps(2.01, 50.0, 18.0);
-    addToMaps(2.53, 53.0, 20.0);
-    addToMaps(3.02, 56.5, 22.0);
+    addToMaps(2.53, 53.5, 20.0);
+    addToMaps(3.02, 57.0, 22.0);
     addToMaps(3.50, 60.0, 23.0);
     addToMaps(4.00, 63.25, 24.5);
     addToMaps(4.51, 70.0, 26.0);

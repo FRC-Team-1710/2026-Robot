@@ -7,6 +7,7 @@ import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Robot;
 import frc.robot.constants.SubsystemConstants.IntakeConstants;
 import java.util.function.BooleanSupplier;
@@ -26,6 +27,8 @@ public class Intake {
 
   @NotLogged private boolean m_brownoutMode = false;
 
+  @NotLogged private final Timer m_timer = new Timer();
+
   /**
    * Constructs an Intake subsystem.
    *
@@ -36,11 +39,28 @@ public class Intake {
   public Intake(IntakeIO io, BooleanSupplier bumpSupplier) {
     m_io = io;
     m_bumpSupplier = bumpSupplier;
+    m_timer.restart();
   }
 
   public void toggleBrownout() {
     m_brownoutMode = !m_brownoutMode;
     Robot.telemetry().log("Brownout/Intake", m_brownoutMode);
+  }
+
+  public void resetUp() {
+    m_io.reset(IntakeStates.Up.setpoint);
+    m_io.setAngle(
+        m_currentState.setpoint,
+        m_currentState.deploymentAcceleration,
+        m_currentState.deploymentVelocity);
+  }
+
+  public void resetDown() {
+    m_io.reset(IntakeStates.Down.setpoint);
+    m_io.setAngle(
+        m_currentState.setpoint,
+        m_currentState.deploymentAcceleration,
+        m_currentState.deploymentVelocity);
   }
 
   /**
@@ -51,6 +71,9 @@ public class Intake {
   public void setState(IntakeStates state) {
     if (m_testing) return;
     m_currentState = state;
+    if (m_currentState == IntakeStates.UpAndIntake || m_currentState == IntakeStates.Up) {
+      m_timer.restart();
+    }
     // m_io.setAngle( //TODO: dissables intake from going down
     //     IntakeStates.Down.setpoint,
     //     IntakeStates.Down.deploymentAcceleration,
@@ -62,7 +85,7 @@ public class Intake {
     m_io.setIntakeVoltage(
         m_bumpSupplier.getAsBoolean()
             ? IntakeConstants.Rollers.Software.kReverseVoltage
-            : (m_brownoutMode ? m_currentState.brownoutVoltage : m_currentState.voltage));
+            : (m_timer.get() < 0.75 ? Volts.of(0.0) : (m_brownoutMode ? m_currentState.brownoutVoltage : m_currentState.voltage)));
   }
 
   /**
@@ -73,6 +96,9 @@ public class Intake {
   public void setStateTesting(IntakeStates state) {
     if (!m_testing) return;
     m_currentState = state;
+    if (m_currentState == IntakeStates.UpAndIntake || m_currentState == IntakeStates.Up) {
+      m_timer.restart();
+    }
     m_io.setAngle(
         m_currentState.setpoint,
         m_currentState.deploymentAcceleration,
@@ -80,7 +106,7 @@ public class Intake {
     m_io.setIntakeVoltage(
         m_bumpSupplier.getAsBoolean()
             ? IntakeConstants.Rollers.Software.kReverseVoltage
-            : m_currentState.voltage);
+            : m_timer.get() < 0.75 ? Volts.of(0.0) : m_currentState.voltage);
   }
 
   /**

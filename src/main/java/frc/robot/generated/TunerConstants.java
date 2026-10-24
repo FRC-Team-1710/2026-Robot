@@ -57,7 +57,7 @@ public class TunerConstants {
 
   // The stator current at which the wheels start to slip;
   // This needs to be tuned to your individual robot
-  private static final Current kSlipCurrent = Amps.of(100.0);
+  private static final Current kSlipCurrent = Amps.of(80.0);
 
   public static final CurrentLimitsConfigs kBrownoutCurrentLimits =
       new CurrentLimitsConfigs()
@@ -69,9 +69,9 @@ public class TunerConstants {
 
   public static final CurrentLimitsConfigs kNormalCurrentLimits =
       new CurrentLimitsConfigs()
-          .withSupplyCurrentLimit(55)
+          .withSupplyCurrentLimit(50)
           .withSupplyCurrentLimitEnable(true)
-          .withStatorCurrentLimit(100)
+          .withStatorCurrentLimit(80)
           .withStatorCurrentLimitEnable(true)
           .withSupplyCurrentLowerTime(0.0);
 

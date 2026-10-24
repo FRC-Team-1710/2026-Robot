@@ -51,6 +51,11 @@ public class IntakeIOCTRE implements IntakeIO {
     TalonFXUtil.optimizeForPIDStatusSignals(m_deploymentMotor);
   }
 
+  @Override
+  public void reset(Angle angle) {
+    m_deploymentMotor.setPosition(angle);
+  }
+
   /** {@inheritDoc} */
   @Override
   public void setAngle(Angle angle, double acceleration, double velocity) {

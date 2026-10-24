@@ -169,7 +169,7 @@ public class SubsystemConstants {
           public static final Time kOpenLoopRampPeriod = Seconds.of(0.065);
 
         public static final Current kStatorCurrentLimit = Amps.of(60.0);
-        public static final Current kSupplyCurrentLimit = Amps.of(60.0);
+        public static final Current kSupplyCurrentLimit = Amps.of(40.0);
 
         public static final TalonFXConfiguration kConfig =
             new TalonFXConfiguration()
@@ -286,7 +286,7 @@ public class SubsystemConstants {
         }
 
         public class CurrentLimits {
-          public static final Current kHighStator = Amps.of(40.0);
+          public static final Current kHighStator = Amps.of(45.0);
           public static final Current kHighSupply = Amps.of(40.0);
 
           public static final Current kLowStator = Amps.of(7.0);

@@ -18,4 +18,6 @@ public interface IntakeIO {
 
   /** Sets the intake motors' voltage */
   public default void setIntakeVoltage(Voltage voltage) {}
+
+  public default void reset(Angle angle) {}
 }
