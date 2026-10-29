@@ -1,117 +1,22 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Robot;
-import frc.robot.constants.IntakeConstants;
-import frc.robot.utils.MechanismUtil;
-import frc.robot.utils.MechanismUtil.IntakeVisualSim;
 
-/**
- * Simulation implementation of {@link IntakeIO} used for robot simulation.
- *
- * <p>Provides a physics-backed simulation of the intake deployment arm and a simple
- * visual/telemetry simulation for the rollers. Values are exposed to SmartDashboard for easy
- * tweaking while simulating.
- */
-@Logged
 public class IntakeIOSIM implements IntakeIO {
-  private final DCMotor m_gearbox;
 
-  private final SingleJointedArmSim m_armPhysicsSim;
-  private final IntakeVisualSim m_intakeVisualSim;
-  private Angle m_angleSetpoint = Degrees.of(0);
+  public IntakeIOSIM() {}
 
-  private final ProfiledPIDController m_PID =
-      new ProfiledPIDController(5, 0, 0, new Constraints(400, 400));
-
-  /** Creates a new IntakeIOSIM. */
-  public IntakeIOSIM() {
-    m_gearbox = DCMotor.getKrakenX60(1);
-    m_armPhysicsSim =
-        new SingleJointedArmSim(
-            m_gearbox,
-            25,
-            0.004,
-            10,
-            IntakeConstants.minDeploymentDegrees.in(Radians),
-            IntakeConstants.maxDeploymentDegrees.in(Radians),
-            false,
-            Units.degreesToRadians(45),
-            new double[2]);
-
-    m_intakeVisualSim =
-        new MechanismUtil().new IntakeVisualSim("Intake", .25, .125); // creates the visual sim
-
-    SmartDashboard.putNumber("Intake/JamTest/Velocity", 0);
-    SmartDashboard.putNumber("Intake/JamTest/Current", 0);
-    SmartDashboard.putNumber("Intake/StuckTest/DeploymentCurrent", 0);
+  /** {@inheritDoc} */
+  @Override
+  public void setAngle(Angle angle, double acceleration, double velocity) {
+    Robot.telemetry().log("SimMechanisms/IntakeAngle", angle);
   }
 
-  /**
-   * Command the simulated deployment/arm to the requested angle. This updates the underlying
-   * physics simulation and visual helpers.
-   *
-   * @param angle desired arm angle
-   */
-  public void setAngle(Angle angle) {
-    m_angleSetpoint = angle;
-    if (m_angleSetpoint == null) return;
-    m_armPhysicsSim.setInputVoltage(
-        m_PID.calculate(m_armPhysicsSim.getAngleRads(), m_angleSetpoint.in(Radians)));
-    m_armPhysicsSim.update(0.02);
-    m_intakeVisualSim.updateArm(
-        Units.radiansToDegrees(m_armPhysicsSim.getAngleRads()),
-        Math.abs(m_angleSetpoint.in(Radians) - m_armPhysicsSim.getAngleRads())
-            < Units.degreesToRadians(1)); // updates visuals
-    SmartDashboard.putData("ArmVisuals", m_intakeVisualSim.getMechanism());
-  }
-
-  /**
-   * Set the simulated intake roller speed. This updates the visual simulation and logs telemetry.
-   *
-   * @param speed roller speed in range [-1.0, 1.0]
-   */
-  public void setIntakeMotor(double speed) {
-    m_intakeVisualSim.updateRoller(speed); // updates roller visuals
-    Robot.telemetry().log("RollerSpeed", speed);
-  }
-
-  /**
-   * @return the simulated roller angular velocity
-   */
-  public AngularVelocity getRollerVelocity() {
-    return RotationsPerSecond.of(SmartDashboard.getNumber("Intake/JamTest/Velocity", 0));
-  }
-
-  /**
-   * @return the simulated roller current
-   */
-  public Current getRollerCurrent() {
-    return Amps.of(SmartDashboard.getNumber("Intake/JamTest/Current", 0));
-  }
-
-  /**
-   * @return the simulated deployment motor current
-   */
-  public Current getDeploymentCurrent() {
-    return Amps.of(SmartDashboard.getNumber("Intake/StuckTest/DeploymentCurrent", 0));
+  /** {@inheritDoc} */
+  @Override
+  public void setIntakeVoltage(Voltage voltage) {
+    Robot.telemetry().log("SimMechanisms/IntakeVoltage", voltage);
   }
 }

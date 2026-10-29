@@ -2,15 +2,11 @@ package frc.robot.constants;
 
 public enum Subsystems {
   Robot(),
-  Epilogue(),
-  Superstructure(),
-  Drive(),
-  Intake(),
-  Feeder(),
-  Shooter(),
-  Indexer(),
   Vision(),
-  Leds()
+  Drive(),
+  Superstructure(),
+  Leds(),
+  Epilogue()
 }
 
-// Do not remove Robot or Epilogue!
+// Always build after adjusting

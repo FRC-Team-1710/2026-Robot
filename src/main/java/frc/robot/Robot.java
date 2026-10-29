@@ -4,11 +4,8 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
-import edu.wpi.first.epilogue.EpilogueConfiguration;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
@@ -18,10 +15,8 @@ import edu.wpi.first.epilogue.logging.errors.ErrorHandler;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Alliance;
 import frc.robot.constants.MatchState;
@@ -32,116 +27,85 @@ import frc.robot.utils.DynamicTimedRobot;
 
 @Logged
 public class Robot extends DynamicTimedRobot {
-  @Logged(importance = Importance.DEBUG)
-  private Command m_autonomousCommand;
-
-  @Logged(importance = Importance.CRITICAL)
-  private boolean m_wasAuto = false;
-
   @Logged(importance = Importance.CRITICAL)
   private final RobotContainer m_robotContainer;
 
-  @Logged(importance = Importance.INFO)
-  private final PowerDistribution pdhLogging = new PowerDistribution();
-
   @NotLogged private boolean m_hasAppliedTestingControls = false;
 
-  @NotLogged public static final EpilogueConfiguration epilogueConfig = new EpilogueConfiguration();
-
   public Robot() {
-    Alliance.updateRedAlliance();
+    SignalLogger.setPath("/u/logs");
+    SignalLogger.start();
 
-    m_robotContainer = new RobotContainer(this::setSubsystemConsumer);
-
-    DataLogManager.start();
-
-    epilogueConfig.backend =
-        EpilogueBackend.multi(new NTEpilogueBackend(NetworkTableInstance.getDefault()));
-
-    if (Mode.currentMode == CurrentMode.SIMULATION) {
-      epilogueConfig.minimumImportance = Importance.DEBUG;
-      epilogueConfig.errorHandler = ErrorHandler.crashOnError();
-    } else {
-      epilogueConfig.minimumImportance = Importance.INFO;
-      epilogueConfig.errorHandler = ErrorHandler.printErrorMessages();
-    }
-
-    epilogueConfig.root = "Robot";
-
-    epilogueConfig.loggingPeriod = Seconds.of(0.02);
-    epilogueConfig.loggingPeriodOffset = Seconds.of(0.02 - (0.02 / Subsystems.values().length));
+    DataLogManager.start("/u/logs");
 
     Epilogue.configure(
         config -> {
-          config = epilogueConfig;
+          config.backend =
+              // EpilogueBackend.multi(
+              new NTEpilogueBackend(NetworkTableInstance.getDefault());
+          // new HootEpilogueBackend());
+
+          if (Mode.currentMode == CurrentMode.SIMULATION) {
+            config.minimumImportance = Importance.DEBUG;
+            config.errorHandler = ErrorHandler.crashOnError();
+          } else {
+            config.minimumImportance = Importance.INFO;
+            config.errorHandler = ErrorHandler.printErrorMessages();
+          }
+
+          config.root = "Robot";
         });
 
-    DriverStation.silenceJoystickConnectionWarning(true);
+    Alliance.updateRedAlliance();
 
-    // Epilogue dislikes the custom DynamicTimedRobot class so we manually update it
-    addSubsystem(
+    m_robotContainer = new RobotContainer();
+
+    registerAllSubsystems(m_robotContainer.getAllSubsystems());
+
+    // Epilogue dislikes the custom DynamicTimedRobot class so we manually run its periodic
+    registerSubsystem(
         new SubsystemInfo(
             Subsystems.Epilogue,
             () ->
                 Epilogue.robotLogger.tryUpdate(
-                    epilogueConfig.backend.getNested(epilogueConfig.root),
+                    Epilogue.getConfig().backend.getNested(Epilogue.getConfig().root),
                     this,
-                    epilogueConfig.errorHandler),
-            epilogueConfig.loggingPeriod,
-            epilogueConfig.loggingPeriodOffset));
-
-    addAllSubsystems(m_robotContainer.getAllSubsystems());
+                    Epilogue.getConfig().errorHandler)));
 
     if (Mode.currentMode == CurrentMode.SIMULATION) {
       SmartDashboard.putBoolean("Reset Fuel Sim", false);
     }
 
-    SmartDashboard.putBoolean("MatchState/IgnoreFMS", false);
-
     // Lowers brownout threshold to 6.0V
     RobotController.setBrownoutVoltage(6.0);
 
     DriverStation.silenceJoystickConnectionWarning(true);
-
-    SignalLogger.stop();
-    SignalLogger.setPath("/media/sda1");
-    SignalLogger.start();
-
-    m_wasAuto = false;
   }
 
   @Override
   public void robotPeriodic() {
+    m_robotContainer.autoChooserPeriodic();
+
     CommandScheduler.getInstance().run();
 
-    MatchState.updateAutonomousWinner();
-  }
-
-  @Override
-  public void disabledInit() {
-    if (m_wasAuto) {
-      m_robotContainer.setTeleCurrentLimits();
+    if (!MatchState.autonomousWinnerIsRed.isPresent()) {
+      MatchState.updateAutonomousWinner();
     }
   }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledInit() {}
+
+  @Override
+  public void disabledPeriodic() {
+    Alliance.updateRedAlliance();
+  }
 
   @Override
   public void disabledExit() {}
 
   @Override
-  public void autonomousInit() {
-    Alliance.updateRedAlliance();
-
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
-    }
-
-    m_wasAuto = true;
-  }
+  public void autonomousInit() {}
 
   @Override
   public void autonomousPeriodic() {}
@@ -151,13 +115,7 @@ public class Robot extends DynamicTimedRobot {
 
   @Override
   public void teleopInit() {
-    Alliance.updateRedAlliance();
-
     MatchState.startTeleop();
-
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
   }
 
   @Override
@@ -199,6 +157,7 @@ public class Robot extends DynamicTimedRobot {
     m_robotContainer.setAllSubsystemTesting(false);
   }
 
+  @NotLogged
   public static EpilogueBackend telemetry() {
     return Epilogue.getConfig().backend.getNested("Outputs");
   }

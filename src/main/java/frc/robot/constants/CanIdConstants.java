@@ -25,8 +25,8 @@ public class CanIdConstants {
 
   /** Constants for intake */
   public static class Intake {
-    public static final int INTAKE_MOTOR = 20;
-    public static final int INTAKE_MOTOR_FOLLOWER = 21;
+    public static final int ROLLER_LEFT = 20;
+    public static final int ROLLER_RIGHT = 21;
     public static final int DEPLOYMENT_MOTOR = 22;
   }
 
@@ -39,7 +39,7 @@ public class CanIdConstants {
   public static class Shooter {
     public static final int SHOOTER_LEFT_MOTOR = 40;
     public static final int SHOOTER_LEFT_FOLLOWER = 41;
-    public static final int SHOOTER_RIGHT_FOLLOWER_1 = 42;
+    public static final int SHOOTER_RIGHT_FOLLOWER = 42;
     public static final int SHOOTER_RIGHT_FOLLOWER_2 = 43;
     public static final int HOOD_MOTOR = 44;
   }

@@ -3,53 +3,53 @@
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 1.9591795288383427,
-        "y_meters": 5.6036433793663685,
+        "x_meters": 1.95918,
+        "y_meters": 5.60364,
         "intermediate_handoff_radius_meters": 0.25
       },
       "rotation_target": {
-        "rotation_radians": 2.4720000298128784,
+        "rotation_radians": 2.472,
         "profiled_rotation": true
       }
     },
     {
       "type": "event_trigger",
-      "t_ratio": -0.0,
+      "t_ratio": 0.0,
       "lib_key": "IntakeAuto"
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 0.6854028162063863,
-        "y_meters": 5.07644597887896,
+        "x_meters": 0.6854,
+        "y_meters": 5.07645,
         "intermediate_handoff_radius_meters": 0.25
       },
       "rotation_target": {
-        "rotation_radians": 2.4643736042452087,
+        "rotation_radians": 2.46437,
         "profiled_rotation": true
       }
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 0.7281485513810408,
-        "y_meters": 6.90885935560525,
+        "x_meters": 0.72815,
+        "y_meters": 6.90886,
         "intermediate_handoff_radius_meters": 0.25
       },
       "rotation_target": {
-        "rotation_radians": 2.476653340002916,
+        "rotation_radians": 2.47665,
         "profiled_rotation": true
       }
     },
     {
       "type": "waypoint",
       "translation_target": {
-        "x_meters": 2.9651753588546392,
-        "y_meters": 4.822913674654854,
+        "x_meters": 2.96518,
+        "y_meters": 4.82291,
         "intermediate_handoff_radius_meters": 0.25
       },
       "rotation_target": {
-        "rotation_radians": 2.5245119935924825,
+        "rotation_radians": 2.52451,
         "profiled_rotation": true
       }
     }

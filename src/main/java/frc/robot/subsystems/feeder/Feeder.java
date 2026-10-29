@@ -1,77 +1,45 @@
 package frc.robot.subsystems.feeder;
 
-import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Importance;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.units.measure.Time;
-import frc.robot.constants.Subsystems;
-import frc.robot.utils.DynamicTimedRobot.TimesConsumer;
+import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Robot;
+import frc.robot.constants.SubsystemConstants.FeederConstants;
 
 @Logged
 public class Feeder {
+
   @Logged(importance = Importance.CRITICAL)
-  private FEEDER_STATE m_currentState;
+  private FeederStates m_currentState = FeederStates.Idle;
+
+  @NotLogged private final BooleanSupplier m_bumpSupplier;
 
   @Logged(importance = Importance.CRITICAL)
   private final FeederIO m_io;
 
   @NotLogged private boolean m_testing = false;
 
-  @NotLogged private final TimesConsumer m_timesConsumer;
+  @NotLogged private boolean m_brownoutMode = false;
 
   /**
    * Constructs a new Feeder.
    *
    * @param io the feeder IO implementation
-   * @param consumer the times consumer for dynamic scheduling
+   * @param bumpSupplier the bump supplier
    */
-  public Feeder(FeederIO io, TimesConsumer consumer) {
-    this.m_io = io;
-    this.m_timesConsumer = consumer;
-    this.m_currentState = FEEDER_STATE.STOP;
+  public Feeder(FeederIO io, BooleanSupplier bumpSupplier) {
+    m_io = io;
+    m_bumpSupplier = bumpSupplier;
   }
 
-  /** Runs periodic feeder logic based on the current state. */
-  public void periodic() {
-    double output = this.m_currentState.m_velocity;
-
-    switch (this.m_currentState) {
-      case FEEDING:
-        // Single-motor feeder: preserve FSM structure while applying a single feed output.
-        output = this.m_currentState.m_velocity;
-        break;
-      default:
-        output = this.m_currentState.m_velocity;
-        break;
-    }
-
-    this.m_io.setFeeder(output);
-
-    this.m_io.update(m_currentState.getSubsystemPeriodicFrequency().in(Seconds));
-  }
-
-  public enum FEEDER_STATE {
-    STOP(Milliseconds.of(60), 0),
-    FEEDING(Milliseconds.of(20), 0.75);
-
-    private final Time m_subsystemPeriodicFrequency;
-    private final double m_velocity;
-
-    FEEDER_STATE(Time pSubsystemPeriodicFrequency, double pVelocity) {
-      this.m_subsystemPeriodicFrequency = pSubsystemPeriodicFrequency;
-      this.m_velocity = pVelocity;
-    }
-
-    Time getSubsystemPeriodicFrequency() {
-      return this.m_subsystemPeriodicFrequency;
-    }
-
-    double getVelocity() {
-      return this.m_velocity;
-    }
+  public void toggleBrownout() {
+    m_brownoutMode = !m_brownoutMode;
+    Robot.telemetry().log("Brownout/Feeder", m_brownoutMode);
   }
 
   /**
@@ -79,14 +47,10 @@ public class Feeder {
    *
    * @param state the feeder state to set
    */
-  public void setState(FEEDER_STATE state) {
+  public void setState(FeederStates state) {
     if (m_testing) return;
-    if (!this.m_currentState
-        .getSubsystemPeriodicFrequency()
-        .isEquivalent(state.getSubsystemPeriodicFrequency())) {
-      m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
-    }
-    this.m_currentState = state;
+    m_currentState = state;
+    m_io.setVoltage(m_bumpSupplier.getAsBoolean() ? FeederConstants.Software.kReverseVoltage : (m_brownoutMode ? m_currentState.brownoutVoltage : m_currentState.voltage));
   }
 
   /**
@@ -94,14 +58,10 @@ public class Feeder {
    *
    * @param state the feeder state to set
    */
-  public void setStateTesting(FEEDER_STATE state) {
+  public void setStateTesting(FeederStates state) {
     if (!m_testing) return;
-    if (!this.m_currentState
-        .getSubsystemPeriodicFrequency()
-        .isEquivalent(state.getSubsystemPeriodicFrequency())) {
-      m_timesConsumer.accept(Subsystems.Feeder, state.getSubsystemPeriodicFrequency());
-    }
-    this.m_currentState = state;
+    m_currentState = state;
+    m_io.setVoltage(m_bumpSupplier.getAsBoolean() ? FeederConstants.Software.kReverseVoltage : (m_currentState.voltage));
   }
 
   /**
@@ -110,12 +70,29 @@ public class Feeder {
    * @param testing true to enable testing mode
    */
   public void setTesting(boolean testing) {
-    this.m_testing = testing;
+    m_testing = testing;
   }
 
   /** Returns the current feeder state. */
   @NotLogged
-  public FEEDER_STATE getState() {
-    return this.m_currentState;
+  public FeederStates getState() {
+    return m_currentState;
+  }
+
+  public enum FeederStates {
+    Idle(),
+    Run(FeederConstants.Software.kRunVoltage, FeederConstants.Software.kBrownoutRunVoltage);
+
+    public final Voltage voltage;
+    public final Voltage brownoutVoltage;
+
+    FeederStates() {
+      this(Volts.of(0), Volts.of(0));
+    }
+
+    FeederStates(Voltage voltage, Voltage brownoutVoltage) {
+      this.voltage = voltage;
+      this.brownoutVoltage = brownoutVoltage;
+    }
   }
 }
